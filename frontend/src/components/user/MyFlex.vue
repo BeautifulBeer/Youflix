@@ -41,7 +41,6 @@
         <v-container fluid>
             <v-row style="background-color: white;">
                 <v-col cols="12">
-
                     <v-row>
                         <v-col
                             style="min-height: 600px; position: relative;"
@@ -56,7 +55,6 @@
             </v-row>
             <v-row style="background-color: white;">
                 <v-col cols="12">
-
                     <v-row>
                         <v-col
                             style="min-height: 600px; position: relative;"
@@ -98,24 +96,22 @@ export default {
             username: ''
         };
     },
-    mounted() {
-
-        if(this.user === null) {
-            this.getUserBySession(this.token).then(() => {
-                console.log(this.user);
-                this.username = this.user.username;
-            });
-        }
-        else {
-            console.log(this.user);
-            this.username = this.user.username;
-        }
-    },
     computed: {
         ...mapState({
             token: state => state.data.token,
             user: state => state.data.user
         })
+    },
+    mounted() {
+        if (this.user === null) {
+            this.getUserBySession(this.token).then(() => {
+                console.log(this.user);
+                this.username = this.user.username;
+            });
+        } else {
+            console.log(this.user);
+            this.username = this.user.username;
+        }
     },
     methods: {
         ...mapActions('data', ['getUserBySession'])

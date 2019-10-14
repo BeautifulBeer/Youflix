@@ -30,19 +30,6 @@ export default {
         MoviePage
         // LoadingPage
     },
-    methods: {
-        ...mapActions('data', ['logout']),
-        changeFlag() {
-            if (this.getLoginModalOpen === true) {
-                this.$store.commit('data/setLoginModalOpen', false);
-            } else {
-                this.$store.commit('data/setLoginModalOpen', true);
-            }
-        },
-        logoutState() {
-            this.logout(this.$store.state.data.user.username);
-        },
-    },
     computed: {
         getLoginModalOpen() {
             return this.$store.state.data.isLoginModalOpen;
@@ -64,6 +51,19 @@ export default {
         );
         if (this.$store.state.user != null) {
             this.logoutflag = true;
+        }
+    },
+    methods: {
+        ...mapActions('data', ['logout']),
+        changeFlag() {
+            if (this.getLoginModalOpen === true) {
+                this.$store.commit('data/setLoginModalOpen', false);
+            } else {
+                this.$store.commit('data/setLoginModalOpen', true);
+            }
+        },
+        logoutState() {
+            this.logout(this.$store.state.data.user.username);
         }
     }
 };

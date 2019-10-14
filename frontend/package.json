@@ -19,6 +19,7 @@
     "vue-loading-overlay": "^3.2.0",
     "vue-router": "^3.0.3",
     "vue-smooth-scrollbar": "^0.1.2",
+    "vue-spinner": "^1.0.3",
     "vue2-animate": "^2.1.2",
     "vuejs-logger": "^1.5.3",
     "vuetify": "^2.0.0",

@@ -102,7 +102,7 @@ def login(request):
                 if email is None or password is None:
                         return Response(data="Not input ID and Password", status=status.HTTP_400_BAD_REQUEST)
                 if email is None:
-                        return Response(data="Not input Email", tatus=status.HTTP_400_BAD_REQUEST)
+                        return Response(data="Not input Email", status=status.HTTP_400_BAD_REQUEST)
                 if password is None:
                         return Response(data="Not input Password", status=status.HTTP_400_BAD_REQUEST)
 
