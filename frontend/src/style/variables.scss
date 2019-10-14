@@ -1,0 +1,24 @@
+$colors: (
+  primary: #006400,
+  secondary: #217a25,
+  light: #fff,
+  dark: #222,
+  error: #ff2818,
+);
+
+$breakpoints: (
+  mobile: 480px,
+  xsmall: 560px,
+  small: 767px,
+  medium: 992px,
+  large: 1200px,
+);
+
+
+$animationDuration: 0.5s;
+$text-color: map-get($colors, dark);
+$mobile-breakpoint: 480px;
+$xsmall-breakpoint: 560px;
+$small-breakpoint: 767px;
+$medium-breakpoint: 992px;
+$large-breakpoint: 1200px;
