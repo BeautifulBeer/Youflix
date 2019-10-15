@@ -86,7 +86,7 @@ export default {
           if (this.userList.length === 0) this.userList = ret.data;
           else this.userList.push.apply(this.userList, ret.data);
         }
-
+        console.log(this.userList)
         this.isLoading = false;
       });
     },

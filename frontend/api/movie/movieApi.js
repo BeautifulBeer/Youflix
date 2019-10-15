@@ -10,5 +10,11 @@ export default {
                 email
             }
         });
+        
+    },
+    getAllMovies(params){
+        return axios.get(`${apiUrl}/movies/`,{
+            params,
+        })
     }
 };
