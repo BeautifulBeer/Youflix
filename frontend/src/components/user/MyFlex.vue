@@ -29,7 +29,7 @@
                                 </div>
 
                                 <div>
-                                    {{username}}
+                                    {{ username }}
                                 </div>
                             </v-flex>
                         </v-layout>
@@ -41,7 +41,6 @@
         <v-container fluid>
             <v-row style="background-color: white;">
                 <v-col cols="12">
-
                     <v-row>
                         <v-col
                             style="min-height: 600px; position: relative;"
@@ -56,7 +55,6 @@
             </v-row>
             <v-row style="background-color: white;">
                 <v-col cols="12">
-
                     <v-row>
                         <v-col
                             style="min-height: 600px; position: relative;"
@@ -74,18 +72,16 @@
 </template>
 
 <script>
+// import VUEX
+import { mapState, mapActions } from 'vuex';
 // User API
-import UserAPI from '../../../api/user/userApi';
+// import UserAPI from '../../../api/user/userApi';
 // Movie API
-import MovieAPI from '../../../api/movie/movieApi';
+// import MovieAPI from '../../../api/movie/movieApi';
 
 // COMPONENTS
 import GenreGraph from './GenresGraph.vue';
-import RatingNumberGraph from './RatingNumberGraph.vue'
-
-// import VUEX
-import { mapState,  mapActions } from 'vuex';
-
+import RatingNumberGraph from './RatingNumberGraph.vue';
 
 export default {
     name: 'MyFlex',
@@ -98,24 +94,20 @@ export default {
             username: ''
         };
     },
-    mounted() {
-
-        if(this.user === null) {
-            this.getUserBySession(this.token).then(() => {
-                console.log(this.user);
-                this.username = this.user.username;
-            });
-        }
-        else {
-            console.log(this.user);
-            this.username = this.user.username;
-        }
-    },
     computed: {
         ...mapState({
-            token: state => state.data.token,
-            user: state => state.data.user
+            token: (state) => state.data.token,
+            user: (state) => state.data.user
         })
+    },
+    mounted() {
+        if (this.user === null) {
+            this.getUserBySession(this.token).then(() => {
+                this.username = this.user.username;
+            });
+        } else {
+            this.username = this.user.username;
+        }
     },
     methods: {
         ...mapActions('data', ['getUserBySession'])

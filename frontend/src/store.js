@@ -26,14 +26,13 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-
 axios.defaults.headers.common['X-CSRFTOKEN'] = getCookie('csrftoken');
 
 // state
 const state = {
     // shape: [{ id, title, genres, viewCnt, rating }]
     user: null,
-    isLoginModalOpen: false,
+    // isLoginModalOpen: false,
     token: null
 };
 
@@ -66,14 +65,19 @@ const actions = {
                 localStorage.setItem('token', result.data.token);
                 Vue.$log.debug('Vuex', 'user obj from response', user);
                 commit('setToken', result.data.token);
+                axios.defaults.headers.common['X-CSRFTOKEN'] = getCookie('csrftoken');
                 return true;
             }
+            return false;
+        }).catch((error) => {
+            Vue.$log.debug(error);
             return false;
         });
         return resp;
     },
 
     async logout({ commit, state }) {
+        Vue.$log.debug(state.token);
         return axios.post(`${apiUrl}/auth/logoutmember/`, {
             token: state.token
         }).then(() => {
@@ -144,9 +148,9 @@ const mutations = {
         Vue.$log.debug('Vuex mutations', 'state obj', state, 'user', user);
         state.user = user;
     },
-    setLoginModalOpen(state, flag) {
-        state.isLoginModalOpen = flag;
-    },
+    // setLoginModalOpen(state, flag) {
+    //     state.isLoginModalOpen = flag;
+    // },
     setToken(state, token) {
         state.token = token;
     },

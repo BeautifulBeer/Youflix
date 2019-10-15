@@ -161,6 +161,9 @@
 </template>
 
 <script>
+// import VUEX
+import { mapState } from 'vuex';
+
 export default {
     data() {
         return {
@@ -186,11 +189,25 @@ export default {
                 'tradesman/craftsman',
                 'unemployed',
                 'writer'],
-            selectedGenre: ['Action', 'War'],
-            genres: ['Action', 'Adventure', 'Animation', "Children's", 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
-                'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western'],
+            selectedGenre: ['Action', 'War']
         };
     },
+    computed: {
+        ...mapState({
+            token: (state) => state.data.token,
+            user: (state) => state.data.user,
+            genres: (state) => state.info.genres
+        })
+    },
+    mounted() {
+        if (this.user === null) {
+            this.getUserBySession(this.token).then(() => {
+                this.username = this.user.username;
+            });
+        } else {
+            this.username = this.user.username;
+        }
+    }
 };
 </script>
 
@@ -200,7 +217,7 @@ export default {
 }
 
 .setting-page {
-  margin: 70px auto;
+  margin: auto auto;
   padding: 55px;
   color: #121218;
   background: #f3f3f3;

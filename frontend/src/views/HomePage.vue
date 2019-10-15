@@ -7,12 +7,11 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
 // @ is an alias to /src
 import LatestMovies from '@/components/movie/LatestMovies.vue';
 import RecommendMovies from '@/components/movie/RecommendMovies.vue';
 import GenreMovies from '@/components/movie/GenreMovies.vue';
-
-import { mapActions } from 'vuex';
 
 export default {
     name: 'HomePage',

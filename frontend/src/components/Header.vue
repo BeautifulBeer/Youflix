@@ -79,9 +79,16 @@
                                     </span>
                                 </v-btn>
                                 <div class="dropdown-content">
-                                    <router-link to="/myflex">myflex</router-link>
+                                    <router-link to="/myflex">
+                                        myflex
+                                    </router-link>
+                                    <router-link to="/setting">
+                                        setting
+                                    </router-link>
                                     <a href="#">likes</a>
-                                    <router-link to="/adminPage">admin</router-link>
+                                    <router-link to="/adminPage">
+                                        admin
+                                    </router-link>
                                     <a
                                         href="#"
                                         @click="logoutState()"
@@ -116,8 +123,28 @@ export default {
             prevOffset: 0
         };
     },
+    computed: {
+        ...mapGetters({
+            getUser: 'data/getUser'
+        }),
+        getLoginModalOpen() {
+            return this.$store.state.data.isLoginModalOpen;
+        },
+        getUserModalOpen() {
+            return this.$store.state.data.user;
+        },
+        getlogoutflag() {
+            return (this.$store.state.data.token !== null);
+        },
+        getUserName() {
+            if (this.$store.state.data.user === undefined || this.$store.state.data.user === null) {
+                return 'GUEST';
+            }
+            return this.$store.state.data.user.username;
+        }
+    },
     mounted() {
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('header-search-icon').addEventListener('mouseenter', () => {
                 this.mouseOver = true;
             });
@@ -136,11 +163,10 @@ export default {
             if (this.getUser) {
                 this.logoutflag = true;
             }
-        })
-            
-        window.addEventListener('scroll', (e) => {
+        });
+        window.addEventListener('scroll', () => {
             const header = document.getElementById('header');
-            if (parseInt(window.scrollY) < this.prevOffset) {
+            if (parseInt(window.scrollY, 10) < this.prevOffset) {
                 header.style.transform = 'translate(0,0)';
                 header.style['-webkit-transform'] = 'translate(0,0)';
                 header.style['-moz-transform'] = 'translate(0,0)';
@@ -204,26 +230,6 @@ export default {
                 this.icon.classList.add('open');
                 this.keyword_input.focus();
             }
-        }
-    },
-    computed: {
-        ...mapGetters({
-            getUser: 'data/getUser'
-        }),
-        getLoginModalOpen() {
-            return this.$store.state.data.isLoginModalOpen;
-        },
-        getUserModalOpen() {
-            return this.$store.state.data.user;
-        },
-        getlogoutflag() {
-            return (this.$store.state.data.token !== null);
-        },
-        getUserName() {
-            if (this.$store.state.data.user === undefined || this.$store.state.data.user === null) {
-                return 'GUEST';
-            }
-            return this.$store.state.data.user.username;
         }
     }
 };

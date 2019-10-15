@@ -16,9 +16,8 @@ import UserList from './components/admin/UserList.vue';
 
 // USER PAGE
 import MyFlex from './components/user/MyFlex.vue';
+import UserSetting from './components/user/UserSetting.vue';
 
-// TEST PAGE
-import Test from './components/base/Test.vue';
 
 Vue.use(Router);
 
@@ -76,9 +75,12 @@ export default new Router({
             }
         },
         {
-            path: '/test',
-            name: 'test',
-            component: Test
+            path: '/setting',
+            name: 'setting',
+            component: UserSetting,
+            meta: {
+                authRequired: true
+            }
         },
         {
             path: '/adminPage',
