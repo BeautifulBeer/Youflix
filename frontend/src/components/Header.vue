@@ -79,10 +79,16 @@
                                     </span>
                                 </v-btn>
                                 <div class="dropdown-content">
-                                    <router-link to="/myflex">myflex</router-link>
-                                    <router-link to="/setting">setting</router-link>
+                                    <router-link to="/myflex">
+                                        myflex
+                                    </router-link>
+                                    <router-link to="/setting">
+                                        setting
+                                    </router-link>
                                     <a href="#">likes</a>
-                                    <router-link to="/adminPage">admin</router-link>
+                                    <router-link to="/adminPage">
+                                        admin
+                                    </router-link>
                                     <a
                                         href="#"
                                         @click="logoutState()"
@@ -138,7 +144,7 @@ export default {
         }
     },
     mounted() {
-        window.addEventListener('DOMContentLoaded', function () {
+        window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('header-search-icon').addEventListener('mouseenter', () => {
                 this.mouseOver = true;
             });
@@ -158,10 +164,9 @@ export default {
                 this.logoutflag = true;
             }
         });
-            
-        window.addEventListener('scroll', (e) => {
+        window.addEventListener('scroll', () => {
             const header = document.getElementById('header');
-            if (parseInt(window.scrollY) < this.prevOffset) {
+            if (parseInt(window.scrollY, 10) < this.prevOffset) {
                 header.style.transform = 'translate(0,0)';
                 header.style['-webkit-transform'] = 'translate(0,0)';
                 header.style['-moz-transform'] = 'translate(0,0)';

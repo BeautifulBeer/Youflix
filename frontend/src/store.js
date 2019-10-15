@@ -32,7 +32,7 @@ axios.defaults.headers.common['X-CSRFTOKEN'] = getCookie('csrftoken');
 const state = {
     // shape: [{ id, title, genres, viewCnt, rating }]
     user: null,
-    isLoginModalOpen: false,
+    // isLoginModalOpen: false,
     token: null
 };
 
@@ -148,9 +148,9 @@ const mutations = {
         Vue.$log.debug('Vuex mutations', 'state obj', state, 'user', user);
         state.user = user;
     },
-    setLoginModalOpen(state, flag) {
-        state.isLoginModalOpen = flag;
-    },
+    // setLoginModalOpen(state, flag) {
+    //     state.isLoginModalOpen = flag;
+    // },
     setToken(state, token) {
         state.token = token;
     },

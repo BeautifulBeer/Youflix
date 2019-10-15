@@ -189,25 +189,22 @@ export default {
                 'tradesman/craftsman',
                 'unemployed',
                 'writer'],
-            selectedGenre: ['Action', 'War'],
-            genres: ['Action', 'Adventure', 'Animation', "Children's", 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
-                'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western'],
+            selectedGenre: ['Action', 'War']
         };
     },
     computed: {
         ...mapState({
             token: (state) => state.data.token,
-            user: (state) => state.data.user
+            user: (state) => state.data.user,
+            genres: (state) => state.info.genres
         })
     },
     mounted() {
         if (this.user === null) {
             this.getUserBySession(this.token).then(() => {
-                console.log(this.user);
                 this.username = this.user.username;
             });
         } else {
-            console.log(this.user);
             this.username = this.user.username;
         }
     }

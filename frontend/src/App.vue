@@ -28,15 +28,9 @@ export default {
         Header,
         Footer,
         MoviePage
-        // LoadingPage
     },
     computed: {
-        getLoginModalOpen() {
-            return this.$store.state.data.isLoginModalOpen;
-        },
-        getUserModalOpen() {
-            return this.$store.state.data.user;
-        },
+
         getlogoutflag() {
             return this.$store.state.data.token !== null;
         }
@@ -55,13 +49,6 @@ export default {
     },
     methods: {
         ...mapActions('data', ['logout']),
-        changeFlag() {
-            if (this.getLoginModalOpen === true) {
-                this.$store.commit('data/setLoginModalOpen', false);
-            } else {
-                this.$store.commit('data/setLoginModalOpen', true);
-            }
-        },
         logoutState() {
             this.logout(this.$store.state.data.user.username);
         }

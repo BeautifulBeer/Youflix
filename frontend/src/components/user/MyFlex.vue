@@ -29,7 +29,7 @@
                                 </div>
 
                                 <div>
-                                    {{username}}
+                                    {{ username }}
                                 </div>
                             </v-flex>
                         </v-layout>
@@ -72,18 +72,16 @@
 </template>
 
 <script>
+// import VUEX
+import { mapState, mapActions } from 'vuex';
 // User API
-import UserAPI from '../../../api/user/userApi';
+// import UserAPI from '../../../api/user/userApi';
 // Movie API
-import MovieAPI from '../../../api/movie/movieApi';
+// import MovieAPI from '../../../api/movie/movieApi';
 
 // COMPONENTS
 import GenreGraph from './GenresGraph.vue';
-import RatingNumberGraph from './RatingNumberGraph.vue'
-
-// import VUEX
-import { mapState,  mapActions } from 'vuex';
-
+import RatingNumberGraph from './RatingNumberGraph.vue';
 
 export default {
     name: 'MyFlex',
@@ -98,18 +96,16 @@ export default {
     },
     computed: {
         ...mapState({
-            token: state => state.data.token,
-            user: state => state.data.user
+            token: (state) => state.data.token,
+            user: (state) => state.data.user
         })
     },
     mounted() {
         if (this.user === null) {
             this.getUserBySession(this.token).then(() => {
-                console.log(this.user);
                 this.username = this.user.username;
             });
         } else {
-            console.log(this.user);
             this.username = this.user.username;
         }
     },
