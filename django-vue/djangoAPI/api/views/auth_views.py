@@ -115,6 +115,9 @@ def login(request):
                         result = {
                                 'email': email,
                                 'username' : profile.username,
+                                'gender': profile.gender,
+                                'age': profile.age,
+                                'occupation': profile.occupation,
                                 'token' : token,
                                 'is_staff' : profile.user.is_staff,
                                 'is_auth' : True,
@@ -124,6 +127,9 @@ def login(request):
                         result = {
                                 'email': None,
                                 'username' : None,
+                                'gender': None,
+                                'age': None,
+                                'occupation': None,
                                 'token' : None,
                                 'is_staff' : False,
                                 'is_auth' : False,
@@ -157,22 +163,40 @@ def deleteUser(request):
 
                 return Response(status=status.HTTP_200_OK)
 
-@api_view(['PUT'])
+@api_view(['POST'])
 def updateUser(request):
 
-        if request.method == 'PUT':
+        if request.method == 'POST':
 
-                id = request.GET.get('id', None)
-                gender = request.GET.get('gender', None)
-                age = request.GET.get('age', None)
-                occupation = request.GET.get('occupation', None)
+                params = request.data.get('params', None)
 
-                user = User.objects.get(id=id)
+                email = params.get('email', None)
+                username = params.get('username', None)
+                password = params.get('password', None)
+                occupation = params.get('occupation', None)
+                genres = params.get('genres', None)
+
+                print(email)
+                print(username)
+                print(password)
+                print(occupation)
+                print(genres)
+
+                user = User.objects.get(email=email)
                 profile = Profile.objects.get(user=user)
 
-                profile.gender = gender
-                profile.age = age
+                print()
+                print(user)
+                print(profile)
+
+                user.set_password(password)
+                user.save()
+
+                genres_ = ','.join(genres)
+
+                profile.username = username
                 profile.occupation = occupation
+                profile.genres = genres_
                 profile.save()
 
                 return Response(status=status.HTTP_200_OK)
@@ -289,6 +313,9 @@ def session_member(request):
                                 'email' : user.email,
                                 'username' : profile.username,
                                 'token' : token,
+                                'gender': profile.gender,
+                                'age': profile.age,
+                                'occupation': profile.occupation,
                                 'is_auth' : True,
                                 'is_staff' : profile.user.is_staff,
                                 'movie_taste': profile.movie_taste
@@ -298,6 +325,9 @@ def session_member(request):
                                 'email': None,
                                 'username' : None,
                                 'token' : None,
+                                'gender': None,
+                                'age': None,
+                                'occupation': None,
                                 'is_auth' : False,
                                 'is_staff' :  False,
                                 'movie_taste': profile.movie_taste
@@ -325,6 +355,9 @@ def session_member(request):
                                 'email' : user.email,
                                 'username' : profile.username,
                                 'token' : token,
+                                'gender': profile.gender,
+                                'age': profile.age,
+                                'occupation': profile.occupation,
                                 'is_auth' : True,
                                 'is_staff' : profile.user.is_staff,
                                 'movie_taste': profile.movie_taste
@@ -334,6 +367,9 @@ def session_member(request):
                                 'email' : None,
                                 'username': None,
                                 'token' : None,
+                                'gender': None,
+                                'age': None,
+                                'occupation': None,
                                 'is_auth' : False,
                                 'is_staff' : False,
                                 'movie_taste': None

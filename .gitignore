@@ -15,6 +15,7 @@
 /django-vue/tcl/
 
 /**/migrations/*_initial.py
+/**/migrations/**/*_initial.py
 
 /**/db.sqlite3*
 /**/data/
