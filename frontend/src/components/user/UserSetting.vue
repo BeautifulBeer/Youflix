@@ -215,11 +215,32 @@ export default {
         ...mapActions(['updateUserInfo']),
         modify() {
             this.updateUserInfo({
+                token: this.token,
                 email: this.userInfo.email,
                 username: this.nickname,
                 password: this.newPassword,
                 occupation: this.selectedOccupation,
                 genres: this.selectedGenre
+            }).then((ret) => {
+                if (ret) {
+                    swal({
+                        title: '수정 성공',
+                        text: '정상적으로 변경 되었습니다.',
+                        icon: 'success',
+                        button: false
+                    }).then(() => {
+                        this.$router.push('/home');
+                    });
+                } else {
+                    swal({
+                        title: '수정 실패',
+                        text: '관리자에게 문의하시길 바랍니다.',
+                        icon: 'error',
+                        button: false
+                    }).then(() => {
+                        this.$router.push('/home');
+                    });
+                }
             });
         }
     }

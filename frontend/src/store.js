@@ -4,9 +4,8 @@ import axios from 'axios';
 import jQuery from 'jquery';
 
 // ======Import Other store===========
-import modal from './store/modal';
-import info from './store/info';
-import user from './store/user';
+import infoStore from './store/info';
+import userStore from './store/user';
 // ===================================
 
 // =========Static Variable===========
@@ -179,11 +178,8 @@ const getters = {
 
 export default new Vuex.Store({
     modules: {
-
-        modal,
-        info,
-        user,
-
+        infoStore,
+        userStore,
         data: {
             namespaced: true,
             state,

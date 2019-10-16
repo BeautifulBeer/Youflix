@@ -170,11 +170,22 @@ def updateUser(request):
 
                 params = request.data.get('params', None)
 
+                token = params.get('token', None)
                 email = params.get('email', None)
                 username = params.get('username', None)
                 password = params.get('password', None)
                 occupation = params.get('occupation', None)
                 genres = params.get('genres', None)
+
+                if token is None or email is None or username is None or password is None or occupation is None or genres is None:
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                
+                print(token)
+
+                user = User.objects.get(email=request.session[str(token)])
+                del request.session[str(token)]
+                user.auth_token.delete()
+                auth.logout(request)
 
                 print(email)
                 print(username)
@@ -199,7 +210,25 @@ def updateUser(request):
                 profile.genres = genres_
                 profile.save()
 
-                return Response(status=status.HTTP_200_OK)
+                user = auth.authenticate(email=email, password=password)
+                auth.login(request, user)
+                token = Token.objects.create(user=user)
+                request.session[str(token)] = email
+
+                result = {
+                        'email': email,
+                        'username' : profile.username,
+                        'gender': profile.gender,
+                        'age': profile.age,
+                        'occupation': profile.occupation,
+                        'token' : token,
+                        'is_staff' : profile.user.is_staff,
+                        'is_auth' : True,
+                        'movie_taste': profile.movie_taste
+                }
+                print(result)
+                serializer = SessionSerializer(result)
+                return Response(data = serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def similarUser(request):
