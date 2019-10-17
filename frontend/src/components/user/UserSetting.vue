@@ -63,12 +63,14 @@
 
                             <v-row>
                                 <v-col>
-                                    <v-text-field
-                                        v-model="newPassword"
-                                        type="password"
-                                        label="비밀번호 (최소 6자리이상, 30자리 이하)"
-                                        :rules="[rules.passwordCheck, rules.passwordLenCheck]"
-                                    />
+                                    <v-form v-model="passwordFlag">
+                                        <v-text-field
+                                            v-model="newPassword"
+                                            type="password"
+                                            label="비밀번호 (최소 6자리이상, 30자리 이하)"
+                                            :rules="[rules.passwordCheck, rules.passwordLenCheck]"
+                                        />
+                                    </v-form>
                                 </v-col>
                             </v-row>
 
@@ -76,11 +78,13 @@
 
                             <v-row>
                                 <v-col>
-                                    <v-text-field
-                                        v-model="nickname"
-                                        label="닉네임 (최소 2자리 이상, 10자리 이하)"
-                                        :rules="[rules.nicknameCheck, rules.nicknameLenCheck]"
-                                    />
+                                    <v-form v-model="nicknameFlag">
+                                        <v-text-field
+                                            v-model="nickname"
+                                            label="닉네임 (최소 2자리 이상, 10자리 이하)"
+                                            :rules="[rules.nicknameCheck, rules.nicknameLenCheck]"
+                                        />
+                                    </v-form>
                                 </v-col>
                             </v-row>
 
@@ -184,6 +188,8 @@ export default {
         return {
             nickname: '',
             newPassword: '',
+            nicknameFlag: false,
+            passwordFlag: false,
             userInfo: {},
             selectedOccupation: '',
             selectedGenre: []
@@ -193,14 +199,14 @@ export default {
         ...mapState({
             token: (state) => state.data.token,
             user: (state) => state.data.user,
-            genres: (state) => state.info.genres,
-            occupations: (state) => state.info.occupations,
-            rules: (state) => state.info.rules
+            genres: (state) => state.infoStore.genres,
+            occupations: (state) => state.infoStore.occupations,
+            rules: (state) => state.infoStore.rules
         })
     },
     mounted() {
         if (this.user === null) {
-            this.getUserBySession(this.token).then(() => {
+            this.getSession().then(() => {
                 this.userInfo = this.user;
                 this.selectedGenre = this.userInfo.movie_taste;
                 this.selectedOccupation = this.userInfo.occupation;
@@ -212,8 +218,18 @@ export default {
         }
     },
     methods: {
+        ...mapActions('data', ['getSession']),
         ...mapActions(['updateUserInfo']),
         modify() {
+            if (!this.passwordFlag || !this.nicknameFlag) {
+                swal({
+                    title: 'Warning',
+                    text: '양식에 맞춰서 입력해주세요.',
+                    icon: 'warning',
+                    button: false
+                });
+                return;
+            }
             this.updateUserInfo({
                 token: this.token,
                 email: this.userInfo.email,

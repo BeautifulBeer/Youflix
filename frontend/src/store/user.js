@@ -2,6 +2,8 @@ import Vue from 'vue';
 // import Axios
 import axios from 'axios';
 
+import Store from '../store';
+
 const apiUrl = '/api';
 
 const actions = {
@@ -27,6 +29,7 @@ const actions = {
                 localStorage.setItem('token', result.data.token);
                 Vue.$log.debug('Vuex', 'user obj from response', user);
                 commit('data/setToken', result.data.token);
+                axios.defaults.headers.common['X-CSRFTOKEN'] = Store.getCookie('csrftoken');
                 return true;
             }
             return false;

@@ -324,10 +324,9 @@
                     <v-divider />
                     <div style="margin: 10px;">
                         <v-row>
-                            <v-col 
+                            <v-col
                                 v-for="(genre, index) in genres.length"
                                 :key="index"
-
                                 cols="12"
                                 sm="3"
                                 md="3"
@@ -340,7 +339,7 @@
                                     hide-details
                                 />
                             </v-col>
-                        </v-row>        
+                        </v-row>
                     </div>
                     <v-card-actions>
                         <div class="flex-grow-1" />
@@ -380,7 +379,7 @@ export default {
     },
     computed: {
         ...mapState({
-            genres: state => state.info.genres
+            genres: (state) => state.infoStore.genres
         })
     },
     watch: {
@@ -441,7 +440,7 @@ export default {
                     icon: 'warning',
                     button: false
                 });
-                return;
+                return false;
             }
             if (this.selectGenres.length === 0) {
                 swal({
