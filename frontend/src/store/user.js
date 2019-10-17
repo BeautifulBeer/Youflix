@@ -1,13 +1,11 @@
 import Vue from 'vue';
 // import Axios
 import axios from 'axios';
-
-import Store from '../store';
+import getCookie from '../plugins/cookie';
 
 const apiUrl = '/api';
 
 const actions = {
-
     async updateUserInfo({ commit }, params) {
         Vue.$log.debug('UpdateUser params', params);
         return axios.post(`${apiUrl}/auth/updateUser/`, {
@@ -29,7 +27,7 @@ const actions = {
                 localStorage.setItem('token', result.data.token);
                 Vue.$log.debug('Vuex', 'user obj from response', user);
                 commit('data/setToken', result.data.token);
-                axios.defaults.headers.common['X-CSRFTOKEN'] = Store.getCookie('csrftoken');
+                axios.defaults.headers.common['X-CSRFTOKEN'] = getCookie('csrftoken');
                 return true;
             }
             return false;
@@ -37,6 +35,15 @@ const actions = {
             Vue.$log.debug(error);
             return false;
         });
+    },
+    async checkDuplicateEmail({ state }, email) {
+        Vue.$log.debug('Duplicate param ', email);
+        const ret = axios.get(`${apiUrl}/auth/duplicateInspection/`, {
+            params: {
+                email
+            }
+        }).then(() => true).catch(() => false);
+        return ret;
     }
 };
 

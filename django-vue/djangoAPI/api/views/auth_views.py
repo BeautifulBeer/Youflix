@@ -405,3 +405,18 @@ def session_member(request):
                         }
                 serializer = SessionSerializer(result)
                 return Response(data = serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def duplicate_inspection(request):
+
+        if request.method == 'GET':
+
+                email = request.GET.get('email', None)
+
+                if email is None:
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                try:
+                        user = User.objects.get(email=email)
+                except User.DoesNotExist:
+                        return Response(status=status.HTTP_200_OK)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
