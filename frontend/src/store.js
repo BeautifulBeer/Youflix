@@ -3,11 +3,14 @@ import Vuex from 'vuex';
 import axios from 'axios';
 import jQuery from 'jquery';
 
-// Import Other store
-import modal from './store/modal';
-import info from './store/info';
+// ======Import Other store===========
+import infoStore from './store/info';
+import userStore from './store/user';
+// ===================================
 
+// =========Static Variable===========
 const apiUrl = '/api';
+// ===================================
 
 Vue.use(Vuex);
 
@@ -58,6 +61,9 @@ const actions = {
                     email: result.data.email,
                     username: result.data.username,
                     token: result.data.token,
+                    gender: result.data.gender,
+                    age: result.data.age,
+                    occupation: result.data.occupation,
                     is_staff: result.data.is_staff,
                     movie_taste: JSON.parse(result.data.movie_taste.replace(/'/g, '"'))
                 };
@@ -100,6 +106,9 @@ const actions = {
                     email: result.data.email,
                     username: result.data.username,
                     token: result.data.token,
+                    gender: result.data.gender,
+                    age: result.data.age,
+                    occupation: result.data.occupation,
                     is_staff: result.data.is_staff,
                     movie_taste: JSON.parse(result.data.movie_taste.replace(/'/g, '"'))
                 });
@@ -123,6 +132,9 @@ const actions = {
                 email: response.data.email,
                 username: response.data.username,
                 token: response.data.token,
+                gender: response.data.gender,
+                age: response.data.age,
+                occupation: response.data.occupation,
                 is_staff: response.data.is_staff,
                 movie_taste: JSON.parse(response.data.movie_taste.replace(/'/g, '"'))
             });
@@ -166,10 +178,8 @@ const getters = {
 
 export default new Vuex.Store({
     modules: {
-
-        modal,
-        info,
-
+        infoStore,
+        userStore,
         data: {
             namespaced: true,
             state,
