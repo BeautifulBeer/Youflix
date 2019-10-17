@@ -17,6 +17,9 @@ urlpatterns = [
     url(r'^auth/logoutmember/$', auth_views.logout, name='logout_member'),
     url(r'^auth/session/$', auth_views.session_member, name="session_member"),
     url(r'^auth/updateUser/$', auth_views.updateUser, name="update_user"),
+
+    # 중복체크 검사
+    url(r'^auth/duplicateInspection/$', auth_views.duplicate_inspection, name="duplicate_inspection"),
     
     # movie 접근 URL
     url(r'movies/$', movie_views.movies, name='movie_list'),
