@@ -108,58 +108,58 @@
 <script>
 import $ from 'jquery';
 import swal from 'sweetalert';
-import { mapActions, mapGetters } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 
+const { mapState, mapActions } = createNamespacedHelpers('users');
 
 export default {
     name: 'Header',
     data() {
         return {
             keyword: '',
-            effect: null,
-            icon: null,
-            keyword_input: null,
             mouseOver: false,
             prevOffset: 0
         };
     },
     computed: {
-        ...mapGetters({
-            getUser: 'data/getUser'
+        ...mapState({
+            user: (state) => state.user,
+            token: (state) => state.token,
+            username: (state) => {
+                return state.user ? state.user.username : state.user;
+            }
         }),
-        getLoginModalOpen() {
-            return this.$store.state.data.isLoginModalOpen;
-        },
-        getUserModalOpen() {
-            return this.$store.state.data.user;
-        },
         getlogoutflag() {
-            return (this.$store.state.data.token !== null);
+            return (this.token !== null && this.token !== undefined);
         },
         getUserName() {
-            if (this.$store.state.data.user === undefined || this.$store.state.data.user === null) {
-                return 'GUEST';
-            }
-            return this.$store.state.data.user.username;
+            return this.username;
         }
     },
     mounted() {
         window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('header-search-icon').addEventListener('mouseenter', () => {
-                this.mouseOver = true;
-            });
+            const headerIcon = document.getElementById('header-search-icon');
+            const headerInput = document.getElementById('header-search-input');
 
-            document.getElementById('header-search-icon').addEventListener('mouseleave', () => {
-                this.mouseOver = false;
-            });
+            if (headerIcon) {
+                headerIcon.addEventListener('mouseenter', () => {
+                    this.mouseOver = true;
+                });
 
-            document.getElementById('header-search-input').addEventListener('focusout', () => {
-                if (!this.mouseOver) {
-                    this.effect.classList.remove('open');
-                    this.icon.classList.remove('open');
-                    this.keyword_input.value = '';
-                }
-            });
+                headerIcon.addEventListener('mouseleave', () => {
+                    this.mouseOver = false;
+                });
+            }
+
+            if (headerInput) {
+                headerInput.addEventListener('focusout', () => {
+                    if (!this.mouseOver) {
+                        this.effect.classList.remove('open');
+                        this.icon.classList.remove('open');
+                        this.keyword_input.value = '';
+                    }
+                });
+            }
             if (this.getUser) {
                 this.logoutflag = true;
             }
@@ -183,12 +183,12 @@ export default {
         });
     },
     methods: {
-        ...mapActions('data', ['logout', 'getSession']),
+        ...mapActions(['logout', 'getSession']),
         changeFlag() {
             if (this.getLoginModalOpen === true) {
-                this.$store.commit('data/setLoginModalOpen', false);
+                this.$store.commit('setLoginModalOpen', false);
             } else {
-                this.$store.commit('data/setLoginModalOpen', true);
+                this.$store.commit('setLoginModalOpen', true);
             }
         },
         logoutState() {
@@ -217,18 +217,18 @@ export default {
             });
         },
         searchKeyword() {
-            this.effect = document.getElementById('header-search-effect');
-            this.keyword_input = document.getElementById('header-search-input');
-            this.icon = document.getElementById('header-search-icon');
-            if (this.effect.classList.contains('open')) {
+            const effect = document.getElementById('header-search-effect');
+            const keywordInput = document.getElementById('header-search-input');
+            const icon = document.getElementById('header-search-icon');
+            if (effect.classList.contains('open')) {
                 // search function trigger
-                this.effect.classList.remove('open');
-                this.icon.classList.remove('open');
-                this.keyword_input.value = '';
+                effect.classList.remove('open');
+                icon.classList.remove('open');
+                keywordInput.value = '';
             } else {
-                this.effect.classList.add('open');
-                this.icon.classList.add('open');
-                this.keyword_input.focus();
+                effect.classList.add('open');
+                icon.classList.add('open');
+                keywordInput.focus();
             }
         }
     }

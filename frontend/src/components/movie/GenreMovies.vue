@@ -67,8 +67,10 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 import axios from 'axios';
+
+const { mapState } = createNamespacedHelpers('users');
 
 export default {
     name: 'GenreMovies',
@@ -121,18 +123,11 @@ export default {
             this.showCount = result;
         });
     },
-    filters: {
-        staticPath(value) {
-            return require(`@/assets/img/${value}`);
-        }
-    },
     computed: {
-        ...mapGetters({
-            getUser : 'data/getUser'
-        }),
+        ...mapState(['user']),
         getUserTaste() {
-            if (this.getUser) {
-                return this.getUser.movie_taste ? this.getUser.movie_taste : [];
+            if (this.user) {
+                return this.user.movie_taste ? this.user.movie_taste : [];
             }
             return [];
         },
@@ -180,7 +175,7 @@ export default {
                 this.currentIndex = this.genreMovies.length + this.currentIndex;
             }
         }
-    }  
+    }
 };
 </script>
 

@@ -98,9 +98,11 @@
 
 <script>
 
-import MovieDetail from '@/components/movie/MovieDetail.vue';
-import { mapGetters } from 'vuex';
 import axios from 'axios';
+import { createNamespacedHelpers } from 'vuex';
+import MovieDetail from '@/components/movie/MovieDetail.vue';
+
+const { mapState } = createNamespacedHelpers('users');
 
 
 export default {
@@ -128,13 +130,11 @@ export default {
             selectedIndex: 0,
             visible: false,
             movies: [],
-            isloaded: false,
+            isloaded: false
         };
     },
     computed: {
-        ...mapGetters({
-            getUser : 'data/getUser'
-        }),
+        ...mapState(['user']),
         currentMovies() {
             const start = this.currentIndex;
             const end = this.currentIndex + this.showCount;
@@ -154,10 +154,30 @@ export default {
             return (this.selectedIndex + this.currentIndex) % this.movies.length;
         },
         getUserPK() {
-            if(this.getUser){
-                return this.getUser.email;
+            if (this.user) {
+                return this.user.email;
             }
             return null;
+        }
+    },
+    watch: {
+        getUserPK: (val) => {
+            this.$log.debug('RecommendMovies.vue watcher getUserPK', val);
+            let targetUser = 5797;
+            if (this.getUserPK === 'whdydtjr@gmail.com') {
+                targetUser = 5796;
+            } else if (this.getUserPK === 'test@test.com') {
+                targetUser = 5784;
+            }
+            axios.get('/api/auth/recommendMovie/', {
+                params: {
+                    id: targetUser
+                }
+            }).then((response) => {
+                this.movies = response.data;
+                this.$forceUpdate();
+                this.isloaded = true;
+            });
         }
     },
     mounted() {
@@ -197,28 +217,7 @@ export default {
         closeMovieDetail() {
             this.visible = false;
         }
-    },
-    watch: {
-        getUserPK: function(val) {
-            this.$log.debug('RecommendMovies.vue watcher getUserPK', val)
-            let target_user = 5797;
-            if (this.getUserPK === 'whdydtjr@gmail.com') {
-                target_user = 5796;               
-            }else if (this.getUserPK === 'test@test.com') {
-                target_user = 5784;
-            }
-            axios.get('/api/auth/recommendMovie/', {
-                params: {
-                    id: target_user
-                }
-            }).then((response) => {
-                this.movies = response.data;
-                this.$forceUpdate();
-                this.isloaded = true;
-            });
-        }
     }
-
 };
 </script>
 

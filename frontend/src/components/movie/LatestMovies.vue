@@ -674,15 +674,15 @@ body {
 }
 .example-slider .fnc-slide-1 .fnc-slide__inner,
 .example-slider .fnc-slide-1 .fnc-slide__mask-inner {
-  background-image: url("../../assets/img/lalaland_wallpaper.jpg");
+  background-image: url("/static/img/lalaland_wallpaper.jpg");
 }
 .example-slider .fnc-slide-2 .fnc-slide__inner,
 .example-slider .fnc-slide-2 .fnc-slide__mask-inner {
-  background-image: url("../../assets/img/harry-potter-wallpaper.jpg");
+  background-image: url("/static/img/harry-potter-wallpaper.jpg");
 }
 .example-slider .fnc-slide-3 .fnc-slide__inner,
 .example-slider .fnc-slide-3 .fnc-slide__mask-inner {
-  background-image: url("../../assets/img/lobster_wallpaper.jpg");
+  background-image: url("/static/img/lobster_wallpaper.jpg");
 }
 .example-slider .fnc-slide-3 .fnc-slide__inner:before {
   content: "";
@@ -695,7 +695,7 @@ body {
 }
 .example-slider .fnc-slide-4 .fnc-slide__inner,
 .example-slider .fnc-slide-4 .fnc-slide__mask-inner {
-  background-image: url("../../assets/img/inception_wallpaper.jpg");
+  background-image: url("/static/img/inception_wallpaper.jpg");
 }
 .example-slider .fnc-slide-4 .fnc-slide__inner:before {
   content: "";

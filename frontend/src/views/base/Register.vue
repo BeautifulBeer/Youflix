@@ -373,23 +373,13 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 import swal from 'sweetalert';
 
-// Agreement Components
-// import ServiceAgreement from './agreements/ServiceAgreement.vue';
-// import ServiceAgreement2 from './agreements/ServiceAgreement2.vue';
-// import UserInfoAgreement from './agreements/UserInfoAgreement.vue';
-// import AlertAgreement from './agreements/AlertAgreement.vue';
-
+const { mapActions } = createNamespacedHelpers('users');
+const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
-    // components: {
-    //     ServiceAgreement,
-    //     ServiceAgreement2,
-    //     UserInfoAgreement,
-    //     AlertAgreement
-    // },
     data() {
         return {
             username: '',
@@ -406,8 +396,8 @@ export default {
         };
     },
     computed: {
-        ...mapState({
-            genres: (state) => state.infoStore.genres
+        ...infoMapState({
+            genres: (state) => state.genres
         })
     },
     watch: {
@@ -441,8 +431,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('data', ['registerMember']),
-        ...mapActions(['checkDuplicateEmail']),
+        ...mapActions(['registerMember', 'checkDuplicateEmail']),
         totalAgree() {
             this.totalAgreeFlag = true;
             this.agreeFlag1 = true;
@@ -590,7 +579,7 @@ input {
 }
 
 #background-img {
-  background: url("../../assets/img/chernobyl.jpg") no-repeat center center;
+  background: url("/static/img/chernobyl.jpg") no-repeat center center;
   background-color: #121218;
   opacity: 0.22;
 
