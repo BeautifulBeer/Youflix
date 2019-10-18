@@ -21,7 +21,8 @@ const actions = {
                     age: result.data.age,
                     occupation: result.data.occupation,
                     is_staff: result.data.is_staff,
-                    movie_taste: JSON.parse(result.data.movie_taste.replace(/'/g, '"'))
+                    // movie_taste: JSON.parse(result.data.movie_taste.replace(/'/g, '"'))
+                    movie_taste: result.data.movie_taste
                 };
                 commit('data/setUser', user);
                 localStorage.setItem('token', result.data.token);
