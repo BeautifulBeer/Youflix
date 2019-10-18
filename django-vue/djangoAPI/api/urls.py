@@ -26,7 +26,7 @@ urlpatterns = [
     url(r'movies/pref/$', movie_views.moviesPref, name='movie_pref'),
     url(r'movies/views/$', movie_views.views, name='movie_views'),
     url(r'movies/modify/$', movie_views.modify, name='movie_modify'),
-    url(r'similarMovie/$', movie_views.similarMovie, name='similarMovie'),
+    # url(r'similarMovie/$', movie_views.similarMovie, name='similarMovie'),
     url(r'^movies/recommend/$', movie_views.recommendation, name='movie_recommend'),
 
     # 평점정보 접근 URL

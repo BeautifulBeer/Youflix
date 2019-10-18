@@ -116,19 +116,19 @@ def views(request):
 
         return Response(status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-def similarMovie(request):
+# @api_view(['GET'])
+# def similarMovie(request):
         
-    if request.method == 'GET':
-        id=request.GET.get('id', None)
+#     if request.method == 'GET':
+#         id=request.GET.get('id', None)
         
-        if id:
-            movie=Movie.objects.get(movie__id=id)
-            movie_cluster=movie.kmeans_cluster
-            movies=Movie.objects.filter(cluster=movie_cluster)
+#         if id:
+#             movie=Movie.objects.get(movie__id=id)
+#             movie_cluster=movie.kmeans_cluster
+#             movies=Movie.objects.filter(cluster=movie_cluster)
 
-        serializer = SimilarMovieSerializer(movies, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+#         serializer = SimilarMovieSerializer(movies, many=True)
+#         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def modify(request):
@@ -145,7 +145,7 @@ def modify(request):
         runtime = modified.get('runtime', None)
 
         if id is None:
-            return Response(status=HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         movie = Movie.objects.get(pk=id)
         

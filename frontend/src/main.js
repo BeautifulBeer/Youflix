@@ -2,7 +2,6 @@ import SmoothScrollbar from 'vue-smooth-scrollbar';
 // https://www.npmjs.com/package/vuejs-logger
 import VueLogger from 'vuejs-logger';
 import Vue from 'vue';
-import { mapActions } from 'vuex';
 import lineClamp from 'vue-line-clamp';
 import App from './App.vue';
 import vuetify from './plugins/vuetify';

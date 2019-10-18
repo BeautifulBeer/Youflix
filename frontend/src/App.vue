@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import $ from 'jquery';
 import { createNamespacedHelpers } from 'vuex';
 // import LoadingPage from '@/components/pages/LoadingPage.vue';
 import Header from '@/components/Header.vue';
