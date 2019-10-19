@@ -1,7 +1,5 @@
 <template>
-    <div id='chart'>
-
-    </div>
+    <div id="chart" />
 </template>
 
 <script>
@@ -9,52 +7,48 @@
 import ApexCharts from 'apexcharts';
 
 // import VUEX
-import { mapState } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 
 // Movie API
 import MovieAPI from '../../../api/movie/movieApi';
 
 import axios from 'axios';
 
+const userMapState = createNamespacedHelpers('users').mapState;
+const infoMapState = createNamespacedHelpers('infos').mapState;
+
 // Variables
-var chart
+var chart;
 
 export default {
-
     data() {
-
         return {
-
             ratings: []
-        }
+        };
     },
     computed: {
-        ...mapState({
-            user: state => state.data.user,
-            genres: state => state.info.genres
-        })
+        ...userMapState(['user']),
+        ...infoMapState(['genres'])
     },
     mounted() {
         // normal : '#FFDD63'
         // max : '#FFA136'
-        if(this.user === null) {
+        // let colors = [];
+        if (this.user === null) {
             this.getUserBySession(this.token);
         }
-        var colors = [];
-
         this.test();
-
-        var options = {
+        let options = {
             chart: {
                 height: 350,
                 type: 'bar',
                 events: {
-                    click: function(chart, w, e) {
-                        console.log(chart, w, e )
+                    click: (ch, w, e) => {
+                        this.$log.debug('RatingNumberGraph.vue', ch, w, e);
                     }
-                },
+                }
             },
-            colors: colors,
+            colors: [],
             plotOptions: {
                 bar: {
                     columnWidth: '45%',
@@ -62,7 +56,7 @@ export default {
                 }
             },
             dataLabels: {
-                enabled: false,
+                enabled: false
             },
             series: [{
                 data: [21, 22, 10, 28, 16, 21, 13, 30]
@@ -71,25 +65,23 @@ export default {
                 categories: ['0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5'],
                 labels: {
                     style: {
-                        colors: colors,
+                        colors: [],
                         fontSize: '14px'
                     }
                 }
             }
-        }
-
+        };
         chart = new ApexCharts(
-            document.querySelector("#chart"),
+            document.querySelector('#chart'),
             options
         );
 
         chart.render();
     },
     methods: {
-
         test() {
-            console.log("USER ", this.user);
-            console.log(typeof(this.user));
+            // console.log('USER ;, this.user);
+            // console.log(typeof(this.user));
             axios.get(`/api/movies/pref/`, {
                 params: {
                     email: this.user.email
@@ -100,5 +92,5 @@ export default {
             console.log(this.user.email)
         }
     }
-}
+};
 </script>

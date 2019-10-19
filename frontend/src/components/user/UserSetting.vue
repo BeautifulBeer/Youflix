@@ -152,10 +152,12 @@
 
 <script>
 // import VUEX
-import { mapState, mapActions } from 'vuex';
-
+import { createNamespacedHelpers } from 'vuex';
 // import SweetAlert
 import swal from 'sweetalert';
+
+const { mapState, mapActions } = createNamespacedHelpers('users');
+const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
     data() {
@@ -171,13 +173,8 @@ export default {
         };
     },
     computed: {
-        ...mapState({
-            token: (state) => state.data.token,
-            user: (state) => state.data.user,
-            genres: (state) => state.infoStore.genres,
-            occupations: (state) => state.infoStore.occupations,
-            rules: (state) => state.infoStore.rules
-        })
+        ...mapState(['token', 'user']),
+        ...infoMapState(['rules', 'genres', 'occupations'])
     },
     mounted() {
         if (this.user === null) {
@@ -195,7 +192,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('data', ['getSession']),
+        ...mapActions(['getSession']),
         ...mapActions(['updateUserInfo']),
         modify() {
             if (!this.passwordFlag || !this.nicknameFlag) {
