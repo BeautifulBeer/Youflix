@@ -204,11 +204,14 @@ def updateUser(request):
                         user.set_password(password)
                         user.save()
 
-                        genres_ = ','.join(genres)
+                        # genres_ = ','.join(genres)
+                        movie_taste_ = []
+                        for genre in genres:
+                                movie_taste_.append(genre)
 
                         profile.username = username
                         profile.occupation = occupation
-                        profile.genres = genres_
+                        profile.movie_taste = movie_taste_
                         profile.save()
 
                         user = auth.authenticate(email=email, password=password)
