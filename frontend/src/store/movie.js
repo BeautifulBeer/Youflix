@@ -1,8 +1,7 @@
 import Vue from 'vue';
 // import Axios
 import axios from 'axios';
-
-const apiUrl = '/api';
+import global from '../plugins/global';
 
 const state = {
     personalMovies: [],
@@ -15,7 +14,7 @@ const actions = {
         Vue.$log.debug('Vuex movie.js getMoviesByGenres', preferences);
         let promises = [];
         preferences.forEach((genre) => {
-            promises.push(axios.get(`${apiUrl}/movies/`, {
+            promises.push(axios.get(`${global.API_URL}/movies/`, {
                 params: {
                     genres: genre,
                     page: 1
@@ -25,7 +24,10 @@ const actions = {
         return Promise.all(promises).then((responses) => {
             for (let i = 0; i < preferences.length; i += 1) {
                 Vue.$log.debug('Vuex movie.js getMoviesByGenres promises all', preferences[i], responses[i].data);
-                commit('setGenreMovies', { genre: preferences[i], movies: responses[i].data });
+                if (responses[i].data.status === global.HTTP_SUCCESS) {
+                    const { result } = responses[i].data;
+                    commit('setGenreMovies', { genre: preferences[i], movies: result });
+                }
             }
             return preferences[0];
         });
@@ -33,12 +35,14 @@ const actions = {
     async getMoviesByPersonal({ commit }, user) {
         Vue.$log.debug('Vuex movie.js getMoviesByPersonal', user);
         const targetUser = 5797;
-        axios.get(`${apiUrl}/auth/recommendMovie/`, {
+        axios.get(`${global.API_URL}/auth/recommendMovie/`, {
             params: {
                 id: targetUser
             }
         }).then((response) => {
-            commit('setPersonalMovies', response.data);
+            Vue.$log.debug('Vuex movie.js getMoviesByPersonal response', response);
+            const { result } = response.data;
+            commit('setPersonalMovies', result);
             commit('setIsLoaded', true);
         });
     }

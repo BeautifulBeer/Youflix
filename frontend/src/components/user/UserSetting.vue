@@ -183,6 +183,7 @@ import { createNamespacedHelpers } from 'vuex';
 import swal from 'sweetalert';
 
 const { mapState, mapActions } = createNamespacedHelpers('users');
+const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
     data() {
@@ -197,7 +198,8 @@ export default {
         };
     },
     computed: {
-        ...mapState(['token', 'user', 'genres', 'occupations', 'rules'])
+        ...mapState(['token', 'user']),
+        ...infoMapState(['rules', 'genres', 'occupations'])
     },
     mounted() {
         if (this.user === null) {

@@ -41,7 +41,9 @@ export default {
         this.$log.debug('App.vue Session Token from localStorage', localStorage.getItem('token'));
         this.$log.debug('App.vue Vuex getters getToken', this.token);
         this.setToken(localStorage.getItem('token'));
-        this.getUserBySession(localStorage.getItem('token'));
+        if (localStorage.getItem('token')) {
+            this.getUserBySession(localStorage.getItem('token'));
+        }        
         if (this.user) {
             this.logoutflag = true;
         }

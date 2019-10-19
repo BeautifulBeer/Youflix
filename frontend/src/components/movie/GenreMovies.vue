@@ -125,6 +125,12 @@ export default {
         }
     },
     mounted() {
+        if (this.currentMovies.length === 0 && this.getUserTaste.length !== 0) {
+            this.$log.debug(this.getUserTaste);
+            this.getMoviesByGenres(this.getUserTaste).then((preference) => {
+                this.selectGenre(preference);
+            });
+        }
         window.addEventListener('resize', () => {
             const windowWidth = window.innerWidth;
             let result = 2;

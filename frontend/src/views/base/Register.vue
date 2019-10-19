@@ -531,7 +531,7 @@ export default {
             };
             this.$log.debug('Register.vue', params);
             this.registerMember(params).then((ret) => {
-                if (ret.statusText === 'Created') {
+                if (ret) {
                     swal({
                         title: 'Success',
                         text: '회원가입을 성공하였습니다.',

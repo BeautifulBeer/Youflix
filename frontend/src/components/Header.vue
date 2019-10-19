@@ -194,7 +194,7 @@ export default {
         logoutState() {
             this.getSession().then((ret) => {
                 if (ret === true) {
-                    this.logout().then(() => {
+                    this.logout(this.token).then(() => {
                         swal({
                             title: 'GoodBye',
                             text: '다음에 또 만나요.',

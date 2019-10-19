@@ -1,3 +1,4 @@
+import axios from 'axios';
 import SmoothScrollbar from 'vue-smooth-scrollbar';
 // https://www.npmjs.com/package/vuejs-logger
 import VueLogger from 'vuejs-logger';
@@ -10,6 +11,10 @@ import router from './router';
 import store from './store';
 // CSS, SCSS
 import './style/app.scss';
+
+// ======Import getCookie=============
+import getCookie from './plugins/cookie';
+// ===================================
 
 // USE LOGGER
 const isProduction = process.env.NODE_ENV === 'production';
@@ -48,6 +53,21 @@ router.beforeResolve((to, from, next) => {
     }
     return next();
 });
+
+// CSRFTOKEN을 매 request마다 체크하여 없으면 넣어준다.
+axios.interceptors.request.use((config) => {
+    Vue.$log.debug('axios interceptors req', config);
+    if (!('X-CSRFTOKEN' in config.headers)) {
+        Vue.$log.debug('axios interceptors check X-CSRFTOKEN', 'Nope');
+        // eslint-disable-next-line
+        config.headers['X-CSRFTOKEN'] = getCookie('csrftoken');
+    }
+    return config;
+}, (err) => {
+    Vue.$log.debug('axios interceptors err', err);
+    return Promise.reject(err);
+});
+
 
 new Vue({
     vuetify,

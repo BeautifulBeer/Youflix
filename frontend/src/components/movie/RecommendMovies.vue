@@ -170,6 +170,9 @@ export default {
     },
     mounted() {
         this.$nextTick(() => {
+            if (this.user && this.currentMovies.length === 0) {
+                this.getMoviesByPersonal(this.user);
+            }
             this.loadSliderWidth(this);
             window.addEventListener('resize', () => {
                 this.loadSliderWidth(this);
