@@ -31,6 +31,7 @@ urlpatterns = [
 
     # 평점정보 접근 URL
     url(r'ratings/$', rating_views.ratings, name='rating_list'),
+    url(r'rateMovie/$', rating_views.rate_movie, name='rate_movie'),
 
     # clustering 실행 URL
     # url('clustering/userCharacter', clustering.getUserCharacter, name="getusercharacter"),

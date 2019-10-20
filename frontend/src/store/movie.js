@@ -45,6 +45,14 @@ const actions = {
             commit('setPersonalMovies', result);
             commit('setIsLoaded', true);
         });
+    },
+    async rateMovie({ commit }, params) {
+        Vue.$log.debug('Vuex movie.js rateMovie', params);
+        axios.get(`${global.API_URL}/rateMovie/`, {
+            params
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js rateMovie response', response);
+        });
     }
 };
 

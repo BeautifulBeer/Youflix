@@ -36,7 +36,7 @@
                                         3.2
                                     </span>
                                 </div>
-                            </AnimateWhenVisible>
+                            </AnimateWhenVisible>``
                         </div>
                         <div
                             class="detail-content"
@@ -52,6 +52,26 @@
                             <div class="detail-play-content">
                                 <span>예고편 보기</span>
                                 <i class="material-icons">play_circle_outline</i>
+                            </div>
+                        </div>
+                        <div>
+                            <span
+                                class="taste-word"
+                                style="color: white;"
+                            >
+                            {{ratingWord}}
+                            </span>
+                            <div style="padding-top: 7px;">
+                                <v-rating
+                                    id="ratingStar"
+                                    v-model="rating"
+                                    dense
+                                    color="white"
+                                    background-color="white"
+                                    half-increments
+                                    hover
+                                    @click="ratingMovie()"
+                                />
                             </div>
                         </div>
                     </div>
@@ -81,6 +101,9 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex';
+const movieMapActions = createNamespacedHelpers('movies').mapActions;
+
 export default {
     filters: {
         runTimeLabel(value) {
@@ -93,10 +116,18 @@ export default {
     props: ['visible', 'pmovie', 'close'],
     data() {
         return {
+            rating: 0,
+            ratingWord: '이미 본 작품인가요?',
             movie: {
                 src: 'detail.jpg'
             }
         };
+    },
+    methods: {
+        ...movieMapActions(['rateMovie']),
+        ratingMovie() {
+            console.log(this.rating)
+        }
     }
 };
 </script>
@@ -248,6 +279,15 @@ export default {
         font-size: 150%;
         text-transform: uppercase;
     }
+}
+
+.taste-word {
+
+    font-size: 1.0em;
+    float: left;
+    margin-top: 10px;
+    margin-right: 20px;
+    margin-left: 10px;
 }
 
 </style>
