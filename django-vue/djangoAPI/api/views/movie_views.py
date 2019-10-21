@@ -39,8 +39,6 @@ def movies(request):
                 genre=Genre.objects.get(name=genres)
                 movies = movies.filter(genres=genre)
         
-        
-
         # 정렬방식
         if sort:
             if int(sort)==1: # 평균평점 순(높은순) default
@@ -165,22 +163,15 @@ def moviesPref(request):
         
         email = request.GET.get('email', None)
 
-        print(email)
-
-
         if email is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.get(email=email)
-        print(user)
         ratings = Rating.objects.filter(user=user)
 
         ret = dict([("0.5", 0), ("1", 0), ("1.5", 0), ("2", 0), ("2.5", 0), ("3", 0), ("3.5", 0), ("4", 0), ("4.5", 0), ("5", 0)])
-        print(ratings)
-        print(ret)
-        for rating in ratings:
 
-            print(rating.rating)
+        for rating in ratings:
 
             if rating.rating < 1:
                 ret['0.5'] = ret.get('0.5') + 1
@@ -202,9 +193,6 @@ def moviesPref(request):
                 ret['4.5'] = ret.get('4.5') + 1
             else:
                 ret['5'] = ret.get('5') + 1
-
-        # json_ret = json.dumps(ret)
-        print(ret)
         return Response(data=ret, status=status.HTTP_200_OK)
 
 # @api_view(['GET'])

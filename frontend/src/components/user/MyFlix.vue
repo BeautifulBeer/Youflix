@@ -17,7 +17,7 @@
                             align-center
                         >
                             <v-flex>
-                                <h1>MYFLEX</h1>
+                                <h1>MYFLIX</h1>
                                 <font>Taste Analysis</font>
 
                                 <div>
@@ -67,6 +67,21 @@
                     </v-row>
                 </v-col>
             </v-row>
+            <v-row style="background-color: white;">
+                <v-col cols="12">
+                    <h1>My Movie Tastes</h1>
+                </v-col>
+            </v-row>
+            <v-row
+                style="background-color: white; padding: 50px;"
+                justify="start"
+            >
+                <MyTastes
+                    v-for="(element, index) in ratingList"
+                    :key="index"
+                    :element="element"
+                />
+            </v-row>
         </v-container>
     </v-container>
 </template>
@@ -78,34 +93,51 @@ import { createNamespacedHelpers } from 'vuex';
 // COMPONENTS
 import GenreGraph from './GenresGraph.vue';
 import RatingNumberGraph from './RatingNumberGraph.vue';
+import MyTastes from './MyTastes.vue';
 
-const { mapState, mapActions } = createNamespacedHelpers('users');
+const userMapState = createNamespacedHelpers('users').mapState;
+const userMapActions = createNamespacedHelpers('users').mapActions;
+const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
 
 export default {
-    name: 'MyFlex',
+    name: 'MyFlix',
     components: {
         GenreGraph,
-        RatingNumberGraph
+        RatingNumberGraph,
+        MyTastes
     },
     data() {
         return {
+            ratingList: [],
             username: ''
         };
     },
     computed: {
-        ...mapState(['token', 'user'])
+        ...userMapState(['token', 'user'])
     },
     mounted() {
         if (this.user === null) {
-            this.getUserBySession(this.token).then(() => {
+            this.getSession().then(() => {
                 this.username = this.user.username;
+                this.getRating(this.user.email).then((ret) => {
+                    this.setRatingList(ret);
+                });
             });
         } else {
-            this.username = this.user.username;
+            this.getRating(this.user.email).then((ret) => {
+                this.username = this.user.username;
+                this.setRatingList(ret);
+            });
         }
     },
     methods: {
-        ...mapActions(['getUserBySession'])
+        ...userMapActions(['getUserBySession', 'getSession']),
+        ...ratingMapActions(['getRating']),
+        setRatingList(list) {
+            list.forEach((element) => {
+                this.ratingList.push(element);
+            });
+        }
     }
 };
 </script>

@@ -120,7 +120,7 @@ class MovieSerializer(serializers.ModelSerializer):
             'vote_average',
             'vote_count',
             'keywords',
-            'view_cnt',
+            'view_cnt'
         )
 
     def getGenre(self,obj):
@@ -213,10 +213,32 @@ class MovieGenderSerializer(serializers.ModelSerializer):
 #================= Rating Serializer ===================#
 
 class RatingSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Rating
+        fields = ('user', 'movie', 'rating', 'timestamp')
+
+class UserRatingSerializer(serializers.ModelSerializer):
+    movie_id = serializers.SerializerMethodField('get_movie_id')
+    movie_title = serializers.SerializerMethodField('get_movie_title')
+    release_date = serializers.SerializerMethodField('get_release_date')
+    poster_path = serializers.SerializerMethodField('get_poster_path')
 
     class Meta:
         model = Rating
-        field = ('user', 'movie', 'rating', 'timestamp')
+        fields = ('user', 'movie_id', 'movie_title', 'release_date', 'rating', 'timestamp', 'poster_path')
+
+    def get_movie_id(self,obj):
+        return obj.movie.id
+
+    def get_movie_title(self,obj):
+        return obj.movie.title
+
+    def get_release_date(self,obj):
+        return obj.movie.release_date
+
+    def get_poster_path(self,obj):
+        return obj.movie.poster_path
 
 class SessionSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField('get_email')

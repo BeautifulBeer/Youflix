@@ -36,7 +36,7 @@
                                         3.2
                                     </span>
                                 </div>
-                            </AnimateWhenVisible>``
+                            </AnimateWhenVisible>
                         </div>
                         <div
                             class="detail-content"
@@ -59,7 +59,7 @@
                                 class="taste-word"
                                 style="color: white;"
                             >
-                            {{ratingWord}}
+                                {{ ratingWord }}
                             </span>
                             <div style="padding-top: 7px;">
                                 <v-rating
@@ -102,6 +102,8 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex';
+
+const userMapState = createNamespacedHelpers('users').mapState;
 const movieMapActions = createNamespacedHelpers('movies').mapActions;
 
 export default {
@@ -113,7 +115,20 @@ export default {
             return value === '' ? '/static/img/no_image.jpg' : value;
         }
     },
-    props: ['visible', 'pmovie', 'close'],
+    props: {
+        visible: {
+            type: Boolean,
+            default: false
+        },
+        pmovie: {
+            type: Object,
+            default: null
+        },
+        close: {
+            type: Function,
+            default: null
+        }
+    },
     data() {
         return {
             rating: 0,
@@ -123,11 +138,45 @@ export default {
             }
         };
     },
-    methods: {
-        ...movieMapActions(['rateMovie']),
-        ratingMovie() {
-            console.log(this.rating)
+    computed: {
+        ...userMapState(['user'])
+    },
+    watch: {
+        // eslint-disable-next-line
+        rating: function() {
+            this.rateMovie(
+                {
+                    email: this.user.email,
+                    movie_id: this.pmovie.id,
+                    ratingValue: this.rating
+                }
+            ).then(() => {
+                if (this.rating === 0.5) {
+                    this.ratingWord = '최악이에요!';
+                } else if (this.rating === 1.0) {
+                    this.ratingWord = '싫어요';
+                } else if (this.rating === 1.5) {
+                    this.ratingWord = '재미없어요';
+                } else if (this.rating === 2.0) {
+                    this.ratingWord = '별로에요';
+                } else if (this.rating === 2.5) {
+                    this.ratingWord = '부족해요';
+                } else if (this.rating === 3.0) {
+                    this.ratingWord = '보통이에요';
+                } else if (this.rating === 3.5) {
+                    this.ratingWord = '볼만해요';
+                } else if (this.rating === 4.0) {
+                    this.ratingWord = '재미있어요';
+                } else if (this.rating === 4.5) {
+                    this.ratingWord = '훌륭해요';
+                } else {
+                    this.ratingWord = '최고에요!';
+                }
+            });
         }
+    },
+    methods: {
+        ...movieMapActions(['rateMovie'])
     }
 };
 </script>

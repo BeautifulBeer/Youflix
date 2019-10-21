@@ -1,13 +1,19 @@
 <template>
     <v-hover v-slot:default="{ hover }">
-        <v-card :elevation="hover ? 8 : 2" @click="viewMovie()">
+        <v-card
+            :elevation="hover ? 8 : 2"
+            @click="viewMovie()"
+        >
             <v-layout
                 align-center
                 py-4
                 pl-4
             >
                 <v-flex text-center>
-                    <v-container grid-list-lg pa-0>
+                    <v-container
+                        grid-list-lg
+                        pa-0
+                    >
                         <v-layout column>
                             <v-list-item>
                                 <v-list-item-content>
@@ -29,12 +35,16 @@
                                         dense
                                         readonly
                                     />
-                                    <div class="grey--text ml-4">{{ rating.toFixed(1) }}</div>
+                                    <div class="grey--text ml-4">
+                                        {{ rating.toFixed(1) }}
+                                    </div>
                                 </v-layout>
                             </v-card-text>
                             <v-card-text>
                                 <v-layout justify-center>
-                                    <v-icon color="black">mdi-eye</v-icon>
+                                    <v-icon color="black">
+                                        mdi-eye
+                                    </v-icon>
                                     <div class="grey--text ml-4">
                                         {{ viewCnt }}
                                     </div>

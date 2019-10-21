@@ -28,7 +28,7 @@
                                     style="line-height: 10vh"
                                     class="log-font"
                                 >
-                                    YOUFLEX
+                                    YOUFLIX
                                 </span>
                             </v-btn>
                         </v-col>
@@ -79,8 +79,8 @@
                                     </span>
                                 </v-btn>
                                 <div class="dropdown-content">
-                                    <router-link to="/myflex">
-                                        myflex
+                                    <router-link to="/myflix">
+                                        myflix
                                     </router-link>
                                     <router-link to="/setting">
                                         setting
