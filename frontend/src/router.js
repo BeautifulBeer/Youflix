@@ -18,6 +18,9 @@ import UserList from './components/admin/UserList.vue';
 import MyFlex from './components/user/MyFlex.vue';
 import UserSetting from './components/user/UserSetting.vue';
 
+// MOVIE PAGE
+import MovieSearchPage from './components/movie/MovieSearchPage.vue';
+import MovieDetailPage from './components/pages/MovieDetailPage.vue';
 
 Vue.use(Router);
 
@@ -78,6 +81,22 @@ export default new Router({
             path: '/setting',
             name: 'setting',
             component: UserSetting,
+            meta: {
+                authRequired: true
+            }
+        },
+        {
+            path: '/movie/search',
+            name: 'movieSearch',
+            component: MovieSearchPage,
+            meta: {
+                authRequired: true
+            }
+        },
+        {
+            path: '/movies/detail/:id',
+            name: 'movieDetailPage',
+            component: MovieDetailPage,
             meta: {
                 authRequired: true
             }

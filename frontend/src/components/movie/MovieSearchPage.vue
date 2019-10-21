@@ -4,65 +4,70 @@
         fluid
         grid-list-md
     >
-        <v-layout row>
-            <v-flex
-                v-for="(card, index) in movieListCardsSliced"
-                :key="index"
-                xs12
-                md3
-                sm6
-                pa-3
-            >
-                <MovieGridCard
-                    :id="card.id"
-                    :img="card.img"
-                    :title="card.title"
-                    :genres="card.genres"
-                    :rating="card.rating"
-                    :view-cnt="card.viewCnt"
-                    :index="index"
-                />
-            </v-flex>
+        <v-row
+            align="center"
+            justify="space-around"
+            style="padding: 0px 50px 0px 50px;"
+        >
+            <MovieGridCard
+                v-for="(movie, index) in movieListCardsSliced "
+                :key="'movieSearchPage' + movie.id + index"
+                :movie="movie"
+            />
             <v-pagination
                 v-if="maxPages > 1"
                 v-model="page"
                 :length="maxPages"
             />
-        </v-layout>
+        </v-row>
     </v-container>
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex';
 import MovieGridCard from './MovieGridCard.vue';
+
+const { mapState, mapActions } = createNamespacedHelpers('movies');
 
 export default {
     components: {
         MovieGridCard
     },
-    props: {
-        movieListCards: {
-            type: Array,
-            default: () => []
-        }
-    },
     data: () => ({
-        cardsPerPage: 12,
+        cardsPerPage: 15,
         page: 1
     }),
     computed: {
+        ...mapState(['searchResultMovies']),
         // pagination related variables
+        movies() {
+            if (Object.keys(this.searchResultMovies).length !== 0) {
+                return this.searchResultMovies.result;
+            }
+            return [];
+        },
         movieListEmpty() {
-            return this.movieListCards.length === 0;
+            return this.movies.length === 0;
         },
         maxPages() {
-            return Math.floor((this.movieListCards.length + this.cardsPerPage - 1) / 
-            this.cardsPerPage);
+            return Math.floor((this.movies.length + this.cardsPerPage - 1)
+            / this.cardsPerPage);
         },
         movieListCardsSliced() {
-            return this.movieListCards.slice(
-                this.cardsPerPage * (this.page - 1),
-                this.cardsPerPage * this.page);
+            if (this.movies.length !== 0) {
+                return this.movies.slice(
+                    this.cardsPerPage * (this.page - 1),
+                    this.cardsPerPage * this.page
+                );
+            }
+            return [];
         }
+    },
+    mounted() {
+        this.getMovieByConditions();
+    },
+    methods: {
+        ...mapActions(['getMovieByConditions'])
     }
 };
 </script>

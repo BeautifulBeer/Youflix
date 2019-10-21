@@ -338,40 +338,40 @@ $button-height: 200px;
 
 
 .arrow {
-	position: absolute;
-	top: 50%;
-	width: 3vmin;
-	height: 3vmin;
-	background: transparent;
-	border-top: 1vmin solid white;
-	border-right: 1vmin solid white;
-	box-shadow: 0 0 0 lightgray;
-	transition: all 200ms ease;
+    position: absolute;
+    top: 50%;
+    width: 3vmin;
+    height: 3vmin;
+    background: transparent;
+    border-top: 1vmin solid white;
+    border-right: 1vmin solid white;
+    box-shadow: 0 0 0 lightgray;
+    transition: all 200ms ease;
 
-	&.left {
-		left: 0;
-		transform: translate3d(0,-50%,0) rotate(-135deg);
-	}
+    &.left {
+        left: 0;
+        transform: translate3d(0,-50%,0) rotate(-135deg);
+    }
 
-	&.right {
-		right: 0;
-		transform: translate3d(0,-50%,0) rotate(45deg);
-	}
+    &.right {
+        right: 0;
+        transform: translate3d(0,-50%,0) rotate(45deg);
+    }
 
-	&:hover {
-		border-color: orange;
-		box-shadow: 0.5vmin -0.5vmin 0 white;
-	}
+    &:hover {
+        border-color: orange;
+        box-shadow: 0.5vmin -0.5vmin 0 white;
+    }
 
-	&:before { // for better hit area
-		content: '';
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-40%,-60%) rotate(45deg);
-		width: 200%;
-		height: 200%;
-	}
+    &:before { // for better hit area
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-40%,-60%) rotate(45deg);
+        width: 200%;
+        height: 200%;
+    }
 }
 
 .section-title {

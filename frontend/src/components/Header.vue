@@ -55,7 +55,7 @@
                                     v-model="keyword"
                                     type="search"
                                     class="search-box"
-                                    placeholder="장르, 영화명, 배우"
+                                    placeholder="영화명"
                                 >
                                 <span
                                     class="search-button"
@@ -106,11 +106,12 @@
 </template>
 
 <script>
-import $ from 'jquery';
 import swal from 'sweetalert';
 import { createNamespacedHelpers } from 'vuex';
 
 const { mapState, mapActions } = createNamespacedHelpers('users');
+const movieMapMutations = createNamespacedHelpers('movies').mapMutations;
+const movieMapActions = createNamespacedHelpers('movies').mapActions;
 
 export default {
     name: 'Header',
@@ -140,6 +141,7 @@ export default {
         window.addEventListener('DOMContentLoaded', () => {
             const headerIcon = document.getElementById('header-search-icon');
             const headerInput = document.getElementById('header-search-input');
+            const headerEffect = document.getElementById('header-search-effect');
 
             if (headerIcon) {
                 headerIcon.addEventListener('mouseenter', () => {
@@ -154,9 +156,9 @@ export default {
             if (headerInput) {
                 headerInput.addEventListener('focusout', () => {
                     if (!this.mouseOver) {
-                        this.effect.classList.remove('open');
-                        this.icon.classList.remove('open');
-                        this.keyword_input.value = '';
+                        headerEffect.classList.remove('open');
+                        headerIcon.classList.remove('open');
+                        headerInput.value = '';
                     }
                 });
             }
@@ -183,6 +185,8 @@ export default {
         });
     },
     methods: {
+        ...movieMapMutations(['setSearchCondition']),
+        ...movieMapActions(['getMovieByConditions']),
         ...mapActions(['logout', 'getSession']),
         changeFlag() {
             if (this.getLoginModalOpen === true) {
@@ -222,14 +226,20 @@ export default {
             const icon = document.getElementById('header-search-icon');
             if (effect.classList.contains('open')) {
                 // search function trigger
+                this.setSearchCondition({
+                    title: keywordInput.value,
+                    genre: 'Romance'
+                });
+                this.getMovieByConditions();
                 effect.classList.remove('open');
                 icon.classList.remove('open');
                 keywordInput.value = '';
+                this.$router.push('/movie/search');
             } else {
                 effect.classList.add('open');
                 icon.classList.add('open');
                 keywordInput.focus();
-            }
+            }            
         }
     }
 };

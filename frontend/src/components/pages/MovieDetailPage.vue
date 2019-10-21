@@ -47,21 +47,27 @@
 </template>
 
 <script>
-import Axios from 'axios';
-import { mapMutations, mapState } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
+
+const { mapMutations, mapState } = createNamespacedHelpers('movies');
 
 export default {
+    props: {
+        movieId: {
+            type: Number,
+            default: 0
+        }
+    },
     data() {
         return {
-            movieInfo: {},
-            movieId: { type: Number, default: 1 }
+            movieInfo: {}
         };
     },
     computed: {
         ...mapState({
             movieSearchList: (state) => state.movieSearchList,
             selectIndex: (state) => state.selectIndex
-        }),
+        })
     },
     mounted() {
         this.$store.commit('setViewCount');
@@ -75,15 +81,7 @@ export default {
         ...mapMutations(['setViewCount']),
         back() {
             this.$router.go(-1);
-        },
-        async getMovieInfo() {
-            return await Axios.get(`/api/movies?id=${this.movieId}`).then((ret) => {
-                this.movieInfo = ret.data[0];
-            });
-        },
-        async addMovieView() {
-            return await Axios.get(`/api/movies/views?id=${this.movieId}`);
-        },
+        }
     },
 };
 </script>

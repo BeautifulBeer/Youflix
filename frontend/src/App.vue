@@ -8,7 +8,7 @@
                 <Header />
                 <router-view />
                 <Footer />
-                <MoviePage />
+                <!-- <MoviePage /> -->
             </v-content>
             <!-- <LoadingPage/> -->
         </v-container>
@@ -19,7 +19,7 @@
 import { createNamespacedHelpers } from 'vuex';
 // import LoadingPage from '@/components/pages/LoadingPage.vue';
 import Header from '@/components/Header.vue';
-import MoviePage from '@/components/movie/MoviePage.vue';
+// import MoviePage from '@/components/movie/MoviePage.vue';
 import Footer from '@/components/Footer.vue';
 
 const { mapState, mapActions, mapMutations } = createNamespacedHelpers('users');
@@ -27,8 +27,8 @@ const { mapState, mapActions, mapMutations } = createNamespacedHelpers('users');
 export default {
     components: {
         Header,
-        Footer,
-        MoviePage
+        Footer
+        // MoviePage
     },
     computed: {
         ...mapState({
