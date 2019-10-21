@@ -61,6 +61,7 @@ class User(AbstractUser):
         return self.email
 
 class Profile(models.Model):
+    id=models.IntegerField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     username=models.CharField(max_length=10,blank=False)
     gender = models.CharField(max_length=10, default='M')
@@ -79,6 +80,7 @@ def create_profile(**kwargs):
     )
 
     profile = Profile.objects.create(
+        id=kwargs['id'],
         user=user,
         username=kwargs['username'],
         gender=kwargs['gender'],
