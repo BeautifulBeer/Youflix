@@ -2,6 +2,9 @@
     <div>
         <v-row class="mb-6">
             <v-col>
+                <Line />
+            </v-col>
+            <v-col>
                 <div id="chart2" />
             </v-col>
             <v-col>
@@ -13,12 +16,16 @@
 
 <script>
 import ApexCharts from 'apexcharts';
+import Line from './lineChart.vue';
 
 let chart;
 let chart2;
+let basicChart;
 
 export default {
-
+    components: {
+        Line
+    },
     mounted() {
         const options = {
             chart: {

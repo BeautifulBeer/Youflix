@@ -83,9 +83,6 @@
 <script>
 export default {
     filters: {
-        staticPath(value) {
-            return require(`@/assets/img/${value}`);
-        },
         runTimeLabel(value) {
             return ['상영시간', ':', value, '분'].join(' ');
         },

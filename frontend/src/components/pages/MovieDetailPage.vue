@@ -54,13 +54,13 @@ export default {
     data() {
         return {
             movieInfo: {},
-            movieId: { type: Number, default: 1 },
+            movieId: { type: Number, default: 1 }
         };
     },
     computed: {
         ...mapState({
-            movieSearchList: (state) => state.data.movieSearchList,
-            selectIndex: (state) => state.data.selectIndex,
+            movieSearchList: (state) => state.movieSearchList,
+            selectIndex: (state) => state.selectIndex
         }),
     },
     mounted() {

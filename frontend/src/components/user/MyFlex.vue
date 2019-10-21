@@ -29,7 +29,7 @@
                                 </div>
 
                                 <div>
-                                    {{username}}
+                                    {{ username }}
                                 </div>
                             </v-flex>
                         </v-layout>
@@ -41,7 +41,6 @@
         <v-container fluid>
             <v-row style="background-color: white;">
                 <v-col cols="12">
-
                     <v-row>
                         <v-col
                             style="min-height: 600px; position: relative;"
@@ -56,7 +55,6 @@
             </v-row>
             <v-row style="background-color: white;">
                 <v-col cols="12">
-
                     <v-row>
                         <v-col
                             style="min-height: 600px; position: relative;"
@@ -74,18 +72,14 @@
 </template>
 
 <script>
-// User API
-import UserAPI from '../../../api/user/userApi';
-// Movie API
-import MovieAPI from '../../../api/movie/movieApi';
+// import VUEX
+import { createNamespacedHelpers } from 'vuex';
 
 // COMPONENTS
 import GenreGraph from './GenresGraph.vue';
-import RatingNumberGraph from './RatingNumberGraph.vue'
+import RatingNumberGraph from './RatingNumberGraph.vue';
 
-// import VUEX
-import { mapState,  mapActions } from 'vuex';
-
+const { mapState, mapActions } = createNamespacedHelpers('users');
 
 export default {
     name: 'MyFlex',
@@ -98,27 +92,20 @@ export default {
             username: ''
         };
     },
+    computed: {
+        ...mapState(['token', 'user'])
+    },
     mounted() {
-
-        if(this.user === null) {
+        if (this.user === null) {
             this.getUserBySession(this.token).then(() => {
-                console.log(this.user);
                 this.username = this.user.username;
             });
-        }
-        else {
-            console.log(this.user);
+        } else {
             this.username = this.user.username;
         }
     },
-    computed: {
-        ...mapState({
-            token: state => state.data.token,
-            user: state => state.data.user
-        })
-    },
     methods: {
-        ...mapActions('data', ['getUserBySession'])
+        ...mapActions(['getUserBySession'])
     }
 };
 </script>

@@ -15,7 +15,7 @@
                 v-model="username"
                 class="input-setting input-top-radius"
                 type="text"
-                placeholder="닉네임 (홍길동)"
+                placeholder="닉네임 (2-10자, 영어,한글,숫자)"
             >
 
             <input
@@ -23,7 +23,7 @@
                 v-model="email"
                 class="input-setting"
                 type="text"
-                placeholder="아이디 (example@gmail.com)"
+                placeholder="이메일 (example@gmail.com)"
             >
 
             <input
@@ -31,7 +31,7 @@
                 v-model="pwd"
                 class="input-setting"
                 type="password"
-                placeholder="비밀번호 (6자 이상)"
+                placeholder="비밀번호 (6-30자, 영어,숫자,특수문자)"
             >
 
             <select
@@ -160,6 +160,21 @@
                 </option>
             </select>
 
+            <!-- <div v-if="agreeFlag1">
+                <ServiceAgreement :dialog="true" />
+            </div>
+            
+            <div v-if="agreeFlag2">
+                <ServiceAgreement2 :dialog="true" />
+            </div>
+            
+            <div v-if="agreeFlag3">
+                <UserInfoAgreement :dialog="true" />
+            </div>
+            <div v-if="agreeFlag4">
+                <AlertAgreement :dialog="true" />
+            </div> -->
+
             <input
                 class="#a4a4a4--text input-bottom-radius input-setting"
                 type="button"
@@ -215,7 +230,7 @@
                         <span class="mdi mdi-checkbox-blank-circle-outline mdi-18px" />
                     </v-btn>
 
-                    <a>유플릭스 이용 약관</a>
+                    <a @click="agreeFlag1 = true">유플릭스 이용 약관</a>
                     <span class="agreement">에 동의합니다.</span>
                 </div>
                 <div>
@@ -241,7 +256,7 @@
                         <span class="mdi mdi-checkbox-blank-circle-outline mdi-18px" />
                     </v-btn>
 
-                    <a>유플릭스 서비스 이용 약관</a>
+                    <a @click="agreeFlag2 = true">유플릭스 서비스 이용 약관</a>
                     <span class="agreement">에 동의합니다.</span>
                 </div>
                 <div>
@@ -267,7 +282,7 @@
                         <span class="mdi mdi-checkbox-blank-circle-outline mdi-18px" />
                     </v-btn>
 
-                    <a>개인정보 취급 방침</a>
+                    <a @click="agreeFlag3 = true">개인정보 취급 방침</a>
                     <span class="agreement">에 동의합니다.</span>
                 </div>
                 <div>
@@ -293,7 +308,7 @@
                         <span class="mdi mdi-checkbox-blank-circle-outline mdi-18px" />
                     </v-btn>
 
-                    <a>신작 알림, 이벤트 정보 수신</a>
+                    <a @click="agreeFlag4 = true">신작 알림, 이벤트 정보 수신</a>
                     <span class="agreement">에 동의합니다.</span>
                 </div>
             </div>
@@ -324,10 +339,9 @@
                     <v-divider />
                     <div style="margin: 10px;">
                         <v-row>
-                            <v-col 
+                            <v-col
                                 v-for="(genre, index) in genres.length"
                                 :key="index"
-
                                 cols="12"
                                 sm="3"
                                 md="3"
@@ -340,7 +354,7 @@
                                     hide-details
                                 />
                             </v-col>
-                        </v-row>        
+                        </v-row>
                     </div>
                     <v-card-actions>
                         <div class="flex-grow-1" />
@@ -359,8 +373,11 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 import swal from 'sweetalert';
+
+const { mapActions } = createNamespacedHelpers('users');
+const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
     data() {
@@ -379,8 +396,8 @@ export default {
         };
     },
     computed: {
-        ...mapState({
-            genres: state => state.info.genres
+        ...infoMapState({
+            genres: (state) => state.genres
         })
     },
     watch: {
@@ -414,7 +431,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('data', ['registerMember']),
+        ...mapActions(['registerMember', 'checkDuplicateEmail']),
         totalAgree() {
             this.totalAgreeFlag = true;
             this.agreeFlag1 = true;
@@ -432,6 +449,36 @@ export default {
                 });
                 return false;
             }
+            if (!this.checkDuplicateEmail(this.email).then((ret) => {
+                if (!ret) {
+                    swal({
+                        title: 'Warning',
+                        text: '이미 가입되어 있는 이메일 입니다.',
+                        icon: 'warning',
+                        button: false
+                    });
+                    return false;
+                }
+                return true;
+            })) return false;
+            if (this.username.length < 2 || this.username > 10) {
+                swal({
+                    title: 'Warning',
+                    text: '이름의 글자 수는 최소2자 최대 10자입니다.',
+                    icon: 'warning',
+                    button: false
+                });
+                return false;
+            }
+            if (!(/^[a-zA-Z0-9!@#$%^&*]*$/).test(this.pwd) || this.pwd.length < 6 || this.pwd.length > 30) {
+                swal({
+                    title: 'Warning',
+                    text: '비밀번호는 영어, 숫자, 특수문자(!@#$%^&*) 조합만 가능합니다.',
+                    icon: 'warning',
+                    button: false
+                });
+                return false;
+            }
             const re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
             if (!re.test(this.email)) {
@@ -441,7 +488,7 @@ export default {
                     icon: 'warning',
                     button: false
                 });
-                return;
+                return false;
             }
             if (this.selectGenres.length === 0) {
                 swal({
@@ -484,11 +531,12 @@ export default {
             };
             this.$log.debug('Register.vue', params);
             this.registerMember(params).then((ret) => {
-                if (ret.statusText === 'Created') {
+                if (ret) {
                     swal({
                         title: 'Success',
                         text: '회원가입을 성공하였습니다.',
-                        icon: 'success'
+                        icon: 'success',
+                        button: false
                     }).then(() => {
                         window.location = '/login';
                     });
@@ -531,7 +579,7 @@ input {
 }
 
 #background-img {
-  background: url("../../assets/img/chernobyl.jpg") no-repeat center center;
+  background: url("/static/img/chernobyl.jpg") no-repeat center center;
   background-color: #121218;
   opacity: 0.22;
 

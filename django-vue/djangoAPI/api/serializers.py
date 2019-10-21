@@ -222,13 +222,16 @@ class SessionSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField('get_email')
     username = serializers.SerializerMethodField('get_user')
     token = serializers.SerializerMethodField('get_token')
+    gender = serializers.SerializerMethodField('get_gender')
+    age = serializers.SerializerMethodField('get_age')
+    occupation = serializers.SerializerMethodField('get_occupation')
     is_auth = serializers.SerializerMethodField('get_is_auth')
     is_staff = serializers.SerializerMethodField('get_is_staff')
     movie_taste = serializers.SerializerMethodField('get_movie_taste')
 
     class Meta:
         model = Profile
-        fields = ('email', 'username', 'token', 'is_auth', 'is_staff', 'movie_taste')
+        fields = ('email', 'username', 'token', 'gender', 'age', 'occupation', 'is_auth', 'is_staff', 'movie_taste')
 
     def get_email(self, obj):
         return str(obj['email'])
@@ -247,3 +250,12 @@ class SessionSerializer(serializers.ModelSerializer):
 
     def get_movie_taste(self, obj):
         return obj['movie_taste']
+
+    def get_gender(self, obj):
+        return obj['gender']
+
+    def get_age(self, obj):
+        return obj['age']
+
+    def get_occupation(self, obj):
+        return obj['occupation']

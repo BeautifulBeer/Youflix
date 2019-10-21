@@ -70,8 +70,9 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex';
-import swal from 'sweetalert';
+import { createNamespacedHelpers } from 'vuex';
+
+const { mapActions } = createNamespacedHelpers('infos');
 
 export default {
     data() {
@@ -82,29 +83,8 @@ export default {
             modalContent: ''
         };
     },
-    computed: {
-        ...mapGetters('data',['getToken'])
-    },
     methods: {
-        ...mapActions('data', ['login']),
         ...mapActions(['commingSoon']),
-
-        loginSubmit() {
-            const params = {
-                loginID: this.uid,
-                loginPassword: this.password
-            };
-
-            this.login(params).then((data) => {
-                if (data.status === true) {
-                    this.$store.commit('data/setLoginModalOpen', false);
-                } else {
-                    this.dialog = true;
-                    this.modalTitle = '알림';
-                    this.modalContent = '아이디/비밀번호를 잘 못 입력하셨습니다.';
-                }
-            });
-        },
         alert() {
             this.commingSoon();
         }
@@ -128,7 +108,7 @@ p {
 }
 
 .start-page {
-    background: url("../../assets/img/chernobyl.jpg") no-repeat center center;
+    background: url("/static/img/chernobyl.jpg") no-repeat center center;
     background-size: cover;
     position: relative;
     height: 100vh;
