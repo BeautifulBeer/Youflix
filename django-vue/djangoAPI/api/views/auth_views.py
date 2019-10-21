@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.http import JsonResponse
 from django.conf import settings
 from django.core.cache import cache
 
@@ -22,15 +23,15 @@ from django_pandas.io import read_frame
 import json
 import numpy as np
 
-import logging
-logger = logging.getLogger("mylogger")
+# import logging
+# logger = logging.getLogger("mylogger")
 
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# 여러명의 사용자들을 가입시키는 Request
 @api_view(['POST'])
 def signup_many(request):
-
     if request.method == 'POST':
         profiles = request.data.get('profiles', None)
         for profile in profiles:
@@ -46,15 +47,14 @@ def signup_many(request):
 
         return Response(status=status.HTTP_201_CREATED)
 
+# 다수의 사용자를 얻을 때 사용하는 Request
 @api_view(['GET'])
 def getUsers(request):
-
     if request.method == 'GET':
         age=request.GET.get('age', None)
         gender=request.GET.get('gender', None)
         occupation=request.GET.get('occupation', None)
         page=request.GET.get('page', 1)
-            
         profiles = Profile.objects.all()
         if age:
                 profiles=profiles.filter(age=age)
@@ -74,6 +74,7 @@ def getUsers(request):
         serializer = ProfileSerializer(profiles, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
         
+# 회원가입
 @api_view(['POST'])
 def register(request):
         if request.method == 'POST':
@@ -85,20 +86,19 @@ def register(request):
                 gender = params.get('gender', None)
                 occupation = params.get('occupation', None)
                 genres = params.get('genres', None)
-                print(email, username, password, age, gender, occupation, genres)
-        try:         
-                create_profile(email=email, username=username, password=password, age=age, occupation=occupation, gender=gender, movie_taste=genres)
-        except:
-                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(status=status.HTTP_201_CREATED)
+                # print(email, username, password, age, gender, occupation, genres)
+                try:         
+                        create_profile(email=email, username=username, password=password, age=age, occupation=occupation, gender=gender, movie_taste=genres)
+                except Exception:
+                        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': Exception})
+        return JsonResponse({'status': status.HTTP_200_OK})
 
 @api_view(['POST'])
 def login(request):
-        print('login request')
         if request.method == 'POST':
                 email = request.data.get('email', None)
                 password = request.data.get('password', None)
-
+                # 밑에 3줄은 딱히 필요없을 것 같다.
                 if email is None or password is None:
                         return Response(data="Not input ID and Password", status=status.HTTP_400_BAD_REQUEST)
                 if email is None:
@@ -107,8 +107,14 @@ def login(request):
                         return Response(data="Not input Password", status=status.HTTP_400_BAD_REQUEST)
 
                 user = auth.authenticate(email=email, password=password)
+
                 if user :
                         auth.login(request, user)
+                        # 토큰이 서버에서 아직 지워지지 않았거나, auth_token이 그대로 남아있으면 삭제한다
+                        if Token.objects.filter(user=user).first():
+                                if str(Token.objects.get(user=user)) in request.session.keys():
+                                        del request.session[str(Token.objects.get(user=user))]
+                                user.auth_token.delete()
                         token = Token.objects.create(user=user)
                         request.session[str(token)] = email
                         profile = Profile.objects.get(user=user)
@@ -136,20 +142,21 @@ def login(request):
                                 'movie_taste': None
                         }
                 serializer = SessionSerializer(result)
-                return Response(data = serializer.data, status=status.HTTP_200_OK)
+                # return Response(data = serializer.data, status=status.HTTP_200_OK)
+                return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
 
 
 @api_view(['POST'])
 def logout(request):
-        print(request)
         if request.method == 'POST':
                 token = request.data.get('token', None)
                 user = User.objects.get(email=request.session[str(token)])
                 del request.session[str(token)]
                 user.auth_token.delete()
                 auth.logout(request)
-        return Response(status=status.HTTP_200_OK)
+        # return Response(status=status.HTTP_200_OK)
+        return JsonResponse({'status': status.HTTP_200_OK})
         
 
 @api_view(['DELETE'])
@@ -161,15 +168,12 @@ def deleteUser(request):
                 user = users.get(id=id)
                 user.delete()
 
-                return Response(status=status.HTTP_200_OK)
+                return JsonResponse({'status': status.HTTP_200_OK})
 
 @api_view(['POST'])
 def updateUser(request):
-
         if request.method == 'POST':
-
                 params = request.data.get('params', None)
-
                 token = params.get('token', None)
                 email = params.get('email', None)
                 username = params.get('username', None)
@@ -178,57 +182,61 @@ def updateUser(request):
                 genres = params.get('genres', None)
 
                 if token is None or email is None or username is None or password is None or occupation is None or genres is None:
-                        return Response(status=status.HTTP_400_BAD_REQUEST)
-                
-                print(token)
+                        return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
+                try:
+                        user = User.objects.get(email=request.session.get('token', None))
+                        del request.session[str(token)]
+                        user.auth_token.delete()
+                        auth.logout(request)
 
-                user = User.objects.get(email=request.session[str(token)])
-                del request.session[str(token)]
-                user.auth_token.delete()
-                auth.logout(request)
+                        # print(email)
+                        # print(username)
+                        # print(password)
+                        # print(occupation)
+                        # print(genres)
 
-                print(email)
-                print(username)
-                print(password)
-                print(occupation)
-                print(genres)
+                        user = User.objects.get(email=email)
+                        profile = Profile.objects.get(user=user)
 
-                user = User.objects.get(email=email)
-                profile = Profile.objects.get(user=user)
+                        # print(user)
+                        # print(profile)
 
-                print()
-                print(user)
-                print(profile)
+                        user.set_password(password)
+                        user.save()
 
-                user.set_password(password)
-                user.save()
+                        # genres_ = ','.join(genres)
+                        movie_taste_ = []
+                        for genre in genres:
+                                movie_taste_.append(genre)
 
-                genres_ = ','.join(genres)
+                        profile.username = username
+                        profile.occupation = occupation
+                        profile.movie_taste = movie_taste_
+                        profile.save()
 
-                profile.username = username
-                profile.occupation = occupation
-                profile.genres = genres_
-                profile.save()
+                        user = auth.authenticate(email=email, password=password)
+                        auth.login(request, user)
+                        token = Token.objects.create(user=user)
+                        request.session[str(token)] = email
 
-                user = auth.authenticate(email=email, password=password)
-                auth.login(request, user)
-                token = Token.objects.create(user=user)
-                request.session[str(token)] = email
-
-                result = {
-                        'email': email,
-                        'username' : profile.username,
-                        'gender': profile.gender,
-                        'age': profile.age,
-                        'occupation': profile.occupation,
-                        'token' : token,
-                        'is_staff' : profile.user.is_staff,
-                        'is_auth' : True,
-                        'movie_taste': profile.movie_taste
-                }
-                print(result)
-                serializer = SessionSerializer(result)
-                return Response(data = serializer.data, status=status.HTTP_200_OK)
+                        result = {
+                                'email': email,
+                                'username' : profile.username,
+                                'gender': profile.gender,
+                                'age': profile.age,
+                                'occupation': profile.occupation,
+                                'token' : token,
+                                'is_staff' : profile.user.is_staff,
+                                'is_auth' : True,
+                                'movie_taste': profile.movie_taste
+                        }
+                        print(result)
+                        serializer = SessionSerializer(result)
+                        return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
+                except KeyError as e:
+                        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': f'Keyerror {e}'})
+                except User.DoesNotExist as e:
+                        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': f'DoesNotExists {e}'})
 
 @api_view(['GET'])
 def similarUser(request):
@@ -244,6 +252,7 @@ def similarUser(request):
 
         serializer = SimilarUserSerializer(similar_users, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
+
 import time
 import copy
 
@@ -321,12 +330,53 @@ def RecommendMovieUserBased(request):
                         print(data)
                         
                         serializer = RecommendMovie(data, many=True)
-                        return Response(data=serializer.data, status=status.HTTP_200_OK)
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                        return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
+                return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
 
-@api_view(['POST', 'GET'])
+@api_view(['GET', 'POST'])
 def session_member(request):
+
+        if request.method == 'GET': 
+                try:
+                        result = {
+                                'msg' : 'error'
+                        }
+                        token = request.GET.get('token', None)
+                        user = User.objects.get(email=request.session.get(str(token)))
+                        
+                        if user is None:
+                                return Response(data = result, status=status.HTTP_400_BAD_REQUEST)
+
+                        if user.is_authenticated and token == str(Token.objects.get(user=user)):
+                                profile = Profile.objects.get(user=user)
+                                result = {
+                                        'email' : user.email,
+                                        'username' : profile.username,
+                                        'token' : token,
+                                        'gender': profile.gender,
+                                        'age': profile.age,
+                                        'occupation': profile.occupation,
+                                        'is_auth' : True,
+                                        'is_staff' : profile.user.is_staff,
+                                        'movie_taste': profile.movie_taste
+                                }
+                        else : 
+                                result = {
+                                        'email' : None,
+                                        'username': None,
+                                        'token' : None,
+                                        'gender': None,
+                                        'age': None,
+                                        'occupation': None,
+                                        'is_auth' : False,
+                                        'is_staff' : False,
+                                        'movie_taste': None
+                                }
+                        serializer = SessionSerializer(result)
+                        return Response(data = serializer.data, status=status.HTTP_200_OK)
+                except:
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
 
         if request.method == 'POST':
 
@@ -360,48 +410,6 @@ def session_member(request):
                                 'is_auth' : False,
                                 'is_staff' :  False,
                                 'movie_taste': profile.movie_taste
-                        }
-                serializer = SessionSerializer(result)
-                return Response(data = serializer.data, status=status.HTTP_200_OK)
-
-        if request.method == 'GET': 
-
-                result = {
-                        'msg' : 'error'
-                }
-                token = request.GET.get('token', None)
-                email = request.session.get(str(token), None)
-                user = None
-
-                if email is not None:
-                        user = User.objects.get(email=email)
-                else:
-                        return Response(data = result, status=status.HTTP_400_BAD_REQUEST)
-
-                if user.is_authenticated and token == str(Token.objects.get(user=user)):
-                        profile = Profile.objects.get(user=user)
-                        result = {
-                                'email' : user.email,
-                                'username' : profile.username,
-                                'token' : token,
-                                'gender': profile.gender,
-                                'age': profile.age,
-                                'occupation': profile.occupation,
-                                'is_auth' : True,
-                                'is_staff' : profile.user.is_staff,
-                                'movie_taste': profile.movie_taste
-                        }
-                else : 
-                        result = {
-                                'email' : None,
-                                'username': None,
-                                'token' : None,
-                                'gender': None,
-                                'age': None,
-                                'occupation': None,
-                                'is_auth' : False,
-                                'is_staff' : False,
-                                'movie_taste': None
                         }
                 serializer = SessionSerializer(result)
                 return Response(data = serializer.data, status=status.HTTP_200_OK)

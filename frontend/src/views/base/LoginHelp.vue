@@ -1,7 +1,7 @@
 <template>
     <div>
         <v-img
-            src="../../assets/img/loginHelp.jpg"
+            src="/static/img/loginHelp.jpg"
             style="height: 100vh;"
         >
             <v-card

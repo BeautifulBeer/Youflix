@@ -11,9 +11,8 @@ import AdminHeader from '../../components/admin/AdminHeader.vue';
 export default {
 
     components: {
-
-        AdminHeader,
-    },
+        AdminHeader
+    }
 };
 </script>
 

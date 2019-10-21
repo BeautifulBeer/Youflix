@@ -73,15 +73,13 @@
 
 <script>
 // import VUEX
-import { mapState, mapActions } from 'vuex';
-// User API
-// import UserAPI from '../../../api/user/userApi';
-// Movie API
-// import MovieAPI from '../../../api/movie/movieApi';
+import { createNamespacedHelpers } from 'vuex';
 
 // COMPONENTS
 import GenreGraph from './GenresGraph.vue';
 import RatingNumberGraph from './RatingNumberGraph.vue';
+
+const { mapState, mapActions } = createNamespacedHelpers('users');
 
 export default {
     name: 'MyFlex',
@@ -95,10 +93,7 @@ export default {
         };
     },
     computed: {
-        ...mapState({
-            token: (state) => state.data.token,
-            user: (state) => state.data.user
-        })
+        ...mapState(['token', 'user'])
     },
     mounted() {
         if (this.user === null) {
@@ -110,7 +105,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('data', ['getUserBySession'])
+        ...mapActions(['getUserBySession'])
     }
 };
 </script>

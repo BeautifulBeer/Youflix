@@ -22,26 +22,16 @@
                     <v-col class="pd-right-none">
                         <v-container class="mg-top-none">
                             <v-row class="mg-top-none">
-                                <v-col
-                                    cols="2"
-                                    class="pd-none"
-                                >
-                                    <v-img
-                                        width="32"
-                                        height="32"
-                                        src="../../assets/icon/avatar.png"
-                                    />
-                                </v-col>
-
                                 <v-col class="mg-top-none text-light">
-                                    {{ userInfo.username }}
-                                    <br>
-                                    {{ userInfo.email }}
+                                    이름: {{ userInfo.username }}
                                 </v-col>
-
-                                <v-col class="mg-top-none pd-right-none text-right">
-                                    프로필 관리
-                                    <br>
+                            </v-row>
+                            <v-row>
+                                <v-col
+                                    class="mg-top-none"
+                                    style="margin-top: 10px;"
+                                >
+                                    이메일: {{ userInfo.email }}
                                 </v-col>
                             </v-row>
                         </v-container>
@@ -51,7 +41,10 @@
 
             <v-divider />
 
-            <v-container class="mg-top-none">
+            <v-container
+                class="mg-top-none" 
+                style="margin-top: 10px;"
+            >
                 <v-row>
                     <v-col cols="4">
                         회원정보
@@ -59,8 +52,6 @@
 
                     <v-col class="pd-right-none">
                         <v-container class="mg-top-none">
-                            <v-divider />
-
                             <v-row>
                                 <v-col>
                                     <v-form v-model="passwordFlag">
@@ -73,9 +64,6 @@
                                     </v-form>
                                 </v-col>
                             </v-row>
-
-                            <v-divider />
-
                             <v-row>
                                 <v-col>
                                     <v-form v-model="nicknameFlag">
@@ -87,21 +75,15 @@
                                     </v-form>
                                 </v-col>
                             </v-row>
-
                             <v-divider />
-
                             <v-row>
-                                <v-col>Age: {{ userInfo.age }}</v-col>
+                                <v-col>Age: {{ displayAge }}</v-col>
                             </v-row>
-
                             <v-divider />
-
                             <v-row>
                                 <v-col>Gender: {{ userInfo.gender }}</v-col>
                             </v-row>
-
                             <v-divider />
-
                             <v-row>
                                 <v-col>
                                     <v-combobox
@@ -111,9 +93,6 @@
                                     />
                                 </v-col>
                             </v-row>
-
-                            <v-divider />
-
                             <v-row>
                                 <v-col>
                                     <v-combobox
@@ -150,26 +129,21 @@
             <v-divider />
 
             <v-container class="mg-top-none">
-                <v-row class="text-center">
-                    <v-col>
-                        <v-btn
-                            class="primary"
-                            style="margin: 10px;"
-                            @click="modify()"
-                        >
-                            수정하기
-                        </v-btn>
-                    </v-col>
-
-                    <v-col>
-                        <v-btn
-                            class="error"
-                            style="margin: 10px;"
-                            @click="$router.go(-1)"
-                        >
-                            취 소
-                        </v-btn>
-                    </v-col>
+                <v-row justify="end">
+                    <v-btn
+                        class="primary"
+                        style="margin: 10px;"
+                        @click="modify()"
+                    >
+                        수정하기
+                    </v-btn>
+                    <v-btn
+                        class="error"
+                        style="margin: 10px;"
+                        @click="$router.go(-1)"
+                    >
+                        취 소
+                    </v-btn>
                 </v-row>
             </v-container>
         </div>
@@ -178,10 +152,12 @@
 
 <script>
 // import VUEX
-import { mapState, mapActions } from 'vuex';
-
+import { createNamespacedHelpers } from 'vuex';
 // import SweetAlert
 import swal from 'sweetalert';
+
+const { mapState, mapActions } = createNamespacedHelpers('users');
+const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
     data() {
@@ -192,17 +168,13 @@ export default {
             passwordFlag: false,
             userInfo: {},
             selectedOccupation: '',
-            selectedGenre: []
+            selectedGenre: [],
+            displayAge: 'Empty'
         };
     },
     computed: {
-        ...mapState({
-            token: (state) => state.data.token,
-            user: (state) => state.data.user,
-            genres: (state) => state.infoStore.genres,
-            occupations: (state) => state.infoStore.occupations,
-            rules: (state) => state.infoStore.rules
-        })
+        ...mapState(['token', 'user']),
+        ...infoMapState(['rules', 'genres', 'occupations'])
     },
     mounted() {
         if (this.user === null) {
@@ -210,15 +182,17 @@ export default {
                 this.userInfo = this.user;
                 this.selectedGenre = this.userInfo.movie_taste;
                 this.selectedOccupation = this.userInfo.occupation;
+                this.getDisplayAge(this.userInfo.age);
             });
         } else {
             this.userInfo = this.user;
             this.selectedGenre = this.userInfo.movie_taste;
             this.selectedOccupation = this.userInfo.occupation;
+            this.getDisplayAge(this.userInfo.age);
         }
     },
     methods: {
-        ...mapActions('data', ['getSession']),
+        ...mapActions(['getSession']),
         ...mapActions(['updateUserInfo']),
         modify() {
             if (!this.passwordFlag || !this.nicknameFlag) {
@@ -258,6 +232,23 @@ export default {
                     });
                 }
             });
+        },
+        getDisplayAge(age) {
+            if (age === 1) {
+                this.displayAge = '18세 미만';
+            } else if (age === 18) {
+                this.displayAge = '18세 이상 24세 이하';
+            } else if (age === 25) {
+                this.displayAge = '25세 이상 34세 이하';
+            } else if (age === 35) {
+                this.displayAge = '35세 이상 44세 이하';
+            } else if (age === 45) {
+                this.displayAge = '45세 이상 49세 이하';
+            } else if (age === 50) {
+                this.displayAge = '50세 이상 55세 이하';
+            } else {
+                this.displayAge = '56세 이상';
+            }
         }
     }
 };
@@ -280,6 +271,7 @@ export default {
 
 .mg-top-none {
   padding-top: 0px;
+  padding-bottom: 0px;
 }
 
 .pd-right-none {

@@ -56,7 +56,6 @@ const state = {
 };
 
 const actions = {
-
     commingSoon() {
         swal({
             title: 'Comming Soon',
@@ -68,7 +67,7 @@ const actions = {
 };
 
 export default {
-
+    namespaced: true,
     state,
     actions
 };

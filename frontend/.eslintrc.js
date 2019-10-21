@@ -15,6 +15,7 @@ module.exports = {
         indent: ['error', 4],
         'linebreak-style': ['error', 'windows'],
         'vue/html-indent': ['error', 4],
-        'comma-dangle' : ['error', 'never']
+        'comma-dangle' : ['error', 'never'],
+        "import/no-extraneous-dependencies": ["error", {"devDependencies": true}]
     },
 };
