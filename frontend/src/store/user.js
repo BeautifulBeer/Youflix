@@ -17,9 +17,10 @@ const actions = {
             Vue.$log.debug('UpdateUser response', response);
             if (response.data.status === global.HTTP_SUCCESS) {
                 const { result } = response.data;
+                Vue.$log.debug('success update user info', result);
                 if (result.is_auth) {
                     if (result.movie_taste !== '') {
-                        result.movie_taste = JSON.parse(result.movie_taste.replace(/'/g, '"'));
+                        result.movie_taste = result.movie_taste;
                     }
                     commit('setUser', result);
                     localStorage.setItem('token', result.token);
@@ -31,6 +32,7 @@ const actions = {
             return false;
         });
     },
+
     async checkDuplicateEmail({ state }, email) {
         Vue.$log.debug('Duplicate param ', email);
         const ret = axios.get(`${global.API_URL}/auth/duplicateInspection/`, {
@@ -40,6 +42,7 @@ const actions = {
         }).then(() => true).catch(() => false);
         return ret;
     },
+
     async registerMember({ commit }, params) {
         Vue.$log.debug('Vuex registerMember', params);
         return axios.post(`${global.API_URL}/auth/registermember/`, {
@@ -111,23 +114,11 @@ const actions = {
                     age: result.data.age,
                     occupation: result.data.occupation,
                     is_staff: result.data.is_staff,
-<<<<<<< HEAD
                     movie_taste: JSON.parse(result.data.movie_taste.replace(/'/g, '"'))
                 });
             } else {
                 localStorage.removeItem('token');
                 commit('setUser', null);
-=======
-                    // movie_taste: JSON.parse(result.data.movie_taste.replace(/'/g, '"'))
-                    movie_taste: result.data.movie_taste
-                };
-                commit('data/setUser', user);
-                localStorage.setItem('token', result.data.token);
-                Vue.$log.debug('Vuex', 'user obj from response', user);
-                commit('data/setToken', result.data.token);
-                axios.defaults.headers.common['X-CSRFTOKEN'] = getCookie('csrftoken');
-                return true;
->>>>>>> 955552765ca354f27113d8c90a6445fd3becab58
             }
             return result.data.is_auth;
         }).catch((err) => {

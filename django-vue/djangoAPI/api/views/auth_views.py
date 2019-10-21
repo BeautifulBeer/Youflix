@@ -184,27 +184,16 @@ def updateUser(request):
                 if token is None or email is None or username is None or password is None or occupation is None or genres is None:
                         return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
                 try:
-                        user = User.objects.get(email=request.session.get('token', None))
+                        user = User.objects.get(email=email)
                         del request.session[str(token)]
                         user.auth_token.delete()
                         auth.logout(request)
 
-                        # print(email)
-                        # print(username)
-                        # print(password)
-                        # print(occupation)
-                        # print(genres)
-
                         user = User.objects.get(email=email)
                         profile = Profile.objects.get(user=user)
-
-                        # print(user)
-                        # print(profile)
-
                         user.set_password(password)
                         user.save()
 
-                        # genres_ = ','.join(genres)
                         movie_taste_ = []
                         for genre in genres:
                                 movie_taste_.append(genre)
@@ -230,7 +219,6 @@ def updateUser(request):
                                 'is_auth' : True,
                                 'movie_taste': profile.movie_taste
                         }
-                        print(result)
                         serializer = SessionSerializer(result)
                         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
                 except KeyError as e:
