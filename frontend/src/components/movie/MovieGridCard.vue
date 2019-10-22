@@ -1,28 +1,33 @@
 <template>
-    <div class="slider">
-        <v-img
-            class="slider-img"
-            :src="movie.backdrop_path | imagePath"
-        />
-        <div class="slider-overlay">
-            <div class="position: relative;">
-                <div class="portfolio-item__info">
-                    <h3 class="portfolio-item__header">
-                        {{ movie.title }}<span>({{ movie.release_date | extractYear }})</span>
-                    </h3>
-                    <h4 class="portfolio-item__inform">
-                        {{ movie.genres | genreConcat }}
-                    </h4>
-                    <h4
-                        id="overview-content"
-                        class="portfolio-item__content"
-                    >
-                        {{ movie.overview }}
-                    </h4>
+    <AnimateWhenVisible name="fade">
+        <div
+            class="slider"
+            @click="viewMovie()"
+        >
+            <v-img
+                class="slider-img"
+                :src="movie.backdrop_path | imagePath"
+            />
+            <div class="slider-overlay">
+                <div class="position: relative;">
+                    <div class="portfolio-item__info">
+                        <h3 class="portfolio-item__header">
+                            {{ movie.title }}<span>({{ movie.release_date | extractYear }})</span>
+                        </h3>
+                        <h4 class="portfolio-item__inform">
+                            {{ movie.genres | genreConcat }}
+                        </h4>
+                        <h4
+                            id="overview-content"
+                            class="portfolio-item__content"
+                        >
+                            {{ movie.overview }}
+                        </h4>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </AnimateWhenVisible>
 </template>
 
 <script>
@@ -98,6 +103,7 @@ $slider-height: 200px;
     position: relative;
     transition: all 0.3s ease;
     -webkit-transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .slider-img{
@@ -118,6 +124,15 @@ $slider-height: 200px;
 .slider:hover{
     transform: scale(1.1);
     -webkit-transform: scale(1.1);
+}
+
+.slider:hover{
+    .slider-img {
+        opacity: 0.3;
+    };
+    .slider-overlay {
+        opacity: 1;
+    };
 }
 
 .portfolio-item__info {
@@ -159,18 +174,6 @@ $slider-height: 200px;
     color: white;
     margin-bottom: 15px;
     overflow-y: scroll;
-}
-
-
-@media (min-width: $large-breakpoint){
-    .slider:hover{
-        .slider-img {
-            opacity: 0.3;
-        };
-        .slider-overlay {
-            opacity: 1;
-        };
-    }
 }
 
 #overview-content::-webkit-scrollbar-track

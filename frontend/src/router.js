@@ -99,7 +99,8 @@ export default new Router({
             component: MovieDetailPage,
             meta: {
                 authRequired: true
-            }
+            },
+            props: true
         },
         {
             path: '/adminPage',

@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import $ from 'jquery';
 import { createNamespacedHelpers } from 'vuex';
 // import LoadingPage from '@/components/pages/LoadingPage.vue';
 import Header from '@/components/Header.vue';
@@ -43,7 +44,7 @@ export default {
         this.setToken(localStorage.getItem('token'));
         if (localStorage.getItem('token')) {
             this.getUserBySession(localStorage.getItem('token'));
-        }        
+        }
         if (this.user) {
             this.logoutflag = true;
         }
