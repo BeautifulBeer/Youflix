@@ -22,9 +22,9 @@ class UserAdmin(DjangoUserAdmin):
             'fields': ('email', 'password1', 'password2'),
         }),
     )
-    list_display = ('email', 'is_staff')
+    list_display = ('id','email', 'is_staff')
     search_fields = ('email',)
-    ordering = ('email',)
+    ordering = ('id',)
 
 @admin.register(Movie)
 class MovieAdmin(ImportExportModelAdmin):

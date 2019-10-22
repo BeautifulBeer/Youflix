@@ -1,17 +1,12 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-from django.contrib.auth.models import User
 from api.serializers import RatingSerializer
 from rest_framework.response import Response
 
-from api.models import Rating
-from api.models import Movie
-from api.models import Profile
-from api.models import Rating
+from api.models import Rating, Movie, User, Comment
 
 import datetime
 import pytz
-
 
 @api_view(['GET', 'POST'])
 def ratings(request):
@@ -22,25 +17,25 @@ def ratings(request):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     if request.method == 'POST':
-        ratings = request.data.get('ratings', None)
+        params = request.data.get('params', None)
+        userId = params.get('userId', None)
+        movieId = params.get('movieId', None)
+        rating = params.get('rating', None)
+        timestamp = params.get('timestamp', None)
+        content = params.get('content', None)
+        
+        print(userId, movieId, rating, timestamp, content)
 
-        for rating_obj in ratings:
-
-            userId = rating_obj.get('userId', None)
-            movieId = rating_obj.get('movieId', None)
-
-            user = User.objects.get(username = 'user' + userId)
+        try:
+            rating=Rating.objects.get(user__id=userId,movie__id=movieId)
+        except Rating.DoesNotExist: #DoesNotExist 에러가 발행하면
+            print('유저가 아직 해당 영화에 별점을 매기지 않았습니다.')
+            user = User.objects.get(id = userId)
             movie = Movie.objects.get(id=movieId)
-
-            rating = rating_obj.get('rating', None)
-            timestamp = datetime.datetime.fromtimestamp(int(rating_obj.get('timestamp', None).strip())).replace(tzinfo=pytz.utc)
-
-            if not (user and movie and rating and timestamp):
-                continue
-            if Rating.objects.filter(user = user).filter(movie = movie).count() > 0:
-                continue
-
-            age  = Profile.objects.get(user = user).age
-            gender = Profile.objects.get(user = user).gender
-            Rating(user=user, movie=movie, rating=rating, timestamp=timestamp).save()
-        return Response(status=status.HTTP_200_OK)
+            rating=Rating(user=user,movie=movie,rating=rating,timestamp=timestamp)
+            rating.save()
+        
+        if content:
+            Comment(rating=rating,content=content).save()
+            
+        return Response(status=status.HTTP_201_CREATED)
