@@ -46,12 +46,16 @@ const actions = {
             commit('setIsLoaded', true);
         });
     },
-    async rateMovie({ commit }, params) {
-        Vue.$log.debug('Vuex movie.js rateMovie', params);
-        axios.get(`${global.API_URL}/rateMovie/`, {
-            params
+    async getRatingPref({ commit }, email) {
+        console.log(email);
+        Vue.$log.debug('Vuex movie.js getRatingPref', email);
+        return axios.get(`${global.API_URL}/movies/pref/`, {
+            params: {
+                email
+            }
         }).then((response) => {
-            Vue.$log.debug('Vuex movie.js rateMovie response', response);
+            Vue.$log.debug('Vuex movie.js getRatingPref response', response);
+            return response.data;
         });
     }
 };

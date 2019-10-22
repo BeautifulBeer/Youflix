@@ -1,8 +1,11 @@
 <template>
-    <v-container fluid>
+    <v-container
+        class="container-settting"
+        fluid
+    >
         <v-row>
             <v-col
-                style="min-height: 600px; margin-top: 65px;"
+                style="min-height: 500px; padding: 0px;"
                 cols="12"
             >
                 <div id="background-img">
@@ -38,30 +41,25 @@
             </v-col>
         </v-row>
 
-        <v-container fluid>
+        <v-container
+            class="container-settting area"
+            fluid
+        >
             <v-row style="background-color: white;">
                 <v-col cols="12">
+                    <h1>MyFlix Dash Board</h1>
                     <v-row>
                         <v-col
                             style="min-height: 600px; position: relative;"
-                            cols="12"
+                            sm="12"
+                            md="6"
                         >
-                            <h1>Number of Ratings</h1>
-
                             <RatingNumberGraph />
                         </v-col>
-                    </v-row>
-                </v-col>
-            </v-row>
-            <v-row style="background-color: white;">
-                <v-col cols="12">
-                    <v-row>
                         <v-col
-                            style="min-height: 600px; position: relative;"
-                            cols="12"
+                            sm="12"
+                            md="6"
                         >
-                            <h1>Rating Distribution</h1>
-
                             <GenreGraph />
                         </v-col>
                     </v-row>
@@ -73,7 +71,7 @@
                 </v-col>
             </v-row>
             <v-row
-                style="background-color: white; padding: 50px;"
+                class="rating-section"
                 justify="start"
             >
                 <MyTastes
@@ -113,7 +111,7 @@ export default {
         };
     },
     computed: {
-        ...userMapState(['token', 'user'])
+        ...userMapState(['user'])
     },
     mounted() {
         if (this.user === null) {
@@ -144,6 +142,17 @@ export default {
 
 <style scoped>
 
+.container-settting {
+
+    padding: 0px;
+}
+
+.area {
+
+    background-color: white;
+    padding: 100px;
+}
+
 #background-img {
 
   background: url("../../assets/userDetail.jpg") no-repeat center center;
@@ -151,22 +160,11 @@ export default {
   background-size: cover;
 }
 
-#content {
-  margin-top: 100px;
-  padding: 50px;
-}
+.rating-section {
 
-#scroll-area {
-  width: 100%;
-  height: 300px;
-}
-
-#example-content {
-  width: 100%;
-  height: 2000px;
-}
-
-.section {
-  margin: 15px;
+    background-color: white;
+    padding: 50px 50px;
+    padding-left: 135px;
+    padding-right: 135px;
 }
 </style>

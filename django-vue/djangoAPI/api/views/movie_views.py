@@ -162,6 +162,7 @@ def moviesPref(request):
     if request.method == 'GET':
         
         email = request.GET.get('email', None)
+        print(email)
 
         if email is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -193,7 +194,9 @@ def moviesPref(request):
                 ret['4.5'] = ret.get('4.5') + 1
             else:
                 ret['5'] = ret.get('5') + 1
-        return Response(data=ret, status=status.HTTP_200_OK)
+            
+            print(ret)
+        return JsonResponse({'status': status.HTTP_200_OK, 'data' : ret })
 
 # @api_view(['GET'])
 # def recommendation(request):
