@@ -1,49 +1,84 @@
 <template>
-    <div id="chart">
-              <apexchart type=line height=350 :options="chartOptions" :series="series" />
-    </div>
+  <div id="chart">
+    <apexchart type=bubble height=350 :options="chartOptions" :series="series" />
+  </div>
 </template>
 
 <script>
-import ApexCharts from 'apexcharts';
+import VueApexCharts from "vue-apexcharts";
+
+function generateData(baseval, count, yrange) {
+      var i = 0;
+      var series = [];
+      while (i < count) {
+        var x = Math.floor(Math.random() * (750 - 1 + 1)) + 1;;
+        var y = Math.floor(Math.random() * (yrange.max - yrange.min + 1)) + yrange.min;
+        var z = Math.floor(Math.random() * (75 - 15 + 1)) + 15;
+
+        series.push([x, y, z]);
+        baseval += 86400000;
+        i++;
+      }
+      return series;
+    }
 
 export default {
-    name:"Line",
-    components: {
-        apexchart: ApexCharts,
-      },
-      data: {
-        series: [{
-            name: "Desktops",
-            data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
-        }],
-        chartOptions: {
-          chart: {
-                height: 350,
-                zoom: {
-                    enabled: false
-                }
-            },
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                curve: 'straight'
-            },
-            title: {
-                text: 'Product Trends by Month',
-                align: 'left'
-            },
-            grid: {
-                row: {
-                    colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
-                    opacity: 0.5
-                },
-            },
-            xaxis: {
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-            }
+  name: "Chart",
+  components: {
+    apexchart: VueApexCharts,
+  },
+  data() {
+    return{
+      series: [{
+          name: 'Bubble1',
+          data: generateData(new Date('11 Feb 2017 GMT').getTime(), 20, {
+            min: 10,
+            max: 60
+          })
+        },
+        {
+          name: 'Bubble2',
+          data: generateData(new Date('11 Feb 2017 GMT').getTime(), 20, {
+            min: 10,
+            max: 60
+          })
+        },
+        {
+          name: 'Bubble3',
+          data: generateData(new Date('11 Feb 2017 GMT').getTime(), 20, {
+            min: 10,
+            max: 60
+          })
+        },
+        {
+          name: 'Bubble4',
+          data: generateData(new Date('11 Feb 2017 GMT').getTime(), 20, {
+            min: 10,
+            max: 60
+          })
         }
-    },
-}
+      ],
+      chartOptions: {
+
+        dataLabels: {
+          enabled: false
+        },
+
+        fill: {
+          opacity: 0.8
+        },
+        title: {
+          text: 'Simple Bubble Chart'
+        },
+        xaxis: {
+          tickAmount: 12,
+          type: 'category',
+        },
+        yaxis: {
+          max: 70
+        }
+      }
+    }
+  }
+};
 </script>

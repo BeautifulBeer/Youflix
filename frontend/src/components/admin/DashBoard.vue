@@ -2,13 +2,20 @@
     <div>
         <v-row class="mb-6">
             <v-col>
-                <Line />
-            </v-col>
-            <v-col>
                 <div id="chart2" />
             </v-col>
             <v-col>
                 <div id="chart" />
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col>
+                <BasicLine/>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col>
+                <ContinuousChart/>
             </v-col>
         </v-row>
     </div>
@@ -16,15 +23,18 @@
 
 <script>
 import ApexCharts from 'apexcharts';
-import Line from './lineChart.vue';
+import BasicLine from './lineChart.vue';
+import ContinuousChart from './testChart.vue';
 
 let chart;
 let chart2;
-let basicChart;
+let BasicChart;
+let BaseChart;
 
 export default {
     components: {
-        Line
+        BasicLine,
+        ContinuousChart,
     },
     mounted() {
         const options = {

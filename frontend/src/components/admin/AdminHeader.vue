@@ -24,6 +24,10 @@
                 <v-icon>movie</v-icon>
                 Movie List
             </v-btn>
+            <v-btn to="/adminPage/DataSet">
+                <v-icon>mdi-mouse</v-icon>
+                Data Management
+            </v-btn>
         </template>
     </v-toolbar>
 </template>

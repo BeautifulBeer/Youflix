@@ -13,6 +13,8 @@ import AdminPage from './views/admin/AdminPage.vue';
 import DashBoard from './components/admin/DashBoard.vue';
 import MovieList from './components/admin/MovieList.vue';
 import UserList from './components/admin/UserList.vue';
+import DataSet from './components/admin/DataSet.vue';
+
 
 // USER PAGE
 import MyFlex from './components/user/MyFlex.vue';
@@ -109,6 +111,14 @@ export default new Router({
                     path: 'userlist',
                     name: 'userlist',
                     component: UserList,
+                    meta: {
+                        authRequired: true
+                    }
+                },
+                {
+                    path: 'dataset',
+                    name: 'dataset',
+                    component: DataSet,
                     meta: {
                         authRequired: true
                     }
