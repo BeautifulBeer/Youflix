@@ -7,35 +7,40 @@ const state = {
     personalMovies: [],
     genreMovies: {},
     searchResultMovies: {
-        genre: 'Romance',
-        title: 'mariposa',
-        result: {}
+        genre: 'Total',
+        title: '',
+        result: []
     },
+    selectedMovie: {},
     isloaded: true
 };
 
 const actions = {
-    // async getMovieById({ commit }, movieId) {
-    //     Vue.$log.debug('Vuex movie.js getMovieById', movieId);
-    //     axios.get(`${global.API_URL}/movies`, {
-    //         params: {
-    //             id: movieId
-    //         }
-    //     }).then((response) => {
-    //         if (response.data.status === global.HTTP_SUCCESS) {
-    //             const { result } = response.data;
-    //             return result;
-    //         }
-    //         return {};
-    //     });
-    // },
-    async addMovieView({ commit }, movieId) {
-        return axios.get(`${global.API_URL}/movies/views`, {
+    async getMovieById({ commit }, movieId) {
+        Vue.$log.debug('Vuex movie.js getMovieById', movieId);
+        axios.get(`${global.API_URL}/movies/`, {
             params: {
                 id: movieId
             }
         }).then((response) => {
             if (response.data.status === global.HTTP_SUCCESS) {
+                Vue.$log.debug('Vuex movie.js getMovieById response', response.data);
+                const { result } = response.data;
+                commit('setSelectedMovie', result[0]);
+                return true;
+            }
+            return false;
+        });
+    },
+    async addMovieView({ commit }, movieId) {
+        Vue.$log.debug('Vuex movie.js addMovieView', movieId);
+        return axios.get(`${global.API_URL}/movies/views/`, {
+            params: {
+                id: movieId
+            }
+        }).then((response) => {
+            if (response.data.status === global.HTTP_SUCCESS) {
+                Vue.$log.debug('Vuex movie.js addMovieView response', true);
                 return true;
             }
             return false;
@@ -108,9 +113,14 @@ const mutations = {
     setSearchResultMovies(state, result) {
         state.searchResultMovies.result = result;
     },
-    setSearchCondition(state, { genre, title }) {
-        state.searchResultMovies.genre = genre;
+    setSelectedMovie(state, movie) {
+        state.selectedMovie = movie;
+    },
+    setSearchConditionTitle(state, title) {
         state.searchResultMovies.title = title;
+    },
+    setSearchConditionGenre(state, genre) {
+        state.searchResultMovies.genre = genre;
     }
 };
 

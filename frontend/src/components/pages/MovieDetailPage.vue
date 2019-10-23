@@ -5,7 +5,7 @@
         grid-list-md
     >
         <v-row
-            align="strech"
+            align="stretch"
             justify="start"
             class="content-wrapper"
         >
@@ -16,7 +16,7 @@
                             {{ getMovie.title }}
                         </div>
                     </v-row>
-                    <v-row align="strech">
+                    <v-row align="stretch">
                         <v-col>
                             <template v-if="isVideo">
                                 <div
@@ -110,10 +110,16 @@
 <script>
 import { createNamespacedHelpers } from 'vuex';
 
-const { mapState } = createNamespacedHelpers('movies');
+const { mapState, mapActions } = createNamespacedHelpers('movies');
 
 export default {
     name: 'MovieDetailPage',
+    props: {
+        id: {
+            type: String,
+            default: ''
+        }
+    },
     data() {
         return {
             chip_colors: [
@@ -126,24 +132,13 @@ export default {
             ]
         };
     },
-    props: {
-        id: {
-            type: String,
-            default: ''
-        }
-    },
     computed: {
-        ...mapState(['searchResultMovies']),
+        ...mapState(['selectedMovie']),
         getMovie() {
-            if (this.searchResultMovies.result) {
-                return this.searchResultMovies.result.filter(
-                    (element) => element.id === parseInt(this.id, 10)
-                )[0];
-            }
-            return {};
+            return this.selectedMovie;
         },
         isEmpty() {
-            if ('id' in this.getMovie) {
+            if (this.getMovie && 'id' in this.getMovie) {
                 return false;
             }
             return true;
@@ -169,7 +164,13 @@ export default {
                 && !this.getMovie.poster_path;
         }
     },
+    mounted() {
+        if (this.isEmpty) {
+            this.getMovieById(this.id);
+        }
+    },
     methods: {
+        ...mapActions(['getMovieById']),
         back() {
             this.$router.go(-1);
         }

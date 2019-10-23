@@ -52,7 +52,7 @@
                     <v-img
                         class="tile-img"
                         :src="movie.poster_path"
-                        @click="movieDetail()"
+                        @click="viewMovie(movie.id)"
                     />
                 </div>
                 <a
@@ -147,7 +147,7 @@ export default {
         });
     },
     methods: {
-        ...movieMapActions(['getMoviesByGenres']),
+        ...movieMapActions(['getMoviesByGenres', 'addMovieView']),
         selectGenre(genre) {
             this.selectedGenre = genre;
             this.currentIndex = 0;
@@ -165,6 +165,10 @@ export default {
             if (this.currentIndex < 0) {
                 this.currentIndex = this.getGenreMovies.length + this.currentIndex;
             }
+        },
+        viewMovie(id) {
+            this.addMovieView(id);
+            this.$router.push(`/movies/detail/${id}`);
         }
     }
 };

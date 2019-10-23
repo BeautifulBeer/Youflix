@@ -33,7 +33,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex';
 
-const { mapActions } = createNamespacedHelpers('users');
+const { mapActions } = createNamespacedHelpers('movies');
 
 export default {
     filters: {
