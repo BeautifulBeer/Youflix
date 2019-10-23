@@ -91,6 +91,8 @@
                 :visible="visible"
                 :pmovie="personalMovies[calcSelectedIndex]"
                 :close="closeMovieDetail"
+                :rating="0"
+                :ratingWord="'이미 본 작품인가요?'"
             />
         </v-row>
     </v-container>

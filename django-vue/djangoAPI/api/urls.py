@@ -30,7 +30,10 @@ urlpatterns = [
     # url(r'^movies/recommend/$', movie_views.recommendation, name='movie_recommend'),
 
     # 평점정보 접근 URL
-    url(r'ratings/$', rating_views.ratings, name='rating_list'),
+    # url(r'ratings/$', rating_views.ratings, name='rating_list'),
+    url(r'rateMovie/$', rating_views.rate_movie, name='rate_movie'),
+    url(r'getRatings/$', rating_views.get_ratings, name='get_ratings'),
+    url(r'getRatingForMovie/$', rating_views.get_rating_for_movie, name='get_rating_for_movie')
 
     # clustering 실행 URL
     # url('clustering/userCharacter', clustering.getUserCharacter, name="getusercharacter"),

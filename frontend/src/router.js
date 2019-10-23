@@ -15,7 +15,7 @@ import MovieList from './components/admin/MovieList.vue';
 import UserList from './components/admin/UserList.vue';
 
 // USER PAGE
-import MyFlex from './components/user/MyFlex.vue';
+import MyFlix from './components/user/MyFlix.vue';
 import UserSetting from './components/user/UserSetting.vue';
 
 // MOVIE PAGE
@@ -70,9 +70,9 @@ export default new Router({
             }
         },
         {
-            path: '/myflex',
-            name: 'myflex',
-            component: MyFlex,
+            path: '/myflix',
+            name: 'myflix',
+            component: MyFlix,
             meta: {
                 authRequired: true
             }

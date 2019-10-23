@@ -97,6 +97,17 @@ const actions = {
             commit('setPersonalMovies', result);
             commit('setIsLoaded', true);
         });
+    },
+    async getRatingPref({ commit }, email) {
+        Vue.$log.debug('Vuex movie.js getRatingPref', email);
+        return axios.get(`${global.API_URL}/movies/pref/`, {
+            params: {
+                email
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getRatingPref response', response);
+            return response.data;
+        });
     }
 };
 
