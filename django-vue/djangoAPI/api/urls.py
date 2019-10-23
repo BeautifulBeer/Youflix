@@ -27,7 +27,8 @@ urlpatterns = [
     url(r'^movies/recommend/$', movie_views.recommendation, name='movie_recommend'),
 
     # 평점정보 접근 URL
-    url(r'ratings/$', rating_views.ratings, name='rating_list'),
+    # url(r'ratings/$', rating_views.ratings, name='rating_list'),
+    url(r'ratings/comment/$', rating_views.create_comment, name='create_comment'),
 
     # clustering 실행 URL
     # url('clustering/userCharacter', clustering.getUserCharacter, name="getusercharacter"),

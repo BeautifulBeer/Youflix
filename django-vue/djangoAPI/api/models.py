@@ -209,11 +209,12 @@ class Rating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     rating = models.FloatField()
-    timestamp = models.DateTimeField(null=True)
+    timestamp = models.DateTimeField()
 
 class Comment(models.Model):
     rating=models.ForeignKey(Rating, on_delete=models.CASCADE)
     content=models.TextField()
+    timestamp = models.DateTimeField()
 
 # Cluster Model
 class UserCluster(models.Model):
