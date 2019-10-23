@@ -120,7 +120,7 @@ class MovieSerializer(serializers.ModelSerializer):
             'vote_average',
             'vote_count',
             'keywords',
-            'view_cnt',
+            'view_cnt'
         )
 
     def getGenre(self,obj):
@@ -213,22 +213,47 @@ class MovieGenderSerializer(serializers.ModelSerializer):
 #================= Rating Serializer ===================#
 
 class RatingSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Rating
+        fields = ('user', 'movie', 'rating', 'timestamp')
+
+class UserRatingSerializer(serializers.ModelSerializer):
+    movie_id = serializers.SerializerMethodField('get_movie_id')
+    movie_title = serializers.SerializerMethodField('get_movie_title')
+    release_date = serializers.SerializerMethodField('get_release_date')
+    poster_path = serializers.SerializerMethodField('get_poster_path')
 
     class Meta:
         model = Rating
-        field = ('user', 'movie', 'rating', 'timestamp')
+        fields = ('user', 'movie_id', 'movie_title', 'release_date', 'rating', 'timestamp', 'poster_path')
+
+    def get_movie_id(self,obj):
+        return obj.movie.id
+
+    def get_movie_title(self,obj):
+        return obj.movie.title
+
+    def get_release_date(self,obj):
+        return obj.movie.release_date
+
+    def get_poster_path(self,obj):
+        return obj.movie.poster_path
 
 class SessionSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField('get_email')
     username = serializers.SerializerMethodField('get_user')
     token = serializers.SerializerMethodField('get_token')
+    gender = serializers.SerializerMethodField('get_gender')
+    age = serializers.SerializerMethodField('get_age')
+    occupation = serializers.SerializerMethodField('get_occupation')
     is_auth = serializers.SerializerMethodField('get_is_auth')
     is_staff = serializers.SerializerMethodField('get_is_staff')
     movie_taste = serializers.SerializerMethodField('get_movie_taste')
 
     class Meta:
         model = Profile
-        fields = ('email', 'username', 'token', 'is_auth', 'is_staff', 'movie_taste')
+        fields = ('email', 'username', 'token', 'gender', 'age', 'occupation', 'is_auth', 'is_staff', 'movie_taste')
 
     def get_email(self, obj):
         return str(obj['email'])
@@ -247,3 +272,12 @@ class SessionSerializer(serializers.ModelSerializer):
 
     def get_movie_taste(self, obj):
         return obj['movie_taste']
+
+    def get_gender(self, obj):
+        return obj['gender']
+
+    def get_age(self, obj):
+        return obj['age']
+
+    def get_occupation(self, obj):
+        return obj['occupation']

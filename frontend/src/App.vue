@@ -8,7 +8,7 @@
                 <Header />
                 <router-view />
                 <Footer />
-                <MoviePage />
+                <!-- <MoviePage /> -->
             </v-content>
             <!-- <LoadingPage/> -->
         </v-container>
@@ -17,40 +17,43 @@
 
 <script>
 import $ from 'jquery';
-import { mapActions } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 // import LoadingPage from '@/components/pages/LoadingPage.vue';
 import Header from '@/components/Header.vue';
-import MoviePage from '@/components/movie/MoviePage.vue';
+// import MoviePage from '@/components/movie/MoviePage.vue';
 import Footer from '@/components/Footer.vue';
+
+const { mapState, mapActions, mapMutations } = createNamespacedHelpers('users');
 
 export default {
     components: {
         Header,
-        Footer,
-        MoviePage
+        Footer
+        // MoviePage
     },
     computed: {
-
-        getlogoutflag() {
-            return this.$store.state.data.token !== null;
-        }
+        ...mapState({
+            token: (state) => state.token,
+            user: (state) => state.user,
+            username: (state) => state.user.username
+        })
     },
     mounted() {
         this.$log.debug('App.vue Session Token from localStorage', localStorage.getItem('token'));
-        this.$log.debug('App.vue Vuex getters getToken', this.$store.getters.getToken);
-        this.$store.commit('data/setToken', localStorage.getItem('token'));
-        this.$store.dispatch(
-            'data/getUserBySession',
-            localStorage.getItem('token'),
-        );
-        if (this.$store.state.user != null) {
+        this.$log.debug('App.vue Vuex getters getToken', this.token);
+        this.setToken(localStorage.getItem('token'));
+        if (localStorage.getItem('token')) {
+            this.getUserBySession(localStorage.getItem('token'));
+        }
+        if (this.user) {
             this.logoutflag = true;
         }
     },
     methods: {
-        ...mapActions('data', ['logout']),
+        ...mapActions(['logout', 'getUserBySession']),
+        ...mapMutations(['setToken']),
         logoutState() {
-            this.logout(this.$store.state.data.user.username);
+            this.logout(this.username);
         }
     }
 };

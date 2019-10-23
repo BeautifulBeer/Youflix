@@ -64,7 +64,7 @@ class ProfileAdmin(ImportExportModelAdmin):
 
 @admin.register(Rating)
 class RatingAdmin(ImportExportModelAdmin):
-    list_display=('user','movie','rating','timestamp',)
+    list_display=('id','user','movie','rating','timestamp',)
 
 @admin.register(UserCluster)
 class UserClusterAdmin(ImportExportModelAdmin):

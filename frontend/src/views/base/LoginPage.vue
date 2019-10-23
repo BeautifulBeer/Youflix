@@ -107,9 +107,11 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 import swal from 'sweetalert';
 
+const { mapActions } = createNamespacedHelpers('users');
+const infoMapActions = createNamespacedHelpers('infos').mapActions;
 export default {
     data() {
         return {
@@ -149,9 +151,8 @@ export default {
         }
     },
     methods: {
-        ...mapActions('data', ['login']),
-        ...mapActions(['commingSoon']),
-
+        ...mapActions(['login']),
+        ...infoMapActions(['commingSoon']),
         userLogin() {
             document.getElementById('userId').disabled = true;
             document.getElementById('userPassword').disabled = true;
@@ -215,7 +216,7 @@ p {
 
 .sign-in-page {
     height: 100vh;
-    background: url("../../assets/img/chernobyl.jpg") no-repeat center center;
+    background: url("/static/img/chernobyl.jpg") no-repeat center center;
     position: relative;
     background-size: cover;
 }

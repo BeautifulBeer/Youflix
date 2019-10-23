@@ -22,25 +22,16 @@
                     <v-col class="pd-right-none">
                         <v-container class="mg-top-none">
                             <v-row class="mg-top-none">
-                                <v-col
-                                    cols="2"
-                                    class="pd-none"
-                                >
-                                    <v-img
-                                        width="32"
-                                        height="32"
-                                        src="../../assets/icon/avatar.png"
-                                    />
-                                </v-col>
-
                                 <v-col class="mg-top-none text-light">
-                                    테스트
-                                    <br>test@naver.com
+                                    이름: {{ userInfo.username }}
                                 </v-col>
-
-                                <v-col class="mg-top-none pd-right-none text-right">
-                                    프로필 관리
-                                    <br>
+                            </v-row>
+                            <v-row>
+                                <v-col
+                                    class="mg-top-none"
+                                    style="margin-top: 10px;"
+                                >
+                                    이메일: {{ userInfo.email }}
                                 </v-col>
                             </v-row>
                         </v-container>
@@ -50,7 +41,10 @@
 
             <v-divider />
 
-            <v-container class="mg-top-none">
+            <v-container
+                class="mg-top-none" 
+                style="margin-top: 10px;"
+            >
                 <v-row>
                     <v-col cols="4">
                         회원정보
@@ -58,42 +52,38 @@
 
                     <v-col class="pd-right-none">
                         <v-container class="mg-top-none">
-                            <v-row class="mg-top-none">
-                                <v-col class="mg-top-none">
-                                    ABC123@naver.com
-                                </v-col>
-                            </v-row>
-
-                            <v-divider />
-
                             <v-row>
                                 <v-col>
-                                    <v-text-field label="비밀번호" />
+                                    <v-form v-model="passwordFlag">
+                                        <v-text-field
+                                            v-model="newPassword"
+                                            type="password"
+                                            label="비밀번호 (최소 6자리이상, 30자리 이하)"
+                                            :rules="[rules.passwordCheck, rules.passwordLenCheck]"
+                                        />
+                                    </v-form>
                                 </v-col>
                             </v-row>
-
-                            <v-divider />
-
                             <v-row>
                                 <v-col>
-                                    <v-text-field label="닉네임" />
+                                    <v-form v-model="nicknameFlag">
+                                        <v-text-field
+                                            v-model="nickname"
+                                            label="닉네임 (최소 2자리 이상, 10자리 이하)"
+                                            :rules="[rules.nicknameCheck, rules.nicknameLenCheck]"
+                                        />
+                                    </v-form>
                                 </v-col>
                             </v-row>
-
                             <v-divider />
-
                             <v-row>
-                                <v-col>Age: 1</v-col>
+                                <v-col>Age: {{ userInfo.age | convertAge }}</v-col>
                             </v-row>
-
                             <v-divider />
-
                             <v-row>
-                                <v-col>Gender: Other</v-col>
+                                <v-col>Gender: {{ userInfo.gender | convertGender }}</v-col>
                             </v-row>
-
                             <v-divider />
-
                             <v-row>
                                 <v-col>
                                     <v-combobox
@@ -103,9 +93,6 @@
                                     />
                                 </v-col>
                             </v-row>
-
-                            <v-divider />
-
                             <v-row>
                                 <v-col>
                                     <v-combobox
@@ -142,18 +129,21 @@
             <v-divider />
 
             <v-container class="mg-top-none">
-                <v-row class="text-center">
-                    <v-col>
-                        <v-btn style="margin: 10px;">
-                            수정하기
-                        </v-btn>
-                    </v-col>
-
-                    <v-col>
-                        <v-btn style="margin: 10px;">
-                            취 소
-                        </v-btn>
-                    </v-col>
+                <v-row justify="end">
+                    <v-btn
+                        class="primary"
+                        style="margin: 10px;"
+                        @click="modify()"
+                    >
+                        수정하기
+                    </v-btn>
+                    <v-btn
+                        class="error"
+                        style="margin: 10px;"
+                        @click="$router.go(-1)"
+                    >
+                        취 소
+                    </v-btn>
                 </v-row>
             </v-container>
         </div>
@@ -162,50 +152,113 @@
 
 <script>
 // import VUEX
-import { mapState } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
+// import SweetAlert
+import swal from 'sweetalert';
+
+const { mapState, mapActions } = createNamespacedHelpers('users');
+const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
+    filters: {
+        convertGender(gender) {
+            if (gender === 'male') {
+                return '남자';
+            }
+            if (gender === 'female') {
+                return '여자';
+            }
+            return '그 외';
+        },
+        convertAge(age) {
+            let convertAge = '56세 이상';
+            if (age === 1) {
+                convertAge = '18세 미만';
+            } else if (age === 18) {
+                convertAge = '18세 이상 24세 이하';
+            } else if (age === 25) {
+                convertAge = '25세 이상 34세 이하';
+            } else if (age === 35) {
+                convertAge = '35세 이상 44세 이하';
+            } else if (age === 45) {
+                convertAge = '45세 이상 49세 이하';
+            } else if (age === 50) {
+                convertAge = '50세 이상 55세 이하';
+            }
+            return convertAge;
+        }
+    },
     data() {
         return {
-            selectedOccupation: 'artist',
-            occupations: ['other',
-                'academic/educator',
-                'artist',
-                'clerical/admin',
-                'college/grad student',
-                'customer service',
-                'doctor/health care',
-                'executive/managerial',
-                'farmer',
-                'homemaker',
-                'K-12 student',
-                'lawyer',
-                'programmer',
-                'retired',
-                'sales/marketing',
-                'scientist',
-                'self-employed',
-                'technician/engineer',
-                'tradesman/craftsman',
-                'unemployed',
-                'writer'],
-            selectedGenre: ['Action', 'War']
+            nickname: '',
+            newPassword: '',
+            nicknameFlag: false,
+            passwordFlag: false,
+            userInfo: {},
+            selectedOccupation: '',
+            selectedGenre: []
         };
     },
     computed: {
-        ...mapState({
-            token: (state) => state.data.token,
-            user: (state) => state.data.user,
-            genres: (state) => state.info.genres
-        })
+        ...mapState(['token', 'user']),
+        ...infoMapState(['rules', 'genres', 'occupations'])
     },
     mounted() {
         if (this.user === null) {
-            this.getUserBySession(this.token).then(() => {
-                this.username = this.user.username;
+            this.getSession().then(() => {
+                this.userInfo = this.user;
+                this.selectedGenre = this.userInfo.movie_taste;
+                this.selectedOccupation = this.userInfo.occupation;
+                this.getDisplayAge(this.userInfo.age);
             });
         } else {
-            this.username = this.user.username;
+            this.userInfo = this.user;
+            this.selectedGenre = this.userInfo.movie_taste;
+            this.selectedOccupation = this.userInfo.occupation;
+            this.getDisplayAge(this.userInfo.age);
+        }
+    },
+    methods: {
+        ...mapActions(['getSession']),
+        ...mapActions(['updateUserInfo']),
+        modify() {
+            if (!this.passwordFlag || !this.nicknameFlag) {
+                swal({
+                    title: 'Warning',
+                    text: '양식에 맞춰서 입력해주세요.',
+                    icon: 'warning',
+                    button: false
+                });
+                return;
+            }
+            this.updateUserInfo({
+                token: this.token,
+                email: this.userInfo.email,
+                username: this.nickname,
+                password: this.newPassword,
+                occupation: this.selectedOccupation,
+                genres: this.selectedGenre
+            }).then((ret) => {
+                if (ret) {
+                    swal({
+                        title: '수정 성공',
+                        text: '정상적으로 변경 되었습니다.',
+                        icon: 'success',
+                        button: false
+                    }).then(() => {
+                        this.$router.push('/home');
+                    });
+                } else {
+                    swal({
+                        title: '수정 실패',
+                        text: '관리자에게 문의하시길 바랍니다.',
+                        icon: 'error',
+                        button: false
+                    }).then(() => {
+                        this.$router.push('/home');
+                    });
+                }
+            });
         }
     }
 };
@@ -228,6 +281,7 @@ export default {
 
 .mg-top-none {
   padding-top: 0px;
+  padding-bottom: 0px;
 }
 
 .pd-right-none {
@@ -236,5 +290,10 @@ export default {
 
 .pd-none {
   padding: 0px;
+}
+
+.error_area {
+
+    color: red;
 }
 </style>

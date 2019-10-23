@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from django.db.models import F
+from django.http import JsonResponse
 from api.models import Movie,User,Genre,Rating
 from api.serializers import MovieSerializer,MovieAgeSerializer
 from rest_framework.response import Response
@@ -38,8 +39,6 @@ def movies(request):
                 genre=Genre.objects.get(name=genres)
                 movies = movies.filter(genres=genre)
         
-        
-
         # 정렬방식
         if sort:
             if int(sort)==1: # 평균평점 순(높은순) default
@@ -62,12 +61,12 @@ def movies(request):
                 movies=movies[start:end]
                 
         serializer = MovieSerializer(movies, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
     if request.method == 'DELETE':
         movie = Movie.objects.all()
         movie.delete()
-        return Response(status=status.HTTP_200_OK)
+        return JsonResponse({'status': status.HTTP_200_OK})
 
     if request.method == 'POST':
         movies = request.data.get('movies', None)
@@ -98,7 +97,7 @@ def movies(request):
             
             Movie(id=id, title=only_title, year=year, genres='|'.join(genres)).save()
 
-        return Response(status=status.HTTP_200_OK)
+        return JsonResponse({'status': status.HTTP_200_OK})
 
 @api_view(['GET'])
 def views(request):
@@ -114,21 +113,21 @@ def views(request):
         movie.view_cnt = movie.view_cnt + 1
         movie.save()
 
-        return Response(status=status.HTTP_200_OK)
+        return JsonResponse({'status': status.HTTP_200_OK})
 
-@api_view(['GET'])
-def similarMovie(request):
+# @api_view(['GET'])
+# def similarMovie(request):
         
-    if request.method == 'GET':
-        id=request.GET.get('id', None)
+#     if request.method == 'GET':
+#         id=request.GET.get('id', None)
         
-        if id:
-            movie=Movie.objects.get(movie__id=id)
-            movie_cluster=movie.kmeans_cluster
-            movies=Movie.objects.filter(cluster=movie_cluster)
+#         if id:
+#             movie=Movie.objects.get(movie__id=id)
+#             movie_cluster=movie.kmeans_cluster
+#             movies=Movie.objects.filter(cluster=movie_cluster)
 
-        serializer = SimilarMovieSerializer(movies, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+#         serializer = SimilarMovieSerializer(movies, many=True)
+#         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def modify(request):
@@ -145,7 +144,7 @@ def modify(request):
         runtime = modified.get('runtime', None)
 
         if id is None:
-            return Response(status=HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         movie = Movie.objects.get(pk=id)
         
@@ -163,23 +162,17 @@ def moviesPref(request):
     if request.method == 'GET':
         
         email = request.GET.get('email', None)
-
         print(email)
-
 
         if email is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.get(email=email)
-        print(user)
         ratings = Rating.objects.filter(user=user)
 
         ret = dict([("0.5", 0), ("1", 0), ("1.5", 0), ("2", 0), ("2.5", 0), ("3", 0), ("3.5", 0), ("4", 0), ("4.5", 0), ("5", 0)])
-        print(ratings)
-        print(ret)
-        for rating in ratings:
 
-            print(rating.rating)
+        for rating in ratings:
 
             if rating.rating < 1:
                 ret['0.5'] = ret.get('0.5') + 1
@@ -201,21 +194,20 @@ def moviesPref(request):
                 ret['4.5'] = ret.get('4.5') + 1
             else:
                 ret['5'] = ret.get('5') + 1
+            
+            print(ret)
+        return JsonResponse({'status': status.HTTP_200_OK, 'data' : ret })
 
-        # json_ret = json.dumps(ret)
-        print(ret)
-        return Response(data=ret, status=status.HTTP_200_OK)
+# @api_view(['GET'])
+# def recommendation(request):
+#     print(request.GET.get('id'), None)
+#     if request.method == 'GET':
+#         topN_movies = [469172, 267752, 404604,
+#             459950, 458506, 456101, 455675,	454787,
+#             452413, 452068, 408509, 1271]
 
-@api_view(['GET'])
-def recommendation(request):
-    print(request.GET.get('id'), None)
-    if request.method == 'GET':
-        topN_movies = [469172, 267752, 404604,
-            459950, 458506, 456101, 455675,	454787,
-            452413, 452068, 408509, 1271]
+#         movies = Movie.objects.all()
 
-        movies = Movie.objects.all()
-
-        result = movies.filter(id__in=topN_movies)
-        serializer = MovieSerializer(result, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+#         result = movies.filter(id__in=topN_movies)
+#         serializer = MovieSerializer(result, many=True)
+#         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
