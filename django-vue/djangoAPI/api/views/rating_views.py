@@ -36,6 +36,25 @@ import pytz
 #             user = User.objects.get(username = 'user' + userId)
 #             movie = Movie.objects.get(id=movieId)
 
+# @api_view(['GET', 'POST'])
+# def ratings(request):
+
+#     if request.method == 'GET':
+        
+#         serializer = RatingSerializer(ratings, many=True)
+#         return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+#     if request.method == 'POST':
+#         ratings = request.data.get('ratings', None)
+
+#         for rating_obj in ratings:
+
+#             userId = rating_obj.get('userId', None)
+#             movieId = rating_obj.get('movieId', None)
+
+#             user = User.objects.get(username = 'user' + userId)
+#             movie = Movie.objects.get(id=movieId)
+
 #             rating = rating_obj.get('rating', None)
 #             timestamp = datetime.datetime.fromtimestamp(int(rating_obj.get('timestamp', None).strip())).replace(tzinfo=pytz.utc)
 
