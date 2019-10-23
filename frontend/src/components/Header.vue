@@ -35,8 +35,69 @@
                     </v-row>
                 </v-col>
                 <v-col
+                    cols="1"
+                >
+                    <v-row
+                        style="width: 100%; height: 100%;"
+                        justify="center"
+                        align="center"
+                    >
+                        <v-btn
+                            text
+                            color="transparent"
+                            class="genre-btn"
+                        >
+                            <span
+                                class="label"
+                            >
+                                탐색하기
+                            </span>
+                            <div
+                                class="overlay"
+                            >
+                                <div class="category-wrapper">
+                                    <div
+                                        v-for="(value, key) in genres"
+                                        :key="'categoryWrapper' + key"
+                                        class="category"
+                                        @click="setSearchConditionGenre(key)"
+                                    >
+                                        {{ key }}
+                                    </div>
+                                </div>
+                                <div class="genres-wrapper">
+                                    <div
+                                        v-for="(genreRow, index) in get2DGenres[getSelectedGenre]"
+                                        :key="'HeaderGenreCategory' + index"
+                                        class="genre-row"
+                                    >
+                                        <div
+                                            v-for="genre in genreRow"
+                                            :key="'HeaderGenre' + genre"
+                                            class="genre"
+                                        >
+                                            {{ genre }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </v-btn>
+                        <v-btn
+                            text
+                            color="transparent"
+                            class="genre-btn"
+                        >
+                            <span
+                                class="label"
+                            >
+                                평가하기
+                            </span>
+                        </v-btn>
+                    </v-row>
+                </v-col>
+                <v-col
                     v-if="getlogoutflag"
-                    cols="11"
+                    cols="10"
                     class="wrapper"
                 >
                     <v-row
@@ -55,7 +116,7 @@
                                     v-model="keyword"
                                     type="search"
                                     class="search-box"
-                                    placeholder="장르, 영화명, 배우"
+                                    placeholder="영화명"
                                 >
                                 <span
                                     class="search-button"
@@ -82,19 +143,25 @@
                                     <router-link to="/myflix">
                                         myflix
                                     </router-link>
-                                    <router-link to="/setting">
+                                    <router-link
+                                        to="/setting"
+                                    >
                                         setting
                                     </router-link>
-                                    <a href="#">likes</a>
+                                    <router-link
+                                        to="#"
+                                    >
+                                        likes
+                                    </router-link>
                                     <router-link to="/adminPage">
                                         admin
                                     </router-link>
-                                    <a
-                                        href="#"
+                                    <router-link
+                                        to="#"
                                         @click="logoutState()"
                                     >
                                         logout
-                                    </a>
+                                    </router-link>
                                 </div>
                             </div>
                         </v-col>
@@ -106,11 +173,13 @@
 </template>
 
 <script>
-import $ from 'jquery';
 import swal from 'sweetalert';
 import { createNamespacedHelpers } from 'vuex';
 
 const { mapState, mapActions } = createNamespacedHelpers('users');
+const movieMapState = createNamespacedHelpers('movies').mapState;
+const movieMapMutations = createNamespacedHelpers('movies').mapMutations;
+const movieMapActions = createNamespacedHelpers('movies').mapActions;
 
 export default {
     name: 'Header',
@@ -118,7 +187,63 @@ export default {
         return {
             keyword: '',
             mouseOver: false,
-            prevOffset: 0
+            prevOffset: 0,
+            genres: {
+                장르: [
+                    '새로 올라온 작품',
+                    'TV 드라마',
+                    'TV 다큐멘터리',
+                    'TV 애니메이션',
+                    '영어자막 지원 작품',
+                    '모험',
+                    '판타지',
+                    '재난',
+                    '로멘틱코미디',
+                    '시대극',
+                    '역사',
+                    '시트콤',
+                    '스포츠',
+                    'SF',
+                    '음악',
+                    '틴에이저',
+                    '전쟁',
+                    '키즈'
+                ],
+                국가: [
+                    '영국',
+                    '독일',
+                    '캐나다',
+                    '인도',
+                    '대만',
+                    '홍콩',
+                    '프랑스',
+                    '스페인',
+                    '중국',
+                    '일본',
+                    '한국',
+                    '이탈리아'
+                ],
+                특징: [
+                    '여왕',
+                    'HBO',
+                    '중세배경',
+                    '참혹한',
+                    '가공의세계',
+                    '마법',
+                    '배신',
+                    '화려한',
+                    '러시아배경',
+                    '호텔',
+                    '소설원작',
+                    '실험적',
+                    '진지한',
+                    '마블',
+                    '픽사',
+                    '7080',
+                    '블록버스터'
+                ]
+            },
+            NumGenreOnRow: 3
         };
     },
     computed: {
@@ -129,17 +254,37 @@ export default {
                 return state.user ? state.user.username : state.user;
             }
         }),
+        ...movieMapState(['searchResultMovies']),
         getlogoutflag() {
             return (this.token !== null && this.token !== undefined);
         },
         getUserName() {
             return this.username;
+        },
+        getSelectedGenre() {
+            return this.searchResultMovies.genre === 'Total' ? '장르' : this.searchResultMovies.genre;
+        },
+        get2DGenres() {
+            let result = {};
+            for (let key in this.genres) {
+                result[key] = [];
+                const rows = parseInt(this.genres[key].length / this.NumGenreOnRow, 10);
+                for (let i = 0; i <= rows; i += 1) {
+                    const end = (i + 1) * this.NumGenreOnRow;
+                    result[key].push(this.genres[key].slice(
+                        i * this.NumGenreOnRow,
+                        end >= this.genres[key].length ? this.genres[key].length : end
+                    ));
+                }
+            }
+            return result;
         }
     },
     mounted() {
         window.addEventListener('DOMContentLoaded', () => {
             const headerIcon = document.getElementById('header-search-icon');
             const headerInput = document.getElementById('header-search-input');
+            const headerEffect = document.getElementById('header-search-effect');
 
             if (headerIcon) {
                 headerIcon.addEventListener('mouseenter', () => {
@@ -154,9 +299,9 @@ export default {
             if (headerInput) {
                 headerInput.addEventListener('focusout', () => {
                     if (!this.mouseOver) {
-                        this.effect.classList.remove('open');
-                        this.icon.classList.remove('open');
-                        this.keyword_input.value = '';
+                        headerEffect.classList.remove('open');
+                        headerIcon.classList.remove('open');
+                        headerInput.value = '';
                     }
                 });
             }
@@ -183,6 +328,8 @@ export default {
         });
     },
     methods: {
+        ...movieMapMutations(['setSearchConditionTitle', 'setSearchConditionGenre']),
+        ...movieMapActions(['getMovieByConditions']),
         ...mapActions(['logout', 'getSession']),
         changeFlag() {
             if (this.getLoginModalOpen === true) {
@@ -222,9 +369,14 @@ export default {
             const icon = document.getElementById('header-search-icon');
             if (effect.classList.contains('open')) {
                 // search function trigger
+                this.setSearchConditionTitle({
+                    title: keywordInput.value
+                });
+                this.getMovieByConditions();
                 effect.classList.remove('open');
                 icon.classList.remove('open');
                 keywordInput.value = '';
+                this.$router.push('/movie/search');
             } else {
                 effect.classList.add('open');
                 icon.classList.add('open');
@@ -468,6 +620,65 @@ $open-sans: 'Open Sans', sans-serif;
 
 .dropdown:hover .dropdown-content{
     display: block;
+}
+
+.genre-btn{
+    position: relative;
+    height: 50px;
+    .label{
+        color: white;
+        font-size: 0.9em;
+    }
+    .overlay{
+        position: absolute;
+        z-index: 20;
+        background-color: black;
+        opacity: 0.9;
+        top: 1.8em;
+        left: 0px;
+        width: 550px;
+        padding: 15px;
+        color: white;
+        display: none;
+
+        .category-wrapper{
+            height: 100%;
+            text-align: left;
+            padding: 0px 20px 0px 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            .category{
+                width: 100%;
+                margin: 0 0 10px 0;
+                float: none;
+
+                &:active{
+                    text-decoration: underline;
+                }
+            }
+        }
+        .genres-wrapper{
+            height: 100%;
+            width: 100%;
+            text-align: center;
+            margin: 0px 10px;
+            .genre-row{
+                margin: 0 0 5px 0;
+                text-align: left;
+                .genre{
+                    font-size: 1em;
+                    margin: 0 15px 5px 0;
+                    display: inline-block;
+                    width: 33%;
+                }
+            }
+        }
+    }
+    &:hover{
+       .overlay{
+           display: flex;
+       }
+    }
 }
 
 </style>
