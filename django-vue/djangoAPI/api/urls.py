@@ -33,7 +33,8 @@ urlpatterns = [
     # url(r'ratings/$', rating_views.ratings, name='rating_list'),
     url(r'rateMovie/$', rating_views.rate_movie, name='rate_movie'),
     url(r'getRatings/$', rating_views.get_ratings, name='get_ratings'),
-    url(r'getRatingForMovie/$', rating_views.get_rating_for_movie, name='get_rating_for_movie')
+    url(r'getRatingForMovie/$', rating_views.get_rating_for_movie, name='get_rating_for_movie'),
+    url(r'ratings/comment/$', rating_views.create_comment, name='create_comment'),
 
     # clustering 실행 URL
     # url('clustering/userCharacter', clustering.getUserCharacter, name="getusercharacter"),

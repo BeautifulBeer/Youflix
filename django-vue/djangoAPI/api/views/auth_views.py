@@ -35,6 +35,7 @@ def signup_many(request):
     if request.method == 'POST':
         profiles = request.data.get('profiles', None)
         for profile in profiles:
+            userid=profile.get('userid',None)
             email = profile.get('email', None)
             username = profile.get('username', None)
             password = profile.get('password', None)
@@ -42,7 +43,7 @@ def signup_many(request):
             occupation = profile.get('occupation', None)
             gender = profile.get('gender', None)
 
-            create_profile(email=email, username=username,password=password, age=age,
+            create_profile(id=userid,email=email, username=username,password=password, age=age,
                            occupation=occupation, gender=gender)
 
         return Response(status=status.HTTP_201_CREATED)
@@ -87,8 +88,10 @@ def register(request):
                 occupation = params.get('occupation', None)
                 genres = params.get('genres', None)
                 # print(email, username, password, age, gender, occupation, genres)
+                max_id_object=Profile.objects.latest('id')
+                max_id=max_id_object.id
                 try:         
-                        create_profile(email=email, username=username, password=password, age=age, occupation=occupation, gender=gender, movie_taste=genres)
+                        create_profile(id=max_id+1,email=email, username=username, password=password, age=age, occupation=occupation, gender=gender, movie_taste=genres)
                 except Exception:
                         return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': Exception})
         return JsonResponse({'status': status.HTTP_200_OK})

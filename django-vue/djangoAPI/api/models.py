@@ -50,6 +50,7 @@ class User(AbstractUser):
     """User model."""
 
     username = None
+    id=models.IntegerField(primary_key=True)
     email = models.EmailField(_('email address'), unique=True)
 
     USERNAME_FIELD = 'email'
@@ -61,31 +62,44 @@ class User(AbstractUser):
         return self.email
 
 class Profile(models.Model):
+    id=models.IntegerField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     username=models.CharField(max_length=10,blank=False)
     gender = models.CharField(max_length=10, default='M')
     age = models.IntegerField(default=25)
     occupation = models.CharField(max_length=200)
-    movie_taste=models.TextField(default='')
+    movie_taste=models.TextField(null=True)
     kmeans_cluster=models.IntegerField(null=True)
 
 #  wrapper for create user Profile
 def create_profile(**kwargs):
 
     user = User.objects.create_user(
+        id=kwargs['id'],
         email = kwargs['email'],
         password=kwargs['password'],
         is_active=True,
     )
+    try:
+        profile = Profile.objects.create(
+            id=kwargs['id'],
+            user=user,
+            username=kwargs['username'],
+            gender=kwargs['gender'],
+            age=kwargs['age'],
+            occupation=kwargs['occupation'],
+            movie_taste=kwargs['movie_taste']
+        )
+    except:
+        profile = Profile.objects.create(
+            id=kwargs['id'],
+            user=user,
+            username=kwargs['username'],
+            gender=kwargs['gender'],
+            age=kwargs['age'],
+            occupation=kwargs['occupation'],
+        )
 
-    profile = Profile.objects.create(
-        user=user,
-        username=kwargs['username'],
-        gender=kwargs['gender'],
-        age=kwargs['age'],
-        occupation=kwargs['occupation'],
-        movie_taste=kwargs['movie_taste']
-    )
 
     return profile
 
@@ -195,6 +209,11 @@ class Rating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     rating = models.FloatField()
+    timestamp = models.DateTimeField()
+
+class Comment(models.Model):
+    rating=models.ForeignKey(Rating, on_delete=models.CASCADE)
+    content=models.TextField()
     timestamp = models.DateTimeField()
 
 # Cluster Model
