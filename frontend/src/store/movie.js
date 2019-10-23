@@ -47,7 +47,6 @@ const actions = {
         });
     },
     async getRatingPref({ commit }, email) {
-        console.log(email);
         Vue.$log.debug('Vuex movie.js getRatingPref', email);
         return axios.get(`${global.API_URL}/movies/pref/`, {
             params: {

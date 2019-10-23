@@ -5,11 +5,11 @@ import global from '../plugins/global';
 
 const actions = {
     async rateMovie({ commit }, params) {
-        Vue.$log.debug('Vuex movie.js rateMovie', params);
-        axios.get(`${global.API_URL}/rateMovie/`, {
+        Vue.$log.debug('Vuex ratings.js rateMovie', params);
+        return axios.get(`${global.API_URL}/rateMovie/`, {
             params
         }).then((response) => {
-            Vue.$log.debug('Vuex movie.js rateMovie response', response);
+            Vue.$log.debug('Vuex ratings.js rateMovie response', response);
 
             let ratingWord = '최고에요!';
 
@@ -35,16 +35,26 @@ const actions = {
             return ratingWord;
         });
     },
-    async getRating({ commit }, email) {
-        Vue.$log.debug('Vuex movie.js getRating', email);
-        return axios.get(`${global.API_URL}/getRating/`, {
+    async getRatings({ commit }, email) {
+        Vue.$log.debug('Vuex ratings.js getRating', email);
+        return axios.get(`${global.API_URL}/getRatings/`, {
             params: {
                 email
             }
         }).then((response) => {
             const { result } = response.data;
-            Vue.$log.debug('Vuex movie.js getRating RESULT', result);
+            Vue.$log.debug('Vuex ratings.js getRating RESULT', result);
             return result;
+        });
+    },
+    async getRatingForMovie({ commit }, params) {
+        Vue.$log.debug('Vuex ratings.js getRatingForMovie', params);
+        return axios.get(`${global.API_URL}/getRatingForMovie/`, {
+            params
+        }).then((response) => {
+            const { result } = response.data;
+            Vue.$log.debug('Vuex ratings.js getRating RESULT', result);
+            return result.rating;
         });
     }
 };

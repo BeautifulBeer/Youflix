@@ -77,11 +77,11 @@
                             </v-row>
                             <v-divider />
                             <v-row>
-                                <v-col>Age: {{ displayAge }}</v-col>
+                                <v-col>Age: {{ userInfo.age | convertAge }}</v-col>
                             </v-row>
                             <v-divider />
                             <v-row>
-                                <v-col>Gender: {{ userInfo.gender }}</v-col>
+                                <v-col>Gender: {{ userInfo.gender | convertGender }}</v-col>
                             </v-row>
                             <v-divider />
                             <v-row>
@@ -160,6 +160,34 @@ const { mapState, mapActions } = createNamespacedHelpers('users');
 const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
+    filters: {
+        convertGender(gender) {
+            if (gender === 'male') {
+                return '남자';
+            }
+            if (gender === 'female') {
+                return '여자';
+            }
+            return '그 외';
+        },
+        convertAge(age) {
+            let convertAge = '56세 이상';
+            if (age === 1) {
+                convertAge = '18세 미만';
+            } else if (age === 18) {
+                convertAge = '18세 이상 24세 이하';
+            } else if (age === 25) {
+                convertAge = '25세 이상 34세 이하';
+            } else if (age === 35) {
+                convertAge = '35세 이상 44세 이하';
+            } else if (age === 45) {
+                convertAge = '45세 이상 49세 이하';
+            } else if (age === 50) {
+                convertAge = '50세 이상 55세 이하';
+            }
+            return convertAge;
+        }
+    },
     data() {
         return {
             nickname: '',
@@ -168,8 +196,7 @@ export default {
             passwordFlag: false,
             userInfo: {},
             selectedOccupation: '',
-            selectedGenre: [],
-            displayAge: 'Empty'
+            selectedGenre: []
         };
     },
     computed: {
@@ -232,23 +259,6 @@ export default {
                     });
                 }
             });
-        },
-        getDisplayAge(age) {
-            if (age === 1) {
-                this.displayAge = '18세 미만';
-            } else if (age === 18) {
-                this.displayAge = '18세 이상 24세 이하';
-            } else if (age === 25) {
-                this.displayAge = '25세 이상 34세 이하';
-            } else if (age === 35) {
-                this.displayAge = '35세 이상 44세 이하';
-            } else if (age === 45) {
-                this.displayAge = '45세 이상 49세 이하';
-            } else if (age === 50) {
-                this.displayAge = '50세 이상 55세 이하';
-            } else {
-                this.displayAge = '56세 이상';
-            }
         }
     }
 };

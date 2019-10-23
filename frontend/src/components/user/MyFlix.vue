@@ -72,7 +72,6 @@
             </v-row>
             <v-row
                 class="rating-section"
-                justify="start"
             >
                 <MyTastes
                     v-for="(element, index) in ratingList"
@@ -117,12 +116,12 @@ export default {
         if (this.user === null) {
             this.getSession().then(() => {
                 this.username = this.user.username;
-                this.getRating(this.user.email).then((ret) => {
+                this.getRatings(this.user.email).then((ret) => {
                     this.setRatingList(ret);
                 });
             });
         } else {
-            this.getRating(this.user.email).then((ret) => {
+            this.getRatings(this.user.email).then((ret) => {
                 this.username = this.user.username;
                 this.setRatingList(ret);
             });
@@ -130,8 +129,9 @@ export default {
     },
     methods: {
         ...userMapActions(['getUserBySession', 'getSession']),
-        ...ratingMapActions(['getRating']),
+        ...ratingMapActions(['getRatings']),
         setRatingList(list) {
+            this.ratingList = [];
             list.forEach((element) => {
                 this.ratingList.push(element);
             });
@@ -145,12 +145,13 @@ export default {
 .container-settting {
 
     padding: 0px;
+    margin: 0px;
 }
 
 .area {
 
     background-color: white;
-    padding: 100px;
+    padding: 50px;
 }
 
 #background-img {
@@ -163,8 +164,9 @@ export default {
 .rating-section {
 
     background-color: white;
-    padding: 50px 50px;
-    padding-left: 135px;
-    padding-right: 135px;
+    margin-left: 30px;
+    margin-right: 30px;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 </style>

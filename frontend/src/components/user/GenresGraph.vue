@@ -34,14 +34,14 @@ import $ from 'jquery';
 
 export default {
     mounted() {
-        let $ppc = $('.progress-pie-chart');
-        let percent = parseInt($ppc.data('percent'));
-        let deg = 360*percent/100;
+        const $ppc = $('.progress-pie-chart');
+        const percent = parseInt($ppc.data('percent'), 10);
+        const deg = (360 * percent) / 100;
         if (percent > 50) {
             $ppc.addClass('gt-50');
         }
-        $('.ppc-progress-fill').css('transform','rotate('+ deg +'deg)');
-        $('.ppc-percents span').html(percent+'%');
+        $('.ppc-progress-fill').css('transform', `rotate('${deg}'deg)`);
+        $('.ppc-percents span').html(`${percent}%`);
     }
 };
 </script>

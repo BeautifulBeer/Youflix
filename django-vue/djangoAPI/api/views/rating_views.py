@@ -58,22 +58,22 @@ def rate_movie(request):
         movie_id = request.GET.get('movie_id', None)
         rating_value = request.GET.get('ratingValue', None)
 
-        print(email)
-        print(movie_id)
-        print(rating_value)
-
         if email is None or movie_id is None or rating_value is None:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
        
         user = User.objects.get(email=email)
         movie = Movie.objects.get(id=movie_id)
-        timestamp = timezone.now()
+        timestamp = datetime.datetime.now().replace(tzinfo=pytz.utc)
 
-        print(user)
-        print(movie)
-        print(timestamp)
+        try:
+            existing_rating = Rating.objects.get(user=user, movie=movie)
 
-        Rating(user=user, movie=movie, rating=rating_value, timestamp=timestamp).save()
+            existing_rating.rating = rating_value
+            existing_rating.timestamp = timestamp
+            existing_rating.save()
+
+        except Rating.DoesNotExist:
+            Rating(user=user, movie=movie, rating=rating_value, timestamp=timestamp).save()
         return JsonResponse({'status': status.HTTP_200_OK})
 
 @api_view(['GET'])
@@ -82,7 +82,7 @@ def get_rating_for_movie(request):
         if request.method == 'GET':
 
             email = request.GET.get('email', None)
-            movie_id = request.GET.get('movieId', None)
+            movie_id = request.GET.get('movie_id', None)
 
             if email is None or movie_id is None:
                 return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
@@ -91,13 +91,11 @@ def get_rating_for_movie(request):
             movie = Movie.objects.get(id=movie_id)
             rating = Rating.objects.get(user=user, movie=movie)
 
-            print(rating)
-
             serializer = RatingSerializer(user, movie, rating.rating, rating.timestamp)
             return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
 
 @api_view(['GET'])
-def get_rating(request):
+def get_ratings(request):
 
     if request.method == 'GET':
 
@@ -108,9 +106,6 @@ def get_rating(request):
 
             user = User.objects.get(email=email)
             ratings = Rating.objects.filter(user=user)
-
-            print(ratings)
             serializer = UserRatingSerializer(ratings, many=True)
-            print(serializer)
             return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
         

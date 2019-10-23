@@ -16,15 +16,17 @@
                             </span>
                         </div>
                         <div>
-                            <v-rating
-                                id="ratingStar"
-                                v-model="rating"
-                                dense
-                                color="white"
-                                background-color="white"
-                                half-increments
-                                hover
-                            />
+                            <span @click="ratingMovie()">
+                                <v-rating
+                                    id="ratingStar"
+                                    v-model="rating"
+                                    dense
+                                    color="white"
+                                    background-color="white"
+                                    half-increments
+                                    hover
+                                />
+                            </span>
                             {{ ratingWord }}
                         </div>
                         <a
@@ -55,15 +57,45 @@ export default {
     data() {
         return {
             rating: 0,
-            ratingWord: ''
+            ratingWord: '최고에요!'
         };
     },
     computed: {
         ...userMapState(['user'])
     },
-    watch: {
-        // eslint-disable-next-line
-        rating() {
+    mounted() {
+        if (this.user === null) {
+            this.getSession();
+        }
+        this.rating = this.element.rating;
+
+        if (this.rating === 0.5) {
+            this.ratingWord = '최악이에요!';
+        } else if (this.rating === 1.0) {
+            this.ratingWord = '싫어요';
+        } else if (this.rating === 1.5) {
+            this.ratingWord = '재미없어요';
+        } else if (this.rating === 2.0) {
+            this.ratingWord = '별로에요';
+        } else if (this.rating === 2.5) {
+            this.ratingWord = '부족해요';
+        } else if (this.rating === 3.0) {
+            this.ratingWord = '보통이에요';
+        } else if (this.rating === 3.5) {
+            this.ratingWord = '볼만해요';
+        } else if (this.rating === 4.0) {
+            this.ratingWord = '재미있어요';
+        } else if (this.rating === 4.5) {
+            this.ratingWord = '훌륭해요';
+        }
+    },
+    methods: {
+        ...ratingMapActions(['rateMovie']),
+        ...userMapActions(['getSession']),
+        urlMapping(value) {
+            return `url(${value}) center / cover no-repeat`;
+        },
+        ratingMovie() {
             this.rateMovie(
                 {
                     email: this.user.email,
@@ -73,19 +105,6 @@ export default {
             ).then((ret) => {
                 this.ratingWord = ret;
             });
-        }
-    },
-    mounted() {
-        if (this.user === null) {
-            this.getSession();
-        }
-        this.rating = this.element.rating;
-    },
-    methods: {
-        ...ratingMapActions(['getRating', 'rateMovie']),
-        ...userMapActions(['getSession']),
-        urlMapping(value) {
-            return `url(${value}) center / cover no-repeat`;
         }
     }
 };
@@ -135,13 +154,13 @@ h1 {
 }
 
 .row {
-  width: 250px;
-  max-width: 250px;
+  margin: 20px;
+  width: 200px;
+  max-width: 200px;
 }
 
 .card {
   float: left;
-  padding: 0 1.7rem;
   width: 100%;
   .menu-content {
     @include cf;
@@ -166,7 +185,7 @@ h1 {
   }
   .wrapper {
     background-color: $white;
-    min-height: 540px;
+    min-height: 300px;
     position: relative;
     overflow: hidden;
     box-shadow: 0 19px 38px rgba($black, 0.3), 0 15px 12px rgba($black, 0.2);

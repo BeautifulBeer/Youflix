@@ -62,15 +62,17 @@
                                 {{ ratingWord }}
                             </span>
                             <div style="padding-top: 7px;">
-                                <v-rating
-                                    id="ratingStar"
-                                    v-model="rating"
-                                    dense
-                                    color="white"
-                                    background-color="white"
-                                    half-increments
-                                    hover
-                                />
+                                <span @click="ratingMovie()">
+                                    <v-rating
+                                        id="ratingStar"
+                                        v-model="rating"
+                                        dense
+                                        color="white"
+                                        background-color="white"
+                                        half-increments
+                                        hover
+                                    />
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -126,12 +128,18 @@ export default {
         close: {
             type: Function,
             default: null
+        },
+        rating: {
+            type: Number,
+            default: 0
+        },
+        ratingWord: {
+            type: String,
+            default: '이미 본 작품인가요?'
         }
     },
     data() {
         return {
-            rating: 0,
-            ratingWord: '이미 본 작품인가요?',
             movie: {
                 src: 'detail.jpg'
             }
@@ -140,9 +148,9 @@ export default {
     computed: {
         ...userMapState(['user'])
     },
-    watch: {
-        // eslint-disable-next-line
-        rating: function() {
+    methods: {
+        ...ratingMapActions(['rateMovie']),
+        ratingMovie() {
             this.rateMovie(
                 {
                     email: this.user.email,
@@ -153,9 +161,6 @@ export default {
                 this.ratingWord = ret;
             });
         }
-    },
-    methods: {
-        ...ratingMapActions(['rateMovie'])
     }
 };
 </script>
