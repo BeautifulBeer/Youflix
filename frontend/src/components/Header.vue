@@ -90,7 +90,9 @@
                             <span
                                 class="label"
                             >
-                                평가하기
+                                <router-link to="/evaluate">
+                                    평가하기
+                                </router-link>
                             </span>
                         </v-btn>
                     </v-row>

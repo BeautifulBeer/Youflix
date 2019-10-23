@@ -22,6 +22,9 @@ import UserSetting from './components/user/UserSetting.vue';
 import MovieSearchPage from './components/movie/MovieSearchPage.vue';
 import MovieDetailPage from './components/pages/MovieDetailPage.vue';
 
+// UN-SORTED PAGE
+import EvaluatePage from './components/pages/EvaluatePage.vue';
+
 Vue.use(Router);
 
 export default new Router({
@@ -101,6 +104,14 @@ export default new Router({
                 authRequired: true
             },
             props: true
+        },
+        {
+            path: '/evaluate',
+            name: 'evaluatePage',
+            component: EvaluatePage,
+            meta: {
+                authRequired: true
+            }
         },
         {
             path: '/adminPage',

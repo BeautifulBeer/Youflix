@@ -107,7 +107,7 @@ def views(request):
         id = request.GET.get('id', None)
 
         if id is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
         movie = Movie.objects.get(pk=id)
         movie.view_cnt = movie.view_cnt + 1
@@ -144,7 +144,7 @@ def modify(request):
         runtime = modified.get('runtime', None)
 
         if id is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
         movie = Movie.objects.get(pk=id)
         
@@ -162,10 +162,9 @@ def moviesPref(request):
     if request.method == 'GET':
         
         email = request.GET.get('email', None)
-        print(email)
 
         if email is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
         user = User.objects.get(email=email)
         ratings = Rating.objects.filter(user=user)
@@ -197,6 +196,38 @@ def moviesPref(request):
             
             print(ret)
         return JsonResponse({'status': status.HTTP_200_OK, 'data' : ret })
+
+@api_view(['GET'])
+def never_seen_movie_list(request):
+
+    if request.method == 'GET':
+        
+        email = request.GET.get('email', None)
+        page = request.GET.get('page', 1)
+
+        if email is None:
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
+        
+        user = User.objects.get(email=email)
+        ratings = Rating.objects.all()
+
+        total_page = len(ratings)
+        start = 0
+
+        ratings = ratings.exclude(user=user)
+
+        if page > total_page:
+            start = (total_page - 1) * 50
+            ratings = ratings[start:]
+        else:
+            start = (page - 1) * 50
+            ratings = ratings[start: page * 50]
+        never_seen_list = []
+
+        for rating in ratings:
+            never_seen_list.append(rating.movie)
+        serializer = MovieSerializer(never_seen_list, many=True)
+        return JsonResponse({'status': status.HTTP_200_OK, 'data': serializer.data}, safe=False)
 
 # @api_view(['GET'])
 # def recommendation(request):
