@@ -46,7 +46,7 @@ def signup_many(request):
             create_profile(id=userid,email=email, username=username,password=password, age=age,
                            occupation=occupation, gender=gender)
 
-        return JsonResponse({'status':status.HTTP_201_CREATED})
+        return JsonResponse({'status':status.HTTP_200_OK})
 
 # 다수의 사용자를 얻을 때 사용하는 Request
 @api_view(['GET'])
@@ -103,11 +103,11 @@ def login(request):
                 password = request.data.get('password', None)
                 # 밑에 3줄은 딱히 필요없을 것 같다.
                 if email is None or password is None:
-                        return JsonResponse({'data':"Not input ID and Password", 'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'msg':"Not input ID and Password", 'status':status.HTTP_400_BAD_REQUEST})
                 if email is None:
-                        return JsonResponse({'data':"Not input Email", 'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'msg':"Not input Email", 'status':status.HTTP_400_BAD_REQUEST})
                 if password is None:
-                        return JsonResponse({'data':"Not input Password", 'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'msg':"Not input Password", 'status':status.HTTP_400_BAD_REQUEST})
 
                 user = auth.authenticate(email=email, password=password)
 
