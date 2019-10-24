@@ -107,7 +107,7 @@ def views(request):
         id = request.GET.get('id', None)
 
         if id is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
 
         movie = Movie.objects.get(pk=id)
         movie.view_cnt = movie.view_cnt + 1
@@ -127,7 +127,7 @@ def views(request):
 #             movies=Movie.objects.filter(cluster=movie_cluster)
 
 #         serializer = SimilarMovieSerializer(movies, many=True)
-#         return Response(data=serializer.data, status=status.HTTP_200_OK)
+#         return JsonResponse({'data':serializer.data, 'status':status.HTTP_200_OK})
 
 @api_view(['POST'])
 def modify(request):
@@ -144,7 +144,7 @@ def modify(request):
         runtime = modified.get('runtime', None)
 
         if id is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
 
         movie = Movie.objects.get(pk=id)
         
@@ -154,7 +154,7 @@ def modify(request):
         movie.runtime = runtime
 
         movie.save()
-        return Response(status=status.HTTP_200_OK)
+        return JsonResponse({'status':status.HTTP_200_OK})
 
 @api_view(['GET'])
 def moviesPref(request):
@@ -165,7 +165,7 @@ def moviesPref(request):
         print(email)
 
         if email is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
 
         user = User.objects.get(email=email)
         ratings = Rating.objects.filter(user=user)

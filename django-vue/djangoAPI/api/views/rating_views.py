@@ -147,8 +147,8 @@ def create_comment(request):
             Comment(rating=rating,content=content,timestamp=timestamp).save()
 
         except Rating.DoesNotExist: #DoesNotExist 에러가 발행하면
-            print('유저가 아직 해당 영화에 별점을 매기지 않았습니다.')
-            return
+            msg='아직 해당 영화에 별점을 매기지 않았습니다.'
+            return JsonResponse({'status':status.HTTP_500_SERVER_ERROR,'msg':msg})
 
         return JsonResponse({'status': status.HTTP_200_OK})
         
