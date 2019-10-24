@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.cache import cache
-
 from api.serializers import ProfileSerializer,SessionSerializer,RecommendMovie,SimilarUserSerializer
 # from api.serializers import SimilarUserSerializer
 
@@ -43,8 +42,7 @@ def signup_many(request):
             occupation = profile.get('occupation', None)
             gender = profile.get('gender', None)
 
-            create_profile(id=userid,email=email, username=username,password=password, age=age,
-                           occupation=occupation, gender=gender)
+            create_profile(id=userid,email=email, username=username,password=password, age=age,         occupation=occupation, gender=gender)
 
         return Response(status=status.HTTP_201_CREATED)
 
@@ -164,13 +162,11 @@ def logout(request):
 
 @api_view(['DELETE'])
 def deleteUser(request):
-
         if request.method == 'DELETE':
                 id = request.GET.get('id', None)
                 users = User.objects.all()
                 user = users.get(id=id)
                 user.delete()
-
                 return JsonResponse({'status': status.HTTP_200_OK})
 
 @api_view(['POST'])

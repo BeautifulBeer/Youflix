@@ -145,7 +145,7 @@ export default {
 
     .fa-facebook-square, .fa-instagram , .fa-youtube-square, .fa-twitter{
         color: white;
-        background-color: #221f1f;
+        background-color: black;
     }
 
     .service-code{

@@ -47,6 +47,58 @@ const state = {
         'unemployed',
         'writer'
     ],
+    category: {
+        genre: [
+            'New',
+            'Drama',
+            'Documentary',
+            'Animation',
+            'English',
+            'Adventure',
+            'Fantasy',
+            'Disaster',
+            'Romance',
+            'History',
+            'Sitcom',
+            'Sport',
+            'Science Fiction',
+            'Music',
+            'Teen'
+        ],
+        nation: [
+            'English',
+            'German',
+            'Canada',
+            'India',
+            'Taiwan',
+            'Hongkong',
+            'France',
+            'Spain',
+            'China',
+            'Japan',
+            'Korea',
+            'Italy'
+        ],
+        property: [
+            'Queen',
+            'HBO',
+            'Middle Ages',
+            'Miserable',
+            'Another World',
+            'Magic',
+            'Betray',
+            'Spectacle',
+            'Siberia',
+            'Hotel',
+            'Novel',
+            'Experimental',
+            'Serious',
+            'Marvel',
+            'Pixar',
+            '7080',
+            'Blockbuster'
+        ]
+    },
     rules: {
         nicknameLenCheck: (value) => (value.length >= 2 && value.length <= 10) || '닉네임은 2-10자까지만 가능합니다.',
         passwordLenCheck: (value) => (value.length >= 6 && value.length <= 30) || '비밀번호는 6-30자까지만 가능합니다.',

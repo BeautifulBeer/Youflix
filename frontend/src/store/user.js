@@ -97,13 +97,12 @@ const actions = {
             return false;
         });
     },
-
     async getSession({ commit }) {
-        Vue.$log.debug('Vuex', localStorage.getItem('token'));
+        Vue.$log.debug('Vuex getSession', localStorage.getItem('token'));
         return axios.post(`${global.API_URL}/auth/session/`, {
             token: localStorage.getItem('token')
         }).then((result) => {
-            Vue.$log.debug('Vuex response result', result);
+            Vue.$log.debug('Vuex getSession response result', result);
 
             if (result.data.is_auth) {
                 commit('setUser', {

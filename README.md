@@ -106,7 +106,7 @@ Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리
 # 1. Ctrl + , 를 이용해 Setting 창 열기
 # 2. 우측 상단에 있는 Open Settings(UI) 버튼을 클릭, Settings.json 열기
 # 3. 아래의 내용 삽입하기
-
+# Eslint, Pylint 적용
 {
     "editor.tabCompletion": "on",
     "eslint.alwaysShowStatus": true,
@@ -119,7 +119,10 @@ Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리
         }
     ],
     "less.lint.duplicateProperties": "warning",
-    "scss.lint.duplicateProperties": "warning",    
+    "scss.lint.duplicateProperties": "warning",
+    "python.linting.pycodestyleEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
 }
 ```
 

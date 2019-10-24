@@ -1,9 +1,5 @@
 <template>
     <div>
-        <div
-            v-if="getlogoutflag"
-            style="height: 10vh;"
-        />
         <nav id="header">
             <v-row class="wrapper">
                 <v-col
@@ -35,11 +31,12 @@
                     </v-row>
                 </v-col>
                 <v-col
-                    cols="1"
+                    v-if="getlogoutflag"
+                    cols="3"
                 >
                     <v-row
-                        style="width: 100%; height: 100%;"
-                        justify="center"
+                        class="genre-btn-row"
+                        justify="start"
                         align="center"
                     >
                         <v-btn
@@ -50,33 +47,34 @@
                             <span
                                 class="label"
                             >
-                                탐색하기
+                                Search
                             </span>
                             <div
                                 class="overlay"
                             >
                                 <div class="category-wrapper">
                                     <div
-                                        v-for="(value, key) in genres"
+                                        v-for="(value, key) in category"
                                         :key="'categoryWrapper' + key"
                                         class="category"
-                                        @click="setSearchConditionGenre(key)"
+                                        @click="setSearchConditionCategory(key)"
                                     >
                                         {{ key }}
                                     </div>
                                 </div>
                                 <div class="genres-wrapper">
                                     <div
-                                        v-for="(genreRow, index) in get2DGenres[getSelectedGenre]"
+                                        v-for="(categoryRow, index) in get2DCategory[getSelectedCategory]"
                                         :key="'HeaderGenreCategory' + index"
                                         class="genre-row"
                                     >
                                         <div
-                                            v-for="genre in genreRow"
-                                            :key="'HeaderGenre' + genre"
+                                            v-for="category in categoryRow"
+                                            :key="'HeaderGenre' + category"
                                             class="genre"
+                                            @click="movieCategorySearch(category)"
                                         >
-                                            {{ genre }}
+                                            {{ category }}
                                         </div>
                                     </div>
                                 </div>
@@ -90,14 +88,14 @@
                             <span
                                 class="label"
                             >
-                                평가하기
+                                Rating
                             </span>
                         </v-btn>
                     </v-row>
                 </v-col>
                 <v-col
                     v-if="getlogoutflag"
-                    cols="10"
+                    cols="8"
                     class="wrapper"
                 >
                     <v-row
@@ -153,14 +151,17 @@
                                     >
                                         likes
                                     </router-link>
-                                    <router-link to="/adminPage">
+                                    <router-link
+                                        to="/adminPage"
+                                    >
                                         admin
                                     </router-link>
                                     <router-link
                                         to="#"
-                                        @click="logoutState()"
                                     >
-                                        logout
+                                        <span @click="logoutState()">
+                                            logout
+                                        </span>
                                     </router-link>
                                 </div>
                             </div>
@@ -180,6 +181,7 @@ const { mapState, mapActions } = createNamespacedHelpers('users');
 const movieMapState = createNamespacedHelpers('movies').mapState;
 const movieMapMutations = createNamespacedHelpers('movies').mapMutations;
 const movieMapActions = createNamespacedHelpers('movies').mapActions;
+const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
     name: 'Header',
@@ -188,61 +190,6 @@ export default {
             keyword: '',
             mouseOver: false,
             prevOffset: 0,
-            genres: {
-                장르: [
-                    '새로 올라온 작품',
-                    'TV 드라마',
-                    'TV 다큐멘터리',
-                    'TV 애니메이션',
-                    '영어자막 지원 작품',
-                    '모험',
-                    '판타지',
-                    '재난',
-                    '로멘틱코미디',
-                    '시대극',
-                    '역사',
-                    '시트콤',
-                    '스포츠',
-                    'SF',
-                    '음악',
-                    '틴에이저',
-                    '전쟁',
-                    '키즈'
-                ],
-                국가: [
-                    '영국',
-                    '독일',
-                    '캐나다',
-                    '인도',
-                    '대만',
-                    '홍콩',
-                    '프랑스',
-                    '스페인',
-                    '중국',
-                    '일본',
-                    '한국',
-                    '이탈리아'
-                ],
-                특징: [
-                    '여왕',
-                    'HBO',
-                    '중세배경',
-                    '참혹한',
-                    '가공의세계',
-                    '마법',
-                    '배신',
-                    '화려한',
-                    '러시아배경',
-                    '호텔',
-                    '소설원작',
-                    '실험적',
-                    '진지한',
-                    '마블',
-                    '픽사',
-                    '7080',
-                    '블록버스터'
-                ]
-            },
             NumGenreOnRow: 3
         };
     },
@@ -255,6 +202,7 @@ export default {
             }
         }),
         ...movieMapState(['searchResultMovies']),
+        ...infoMapState(['category']),
         getlogoutflag() {
             return (this.token !== null && this.token !== undefined);
         },
@@ -262,19 +210,25 @@ export default {
             return this.username;
         },
         getSelectedGenre() {
-            return this.searchResultMovies.genre === 'Total' ? '장르' : this.searchResultMovies.genre;
+            return this.searchResultMovies.keyword;
         },
-        get2DGenres() {
+        getSelectedCategory() {
+            return this.searchResultMovies.category;
+        },
+        get2DCategory() {
             let result = {};
-            for (let key in this.genres) {
-                result[key] = [];
-                const rows = parseInt(this.genres[key].length / this.NumGenreOnRow, 10);
-                for (let i = 0; i <= rows; i += 1) {
-                    const end = (i + 1) * this.NumGenreOnRow;
-                    result[key].push(this.genres[key].slice(
-                        i * this.NumGenreOnRow,
-                        end >= this.genres[key].length ? this.genres[key].length : end
-                    ));
+            const keys = Object.keys(this.category);
+            for (let i = 0; i < keys.length; i += 1) {
+                if ({}.hasOwnProperty.call(this.category, keys[i])) {
+                    result[keys[i]] = [];
+                    const rows = parseInt(this.category[keys[i]].length / this.NumGenreOnRow, 10);
+                    for (let j = 0; j <= rows; j += 1) {
+                        const end = (j + 1) * this.NumGenreOnRow;
+                        result[keys[i]].push(this.category[keys[i]].slice(
+                            j * this.NumGenreOnRow,
+                            end >= this.category[keys[i]].length ? this.category[keys[i]].length : end
+                        ));
+                    }
                 }
             }
             return result;
@@ -285,7 +239,7 @@ export default {
             const headerIcon = document.getElementById('header-search-icon');
             const headerInput = document.getElementById('header-search-input');
             const headerEffect = document.getElementById('header-search-effect');
-
+            const categories = document.getElementsByClassName('category');
             if (headerIcon) {
                 headerIcon.addEventListener('mouseenter', () => {
                     this.mouseOver = true;
@@ -305,6 +259,23 @@ export default {
                     }
                 });
             }
+
+            if (categories) {
+                const categoryLength = categories.length;
+                for (let i = 0; i < categoryLength; i += 1) {
+                    categories[i].addEventListener('click', (event) => {
+                        this.$log.debug('Header.vue category addEventListener', event);
+                        const classes = event.target.classList;
+                        if (!classes.contains('highlight')) {
+                            for (let j = 0; j < categoryLength; j += 1) {
+                                categories[j].classList.remove('highlight');
+                            }
+                            classes.add('highlight');
+                        }
+                    });
+                }
+            }
+
             if (this.getUser) {
                 this.logoutflag = true;
             }
@@ -328,7 +299,11 @@ export default {
         });
     },
     methods: {
-        ...movieMapMutations(['setSearchConditionTitle', 'setSearchConditionGenre']),
+        ...movieMapMutations([
+            'setSearchConditionTitle',
+            'setSearchConditionKeyword',
+            'setSearchConditionCategory'
+        ]),
         ...movieMapActions(['getMovieByConditions']),
         ...mapActions(['logout', 'getSession']),
         changeFlag() {
@@ -369,9 +344,7 @@ export default {
             const icon = document.getElementById('header-search-icon');
             if (effect.classList.contains('open')) {
                 // search function trigger
-                this.setSearchConditionTitle({
-                    title: keywordInput.value
-                });
+                this.setSearchConditionTitle(keywordInput.value);
                 this.getMovieByConditions();
                 effect.classList.remove('open');
                 icon.classList.remove('open');
@@ -382,6 +355,10 @@ export default {
                 icon.classList.add('open');
                 keywordInput.focus();
             }
+        },
+        movieCategorySearch(keyword) {
+            this.setSearchConditionKeyword(keyword)
+            this.$router.push('/movie/search');
         }
     }
 };
@@ -622,23 +599,34 @@ $open-sans: 'Open Sans', sans-serif;
     display: block;
 }
 
+.genre-btn-row{
+    width: 100%;
+    height: 100%;
+    padding-left: 2em;
+}
+
+// #f5f5f1
 .genre-btn{
     position: relative;
     height: 50px;
+    width: 70px;
     .label{
         color: white;
-        font-size: 0.9em;
+        opacity: 0.9;
+        font-size: 1em;
+        font-weight: bold;
+        text-transform: uppercase;
     }
     .overlay{
         position: absolute;
         z-index: 20;
         background-color: black;
-        opacity: 0.9;
+        // opacity: 0.9;
         top: 1.8em;
         left: 0px;
-        width: 550px;
+        width: 650px;
         padding: 15px;
-        color: white;
+        color: gray;
         display: none;
 
         .category-wrapper{
@@ -649,12 +637,14 @@ $open-sans: 'Open Sans', sans-serif;
             font-weight: bold;
             .category{
                 width: 100%;
-                margin: 0 0 10px 0;
+                margin: 0 0 15px 0;
+                padding: 0 0 1px 0;
                 float: none;
-
-                &:active{
-                    text-decoration: underline;
-                }
+            }
+            .highlight{
+                // border-top: 1px gray solid;
+                text-decoration: underline;
+                color: white;
             }
         }
         .genres-wrapper{
@@ -662,6 +652,7 @@ $open-sans: 'Open Sans', sans-serif;
             width: 100%;
             text-align: center;
             margin: 0px 10px;
+            text-transform: capitalize;
             .genre-row{
                 margin: 0 0 5px 0;
                 text-align: left;
@@ -670,6 +661,10 @@ $open-sans: 'Open Sans', sans-serif;
                     margin: 0 15px 5px 0;
                     display: inline-block;
                     width: 33%;
+
+                    &:hover{
+                        color: white;
+                    }
                 }
             }
         }

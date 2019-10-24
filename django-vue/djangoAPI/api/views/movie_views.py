@@ -23,10 +23,11 @@ def movies(request):
     if request.method == 'GET':
         id = request.GET.get('id', request.GET.get('movie_id', None))
         title = request.GET.get('title', None)
-        genres = request.GET.get('genres', None)
+        category = request.GET.get('category', None)
+        keyword = request.GET.get('keyword', None)
         sort=request.GET.get('sort',1)
         page=request.GET.get('page',1)
-        print(id, title, genres, sort, page)
+        print(id, title, category, keyword, sort, page)
         movies = Movie.objects.all()
         
         # querySet 으로 반환됨
@@ -34,10 +35,10 @@ def movies(request):
             movies = movies.filter(pk=id)
         if title:
             movies = movies.filter(title__icontains=title)
-        if genres:
-            if genres != 'Total':
-                genre=Genre.objects.get(name=genres)
-                movies = movies.filter(genres=genre)
+        if category == 'genre':
+            if keyword != 'Total':
+                genre_obj=Genre.objects.get(name=keyword)
+                movies = movies.filter(genres=genre_obj)
         
         # 정렬방식
         if sort:
