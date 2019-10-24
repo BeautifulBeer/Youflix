@@ -27,6 +27,10 @@
             <v-btn to="/adminPage/DataSet">
                 <v-icon>mdi-mouse</v-icon>
                 Data Management
+            </v-btn>    
+            <v-btn to="/adminPage/Learning">
+                <v-icon>fa-cog</v-icon>
+                Settings
             </v-btn>
         </template>
     </v-toolbar>

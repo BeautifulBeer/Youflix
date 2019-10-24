@@ -14,6 +14,8 @@ import DashBoard from './components/admin/DashBoard.vue';
 import MovieList from './components/admin/MovieList.vue';
 import UserList from './components/admin/UserList.vue';
 import DataSet from './components/admin/DataSet.vue';
+import Learning from './components/admin/Learning.vue';
+import BeforeLearn from './components/admin/BeforeLearn.vue';
 
 
 // USER PAGE
@@ -122,7 +124,24 @@ export default new Router({
                     meta: {
                         authRequired: true
                     }
-                }
+                },
+                {
+                    path: 'Learning',
+                    name: 'Learning',
+                    component: Learning,
+                    meta: {
+                        authRequired: true
+                    }
+                },
+                {
+                    path: 'beforelearn',
+                    name: 'beforelearn',
+                    component: BeforeLearn,
+                    meta: {
+                        authRequired: true
+                    }
+                },
+                
             ],
             meta: {
                 authRequired: true
