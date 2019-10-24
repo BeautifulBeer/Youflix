@@ -20,7 +20,7 @@ urlpatterns = [
 
     # 중복체크 검사
     url(r'^auth/duplicateInspection/$', auth_views.duplicate_inspection, name="duplicate_inspection"),
-    
+
     # movie 접근 URL
     url(r'movies/$', movie_views.movies, name='movie_list'),
     url(r'movies/pref/$', movie_views.moviesPref, name='movie_pref'),
