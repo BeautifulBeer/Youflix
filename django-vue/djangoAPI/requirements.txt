@@ -20,3 +20,5 @@ django-import-export
 sqlparse==0.3.0
 
 rake-nltk
+pylint
+autopep8

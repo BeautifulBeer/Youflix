@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from api.models import Movie, Crew
 from django.contrib.auth.models import User
-from api.serializers import MovieSerializer,MovieAgeSerializer,MovieGenderSerializer
+from api.serializers import MovieSerializer, MovieAgeSerializer, MovieGenderSerializer
 from rest_framework.response import Response
 from .tmdb import getMovieInfo
 
@@ -69,7 +69,7 @@ def algo(request):
 
         # id를 통해 movie 객체를 가져와서 필요한 정보를 추출합니다.
         movie = Movie.objects.get(id=element[0])
-        
+
         if len(movie.keywords.all()) is not 0:
 
             temp = []
@@ -97,9 +97,9 @@ def algo(request):
     # 1. overview가 없는 영화에 대해서 ''로 모두 할당 해줍니다.
     movies_frame['overview'] = movies_frame['overview'].fillna('')
     # 2. Genre 데이터를 삽입합니다.
-    movies_frame = movies_frame.assign(genres = genres)
+    movies_frame = movies_frame.assign(genres=genres)
     # 3. Keyword 데이터를 삽입합니다.
-    movies_frame = movies_frame.assign(keywords = keywords)
+    movies_frame = movies_frame.assign(keywords=keywords)
 
     # genres, keywords 데이터에 대해서 공백(' ')을 없애줍니다.
     movies_frame['genres'] = movies_frame['genres'].apply(preprocessing_genres)
@@ -115,7 +115,7 @@ def algo(request):
     df_keys['id'] = movies_frame['id']
 
     # 만들어진 단어들을 하나의 단어 모음으로 만듭니다.
-    df_keys['keywords'] = movies_frame.apply(bag_words, axis = 1)
+    df_keys['keywords'] = movies_frame.apply(bag_words, axis=1)
 
     # 지금까지의 결과를 .csv 파일로 저장합니다.
     # df_keys.to_csv('df_keys.csv', mode='w')
@@ -133,16 +133,17 @@ def algo(request):
     # print(cosine_sim)
 
     # 일치하는 index list를 생성합니다.
-    indices = pd.Series(df_keys.index, index = df_keys['id'])
+    indices = pd.Series(df_keys.index, index=df_keys['id'])
 
     # 상위 10개의 추천 영화를 추출합니다.
     print(recommend_movie(df_keys, indices, 597, cosine_sim, 10))
     return Response(status=status.HTTP_200_OK)
 
+
 def recommend_movie(df_keys, indices, id, cosine_sim, n):
 
     movies = []
-    
+
     # 일치하는 영화가 있는지 검사합니다.
     if id not in indices.index:
         print("Movie not in database.")
@@ -151,28 +152,31 @@ def recommend_movie(df_keys, indices, id, cosine_sim, n):
         idx = indices[id]
 
     # 내림차순으로, Cosine Simirality을 정렬합니다.
-    scores = pd.Series(cosine_sim[idx]).sort_values(ascending = False)
-    
+    scores = pd.Series(cosine_sim[idx]).sort_values(ascending=False)
+
     # 가장 유사한 n(10)개만 추출합니다.
     # 첫번째 index의 영화의 경우 활성화된 영화와 같기 때문에 제외합니다.
     top_n_idx = list(scores.iloc[1:n].index)
-    
+
     # 타이틀을 기준으로 추출합니다.
     return df_keys['title'].iloc[top_n_idx]
 
+
 def preprocessing_keyword(data):
- 
+
     ret = []
     for keyword in data:
         ret.append(keyword.replace(' ', ''))
     return ret
 
+
 def preprocessing_genres(data):
- 
+
     ret = []
     for genre in data:
         ret.append(genre.replace(' ', ''))
     return ret
+
 
 def preprocessing_director(data):
 
@@ -181,6 +185,7 @@ def preprocessing_director(data):
     ret = data.replace(' ', '')
     return ret
 
+
 def preprocessing_overview(data):
 
     plot = data
@@ -188,6 +193,7 @@ def preprocessing_overview(data):
     rake.extract_keywords_from_text(plot)
     scores = rake.get_word_degrees()
     return(list(scores.keys()))
+
 
 def bag_words(x):
 
