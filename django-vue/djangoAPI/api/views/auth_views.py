@@ -73,7 +73,7 @@ def getUsers(request):
                 profiles=profiles[start:end]
 
         serializer = ProfileSerializer(profiles, many=True)
-        return JsonResponse({'data':serializer.data, 'status':status.HTTP_200_OK})
+        return JsonResponse({'result':serializer.data, 'status':status.HTTP_200_OK})
         
 # 회원가입
 @api_view(['POST'])
@@ -240,7 +240,7 @@ def similarUser(request):
                 similar_users=similar_users.exclude(id=target_id)
 
         serializer = SimilarUserSerializer(similar_users, many=True)
-        return JsonResponse({'data':serializer.data, 'status':status.HTTP_200_OK})
+        return JsonResponse({'result':serializer.data, 'status':status.HTTP_200_OK})
 
 import time
 import copy
@@ -328,14 +328,11 @@ def session_member(request):
 
         if request.method == 'GET': 
                 try:
-                        result = {
-                                'msg' : 'error'
-                        }
                         token = request.GET.get('token', None)
                         user = User.objects.get(email=request.session.get(str(token)))
                         
                         if user is None:
-                                return JsonResponse({'data' : result, 'status':status.HTTP_400_BAD_REQUEST})
+                                return JsonResponse({'msg' : 'error', 'status':status.HTTP_400_BAD_REQUEST})
 
                         if user.is_authenticated and token == str(Token.objects.get(user=user)):
                                 profile = Profile.objects.get(user=user)
@@ -363,9 +360,9 @@ def session_member(request):
                                         'movie_taste': None
                                 }
                         serializer = SessionSerializer(result)
-                        return JsonResponse({'data' : serializer.data, 'status':status.HTTP_200_OK})
+                        return JsonResponse({'result' : serializer.data, 'status':status.HTTP_200_OK})
                 except:
-                        return JsonResponse({}'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
 
         if request.method == 'POST':
 
@@ -401,7 +398,7 @@ def session_member(request):
                                 'movie_taste': profile.movie_taste
                         }
                 serializer = SessionSerializer(result)
-                return JsonResponse({'data': serializer.data, 'status':status.HTTP_200_OK})
+                return JsonResponse({'result': serializer.data, 'status':status.HTTP_200_OK})
 
 @api_view(['GET'])
 def duplicate_inspection(request):
