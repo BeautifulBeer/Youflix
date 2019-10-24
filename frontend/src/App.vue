@@ -1,5 +1,5 @@
 <template>
-    <v-app style=" position: relative; background-color: #221f1f">
+    <v-app style=" position: relative; background-color: #000000">
         <v-container
             fluid
             pa-0
