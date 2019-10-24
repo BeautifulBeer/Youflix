@@ -1,27 +1,20 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from django.http import JsonResponse
-from django.conf import settings
-from django.core.cache import cache
-
-from api.serializers import ProfileSerializer,SessionSerializer,RecommendMovie,SimilarUserSerializer
-# from api.serializers import SimilarUserSerializer
-
-# from api.models import UserCluster
-from api.models import create_profile
-from api.models import User,Profile,Movie,Rating,UserCluster
-
-from django.shortcuts import render
-from django.contrib import auth
-
 from rest_framework.authtoken.models import Token
 
+from django.http import JsonResponse
+from django.core.cache import cache
+from django.contrib import auth
+
+from api.serializers import ProfileSerializer,SessionSerializer,RecommendMovie,SimilarUserSerializer
+from api.models import create_profile
+from api.models import User,Profile,Movie,Rating
+
 from collections import Counter
+
 import pandas as pd
-from django_pandas.io import read_frame
-import json
 import numpy as np
+import json
 
 # import logging
 # logger = logging.getLogger("mylogger")
@@ -46,7 +39,7 @@ def signup_many(request):
             create_profile(id=userid,email=email, username=username,password=password, age=age,
                            occupation=occupation, gender=gender)
 
-        return JsonResponse({'status':status.HTTP_200_OK})
+        return JsonResponse({'status': status.HTTP_200_OK})
 
 # 다수의 사용자를 얻을 때 사용하는 Request
 @api_view(['GET'])
@@ -73,7 +66,7 @@ def getUsers(request):
                 profiles=profiles[start:end]
 
         serializer = ProfileSerializer(profiles, many=True)
-        return JsonResponse({'result':serializer.data, 'status':status.HTTP_200_OK})
+        return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
         
 # 회원가입
 @api_view(['POST'])
@@ -103,11 +96,11 @@ def login(request):
                 password = request.data.get('password', None)
                 # 밑에 3줄은 딱히 필요없을 것 같다.
                 if email is None or password is None:
-                        return JsonResponse({'msg':"Not input ID and Password", 'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'msg': "Not input ID and Password", 'status': status.HTTP_400_BAD_REQUEST})
                 if email is None:
-                        return JsonResponse({'msg':"Not input Email", 'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'msg': "Not input Email", 'status': status.HTTP_400_BAD_REQUEST})
                 if password is None:
-                        return JsonResponse({'msg':"Not input Password", 'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'msg': "Not input Password", 'status': status.HTTP_400_BAD_REQUEST})
 
                 user = auth.authenticate(email=email, password=password)
 
@@ -240,7 +233,7 @@ def similarUser(request):
                 similar_users=similar_users.exclude(id=target_id)
 
         serializer = SimilarUserSerializer(similar_users, many=True)
-        return JsonResponse({'result':serializer.data, 'status':status.HTTP_200_OK})
+        return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
 
 import time
 import copy
@@ -332,7 +325,7 @@ def session_member(request):
                         user = User.objects.get(email=request.session.get(str(token)))
                         
                         if user is None:
-                                return JsonResponse({'msg' : 'error', 'status':status.HTTP_400_BAD_REQUEST})
+                                return JsonResponse({'msg': 'error', 'status': status.HTTP_400_BAD_REQUEST})
 
                         if user.is_authenticated and token == str(Token.objects.get(user=user)):
                                 profile = Profile.objects.get(user=user)
@@ -360,9 +353,9 @@ def session_member(request):
                                         'movie_taste': None
                                 }
                         serializer = SessionSerializer(result)
-                        return JsonResponse({'result' : serializer.data, 'status':status.HTTP_200_OK})
+                        return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
                 except:
-                        return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
         if request.method == 'POST':
 
@@ -398,7 +391,7 @@ def session_member(request):
                                 'movie_taste': profile.movie_taste
                         }
                 serializer = SessionSerializer(result)
-                return JsonResponse({'result': serializer.data, 'status':status.HTTP_200_OK})
+                return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
 
 @api_view(['GET'])
 def duplicate_inspection(request):
@@ -408,9 +401,9 @@ def duplicate_inspection(request):
                 email = request.GET.get('email', None)
 
                 if email is None:
-                        return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
                 try:
                         user = User.objects.get(email=email)
                 except User.DoesNotExist:
-                        return JsonResponse('status':status.HTTP_200_OK})
-                return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
+                        return JsonResponse({'status': status.HTTP_200_OK})
+                return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})

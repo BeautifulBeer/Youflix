@@ -1,21 +1,14 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-# from django.contrib.auth.models import User
-from api.serializers import RatingSerializer, UserRatingSerializer
-from rest_framework.response import Response
+
 from django.http import JsonResponse
 
-from django.utils import timezone
-
-from api.models import Rating
-from api.models import Movie
-from api.models import Profile
-from api.models import Rating
-from api.models import User
-from api.models import Comment
+from api.serializers import RatingSerializer, UserRatingSerializer
+from api.models import Rating, Movie, Rating, User, Comment, Profile
 
 import datetime
 import pytz
+
 
 # @api_view(['GET', 'POST'])
 # def ratings(request):
@@ -147,7 +140,7 @@ def create_comment(request):
             Comment(rating=rating,content=content,timestamp=timestamp).save()
 
         except Rating.DoesNotExist: #DoesNotExist 에러가 발행하면
-            return JsonResponse({'status':status.HTTP_500_SERVER_ERROR,'msg':'아직 해당 영화에 별점을 매기지 않았습니다.'})
+            return JsonResponse({'status': status.HTTP_500_SERVER_ERROR, 'msg': '아직 해당 영화에 별점을 매기지 않았습니다.'})
 
         return JsonResponse({'status': status.HTTP_200_OK})
         

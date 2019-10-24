@@ -1,21 +1,11 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
+
 from django.db.models import F
 from django.http import JsonResponse
+
 from api.models import Movie,User,Genre,Rating
-from api.serializers import MovieSerializer,MovieAgeSerializer
-from rest_framework.response import Response
-from .tmdb import getMovieInfo
-from django.core import serializers
-
-import json
-import operator
-
-import requests
-from bs4 import BeautifulSoup as bs
-import openpyxl
-from urllib.request import urlretrieve
-import ssl
+from api.serializers import MovieSerializer
 
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
 def movies(request):
@@ -107,7 +97,7 @@ def views(request):
         id = request.GET.get('id', None)
 
         if id is None:
-            return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
         movie = Movie.objects.get(pk=id)
         movie.view_cnt = movie.view_cnt + 1
@@ -127,7 +117,7 @@ def views(request):
 #             movies=Movie.objects.filter(cluster=movie_cluster)
 
 #         serializer = SimilarMovieSerializer(movies, many=True)
-#         return JsonResponse({'data':serializer.data, 'status':status.HTTP_200_OK})
+#         return JsonResponse({'data': serializer.data, 'status': status.HTTP_200_OK})
 
 @api_view(['POST'])
 def modify(request):
@@ -144,7 +134,7 @@ def modify(request):
         runtime = modified.get('runtime', None)
 
         if id is None:
-            return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
         movie = Movie.objects.get(pk=id)
         
@@ -154,7 +144,7 @@ def modify(request):
         movie.runtime = runtime
 
         movie.save()
-        return JsonResponse({'status':status.HTTP_200_OK})
+        return JsonResponse({'status': status.HTTP_200_OK})
 
 @api_view(['GET'])
 def moviesPref(request):
@@ -165,7 +155,7 @@ def moviesPref(request):
         print(email)
 
         if email is None:
-            return JsonResponse({'status':status.HTTP_400_BAD_REQUEST})
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
         user = User.objects.get(email=email)
         ratings = Rating.objects.filter(user=user)
@@ -196,7 +186,7 @@ def moviesPref(request):
                 ret['5'] = ret.get('5') + 1
             
             print(ret)
-        return JsonResponse({'status': status.HTTP_200_OK, 'data' : ret })
+        return JsonResponse({'status': status.HTTP_200_OK, 'data': ret })
 
 # @api_view(['GET'])
 # def recommendation(request):
