@@ -1,5 +1,5 @@
 <template>
-    <v-app style=" position: relative; background-color: #000000">
+    <v-app id="appContainer">
         <v-container
             fluid
             pa-0
@@ -7,7 +7,9 @@
             <v-content>
                 <Header />
                 <router-view />
-                <Footer />
+                <template v-if="getlogoutflag">
+                    <Footer />
+                </template>
                 <!-- <MoviePage /> -->
             </v-content>
             <!-- <LoadingPage/> -->
@@ -16,7 +18,6 @@
 </template>
 
 <script>
-import $ from 'jquery';
 import { createNamespacedHelpers } from 'vuex';
 // import LoadingPage from '@/components/pages/LoadingPage.vue';
 import Header from '@/components/Header.vue';
@@ -36,7 +37,10 @@ export default {
             token: (state) => state.token,
             user: (state) => state.user,
             username: (state) => state.user.username
-        })
+        }),
+        getlogoutflag() {
+            return (this.token !== null && this.token !== undefined);
+        }
     },
     mounted() {
         this.$log.debug('App.vue Session Token from localStorage', localStorage.getItem('token'));
@@ -58,3 +62,13 @@ export default {
     }
 };
 </script>
+
+<style lang="scss" scoped>
+@import "@/style/variables.scss";
+
+#appContainer{
+    position: relative;
+    background-color: $background-color;
+}
+
+</style>

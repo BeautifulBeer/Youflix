@@ -7,7 +7,8 @@ const state = {
     personalMovies: [],
     genreMovies: {},
     searchResultMovies: {
-        genre: 'Total',
+        category: 'genre',
+        keyword: 'Total',
         title: '',
         result: []
     },
@@ -50,7 +51,8 @@ const actions = {
         Vue.$log.debug('Vuex movie.js getMovieByConditions', state.searchResultMovies);
         axios.get(`${global.API_URL}/movies/`, {
             params: {
-                genres: state.searchResultMovies.genre,
+                category: state.searchResultMovies.category,
+                keyword: state.searchResultMovies.keyword,
                 title: state.searchResultMovies.title
             }
         }).then((response) => {
@@ -68,7 +70,8 @@ const actions = {
         preferences.forEach((genre) => {
             promises.push(axios.get(`${global.API_URL}/movies/`, {
                 params: {
-                    genres: genre,
+                    category: 'genre',
+                    keyword: genre,
                     page: 1
                 }
             }));
@@ -141,8 +144,11 @@ const mutations = {
     setSearchConditionTitle(state, title) {
         state.searchResultMovies.title = title;
     },
-    setSearchConditionGenre(state, genre) {
-        state.searchResultMovies.genre = genre;
+    setSearchConditionCategory(state, category) {
+        state.searchResultMovies.category = category;
+    },
+    setSearchConditionKeyword(state, keyword) {
+        state.searchResultMovies.keyword = keyword;
     }
 };
 
