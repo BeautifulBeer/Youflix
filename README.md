@@ -1,14 +1,18 @@
 ﻿# You can flex(YOUFLEX)
 
-Movielens와 IMDB 데이터를 활용하여 개인 맞춤형 영화 추천을 하는 서비스입니다.
-Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리를 원활하게 합니다.
+Movielens와 IMDB 데이터를 활용하여 개인 맞춤형 영화 추천을 하는 서비스입니다. Content-based 와 Collaborative Filtering 기술을 결합하여 Hybrid Recommender System을 개발하고, 이는 사용자 취향 기반의 영화 추천을 가능케 합니다. 또한, 영화 줄거리/리뷰를 통해 태그를 추출해내어 키워드 기반 영화검색이 가능한 서비스를 개발합니다.
 
 
-## Initial Setting
+
+## Prerequisite Steps
 
 프로젝트를 실행하기 위해 필요한 단계들입니다. 
 
-### Create virtual environment
+
+
+### Create Virtual Environment
+
+프로젝트의 환경과 기존 로컬 환경을 분리하기 위한 가상환경을 생성합니다. 
 
 ```bash
 # Path > bigdata-sub3
@@ -24,7 +28,9 @@ Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리
 
 
 
-### Activate virtual environment
+### Activate Virtual Environment
+
+생성한 가상환경을 활성화합니다. 해당 가상환경은, 서버를 실행하기 전에 반드시 활성화해야 합니다.
 
 ```bash
 # Path > bigdata-sub3/django-vue
@@ -39,7 +45,7 @@ Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리
 
 
 
-### Install required packages
+### Install Required Packages
 
 ```bash
 # Virtual environment를 활성화한 상태여야 합니다.
@@ -106,6 +112,7 @@ Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리
 # 1. Ctrl + , 를 이용해 Setting 창 열기
 # 2. 우측 상단에 있는 Open Settings(UI) 버튼을 클릭, Settings.json 열기
 # 3. 아래의 내용 삽입하기
+# 4. VSCode Extension Python 설치
 # Eslint, Pylint 적용
 {
     "editor.tabCompletion": "on",
@@ -118,11 +125,19 @@ Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리
             "language": "vue"
         }
     ],
+    "explorer.confirmDragAndDrop": false,
     "less.lint.duplicateProperties": "warning",
     "scss.lint.duplicateProperties": "warning",
     "python.linting.pycodestyleEnabled": true,
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": false,
+    "python.linting.ignorePatterns": [
+        ".vscode/*.py",
+        "**/site-packages/**/*.py",
+        "**/*.pyc"
+    ],
+    "window.zoomLevel": 2,
+    "vetur.format.options.tabSize": 4,
 }
 ```
 
@@ -136,28 +151,15 @@ Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리
 
 ## 관련자료 링크
 
-> **Git Commit message 남기는 규칙**
+자세한 사항은 관련 위키를 참조해주시면 감사하겠습니다. [프로젝트 관련 문서 위키]([https://lab.ssafy.com/Jo_yongseok/youflix/wikis/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EB%AA%85%EC%84%B8%EC%84%9C](https://lab.ssafy.com/Jo_yongseok/youflix/wikis/프로젝트-명세서))
+
+아래는 프로젝트 진행 중 참고한 기술들에 대한 레퍼런스입니다.
+
+
+
+> *Git Commit message 남기는 규칙**
 
 - https://djkeh.github.io/articles/How-to-write-a-git-commit-message-kor/
-
-
-
- 저희팀의 경우 아래와 같이 Commit Format을 정하였습니다.
-
-```bash
-[ISSUE번호] [implement|update|merge|...] [개요]
-
-# content
-1. 구현한 내용을 상세히 입력
-
-# To-Do
-1. 이 후 해야할 일을 기입
-
-# issue
-[closed|fixed|...] #[이슈번호] - [남길내용]
-```
-
-
 
 > **우아한 형제 기술 블로그(Git 사용방법)**
 
@@ -167,54 +169,3 @@ Collaborative Filtering 알고리즘을 사용하여, 대규모 데이터 처리
 
 - https://docs.djangoproject.com/en/2.2/topics/cache/
 
-
-
-
-
-## Templete
-
-- https://onepagelove.com/templates/free-templates
-
-
-
-## API
-
-> **The movie DataBase**
-
-- https://www.themoviedb.org/documentation/api?language=en-US
-
-## DB 삭제 후 재생성
-### Json 파일 목록 및 load 순서
-collection
-company
-country
-genre
-language
-keyword
-movie
-6000user
-6000profile
-cast
-crew
-rating
-
-* 사전에 pycache에 앞에 숫자 있는 파일을 삭제.
-
-1. django-vue/djangoAPI/에 data, json 폴더를 넣고
-2. djangoAPI 디렉토리에서 makemigrations, migrate 실행
-3. python manage.py loaddata ./json/파일이름.json을 실행(위의 명령대로)
-
-위치> \bigdata-sub3\django-vue\djangoAPI
-
-python .\manage.py loaddata ./json/collection.json
-python .\manage.py loaddata ./json/company.json
-python .\manage.py loaddata ./json/country.json
-python .\manage.py loaddata ./json/genre.json
-python .\manage.py loaddata ./json/language.json
-python .\manage.py loaddata ./json/keyword.json
-python .\manage.py loaddata ./json/movie.json
-
-python .\manage.py loaddata ./json/6000user.json
-python .\manage.py loaddata ./json/6000profile.json
-python .\manage.py loaddata ./json/cast.json
-python .\manage.py loaddata ./json/crew.json

@@ -35,7 +35,7 @@
                     cols="3"
                 >
                     <v-row
-                        class="genre-btn-row"
+                        class="genre-btn-row title-family"
                         justify="start"
                         align="center"
                     >
@@ -52,7 +52,7 @@
                             <div
                                 class="overlay"
                             >
-                                <div class="category-wrapper">
+                                <div class="category-wrapper title-family">
                                     <div
                                         v-for="(value, key) in category"
                                         :key="'categoryWrapper' + key"
@@ -62,7 +62,7 @@
                                         {{ key }}
                                     </div>
                                 </div>
-                                <div class="genres-wrapper">
+                                <div class="genres-wrapper content-family">
                                     <div
                                         v-for="(categoryRow, index) in get2DCategory[getSelectedCategory]"
                                         :key="'HeaderGenreCategory' + index"
@@ -113,10 +113,11 @@
                                     id="header-search-input"
                                     v-model="keyword"
                                     type="search"
-                                    class="search-box"
+                                    class="search-box content-family"
                                     placeholder="영화명"
                                 >
                                 <span
+                                    id="search-btn"
                                     class="search-button"
                                     @click="searchKeyword()"
                                 >
@@ -235,67 +236,69 @@ export default {
         }
     },
     mounted() {
-        window.addEventListener('DOMContentLoaded', () => {
-            const headerIcon = document.getElementById('header-search-icon');
-            const headerInput = document.getElementById('header-search-input');
-            const headerEffect = document.getElementById('header-search-effect');
-            const categories = document.getElementsByClassName('category');
-            if (headerIcon) {
-                headerIcon.addEventListener('mouseenter', () => {
-                    this.mouseOver = true;
-                });
+        this.$nextTick(() => {
+            window.addEventListener('DOMContentLoaded', () => {
+                const headerIcon = document.getElementById('header-search-icon');
+                const headerInput = document.getElementById('header-search-input');
+                const headerEffect = document.getElementById('header-search-effect');
+                const categories = document.getElementsByClassName('category');
+                if (headerIcon) {
+                    headerIcon.addEventListener('mouseenter', () => {
+                        this.$log.debug('Header.vue headerIcon mouseenter');
+                        this.mouseOver = true;
+                    });
 
-                headerIcon.addEventListener('mouseleave', () => {
-                    this.mouseOver = false;
-                });
-            }
+                    headerIcon.addEventListener('mouseleave', () => {
+                        this.$log.debug('Header.vue headerIcon mouseleave');
+                        this.mouseOver = false;
+                    });
+                }
 
-            if (headerInput) {
-                headerInput.addEventListener('focusout', () => {
-                    if (!this.mouseOver) {
-                        headerEffect.classList.remove('open');
-                        headerIcon.classList.remove('open');
-                        headerInput.value = '';
-                    }
-                });
-            }
+                if (headerInput) {
+                    headerInput.addEventListener('focusout', () => {
+                        if (!this.mouseOver) {
+                            headerEffect.classList.remove('open');
+                            headerIcon.classList.remove('open');
+                            headerInput.value = '';
+                        }
+                    });
+                }
 
-            if (categories) {
-                const categoryLength = categories.length;
-                for (let i = 0; i < categoryLength; i += 1) {
-                    categories[i].addEventListener('click', (event) => {
-                        this.$log.debug('Header.vue category addEventListener', event);
-                        const classes = event.target.classList;
-                        if (!classes.contains('highlight')) {
+                if (categories && categories.length > 0) {
+                    const categoryLength = categories.length;
+                    for (let i = 0; i < categoryLength; i += 1) {
+                        categories[i].addEventListener('click', (event) => {
+                            this.$log.debug('Header.vue category addEventListener', event);
+                            const classes = event.target.classList;
                             for (let j = 0; j < categoryLength; j += 1) {
                                 categories[j].classList.remove('highlight');
                             }
                             classes.add('highlight');
-                        }
-                    });
+                        });
+                    }
                 }
-            }
 
-            if (this.getUser) {
-                this.logoutflag = true;
-            }
-        });
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            if (parseInt(window.scrollY, 10) < this.prevOffset) {
-                header.style.transform = 'translate(0,0)';
-                header.style['-webkit-transform'] = 'translate(0,0)';
-                header.style['-moz-transform'] = 'translate(0,0)';
-                header.style['-ms-transform'] = 'translate(0,0)';
-                header.style['-o-transform'] = 'translate(0,0)';
-            } else {
-                header.style.transform = 'translate(0,-100px)';
-                header.style['-webkit-transform'] = 'translate(0,-100px)';
-                header.style['-moz-transform'] = 'translate(0,-100px)';
-                header.style['-ms-transform'] = 'translate(0,-100px)';
-                header.style['-o-transform'] = 'translate(0,-100px)';
-            }
-            this.prevOffset = window.scrollY;
+                if (this.getUser) {
+                    this.logoutflag = true;
+                }
+            });
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('header');
+                if (parseInt(window.scrollY, 10) < this.prevOffset) {
+                    header.style.transform = 'translate(0,0)';
+                    header.style['-webkit-transform'] = 'translate(0,0)';
+                    header.style['-moz-transform'] = 'translate(0,0)';
+                    header.style['-ms-transform'] = 'translate(0,0)';
+                    header.style['-o-transform'] = 'translate(0,0)';
+                } else {
+                    header.style.transform = 'translate(0,-100px)';
+                    header.style['-webkit-transform'] = 'translate(0,-100px)';
+                    header.style['-moz-transform'] = 'translate(0,-100px)';
+                    header.style['-ms-transform'] = 'translate(0,-100px)';
+                    header.style['-o-transform'] = 'translate(0,-100px)';
+                }
+                this.prevOffset = window.scrollY;
+            });
         });
     },
     methods: {
@@ -366,6 +369,8 @@ export default {
 
 <style lang="scss" scoped>
 
+@import '@/style/font.scss';
+
 $search-bg-color: transparent;
 $icon-color: #e50914;
 $transition: all .5s ease;
@@ -376,8 +381,6 @@ $subtle-white: #f9f9f9;
 $subtle-grey: #f2f2f2;
 $masked-grey: #333;
 $blue: #F03861;
-
-$open-sans: 'Open Sans', sans-serif;
 
 #header{
     top: 0;
@@ -602,7 +605,7 @@ $open-sans: 'Open Sans', sans-serif;
 .genre-btn-row{
     width: 100%;
     height: 100%;
-    padding-left: 2em;
+    padding-left: 0.5em;
 }
 
 // #f5f5f1

@@ -49,7 +49,7 @@
                         justify="start"
                     >
                         <v-col cols="12">
-                            <div class="detail-title">
+                            <div class="detail-title title-family">
                                 {{ getMovie.title }}
                             </div>
                         </v-col>
@@ -81,7 +81,7 @@
                             <span class="label">
                                 Overview
                             </span>
-                            <div class="overview content">
+                            <div class="overview content content-family">
                                 {{ getMovie.overview }}
                             </div>
                         </div>
@@ -199,6 +199,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "@/style/font.scss";
+
 
 .content-wrapper{
     padding: 0px 50px 0px 50px;

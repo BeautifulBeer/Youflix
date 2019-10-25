@@ -17,11 +17,11 @@
                 <AnimateWhenVisible name="fadeDown">
                     <span
                         key="span1"
-                        class="section-title deepshadow"
+                        class="section-title deepshadow title-family"
                     >Personalized</span>
                     <span
                         key="span2"
-                        class="section-content"
+                        class="section-content content-family"
                     >We provide best movies for you</span>
                 </AnimateWhenVisible>
             </v-col>
@@ -216,6 +216,7 @@ export default {
 <style lang="scss" scoped>
 
 @import '@/style/variables';
+@import '@/style/font.scss';
 
 $portfolio-item-info-offset: 0px;
 
@@ -254,14 +255,14 @@ $button-height: 200px;
 .section{
     min-height: 500px;
     background-color:transparent;
-    color: white;
+    color: $text-color;
     margin-right: 0px;
     margin-left: 0px;
 }
 
 .title{
     height: 100px;
-    color: white;
+    color: $text-color;
     padding-top: 50px;
     margin-bottom: 30px;
 }
@@ -378,7 +379,6 @@ $button-height: 200px;
 }
 
 .section-title {
-    font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
     font-size: 45px;
     text-align: left;
     text-transform: uppercase;
@@ -386,8 +386,8 @@ $button-height: 200px;
     display: block;
 
     &.deepshadow {
-    color: #f5f5f1;
-    background-color: #221f1f;
+    color: $text-color;
+    background-color: $background-color;
     letter-spacing: .1em;
     text-shadow:
         0 5px 7px rgba(0, 0, 0, 0.9);
@@ -397,8 +397,7 @@ $button-height: 200px;
 
 
 .section-content{
-    font: 600 'Raleway', sans-serif;
-    color: rgba(255,255,255,.6);
+    color: $text-gray-color;
     text-align: left;
     text-transform: uppercase;
     letter-spacing: .35em;
@@ -428,7 +427,7 @@ $button-height: 200px;
     font-size: 1.8em;
     line-height: 1em;
     span {
-        color: gray;
+        color: $text-gray-color;
         font-size: 0.8em;
     }
 
