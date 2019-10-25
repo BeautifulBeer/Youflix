@@ -1,9 +1,10 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-from api.models import Movie, Crew
-from django.contrib.auth.models import User
-from api.serializers import MovieSerializer, MovieAgeSerializer, MovieGenderSerializer
+from api.models import Movie, Rating, User, Crew
+# from django.contrib.auth.models import User
+from api.serializers import MovieSerializer,MovieAgeSerializer,MovieGenderSerializer
 from rest_framework.response import Response
+from django.http import JsonResponse
 from .tmdb import getMovieInfo
 
 import json
@@ -17,6 +18,8 @@ from sklearn.metrics.pairwise import linear_kernel
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+import sklearn.preprocessing as pp
+
 import pandas as pd
 import numpy as np
 from numpy import dot
@@ -29,14 +32,56 @@ from rake_nltk import Rake
 from django.http import JsonResponse
 from django.core.cache import cache
 
-# Numba
-# from numba import jit
+@api_view(['GET'])
+def ContentBased(request):
+
+    if request.method == 'GET':
+
+        email = request.GET.get('email', None)
+        user = User.objects.get(email=email)
+        ratings = Rating.objects.filter(user=user)
+
+        max_rating_obj = None
+        ratingValue = 0
+
+        for rating in ratings:
+            if ratingValue < rating.rating:
+                max_rating_obj = rating
+                ratingValue = rating.rating
+
+        df_keys = pd.read_csv('df_keys.csv')
+
+        selectedMovie = df_keys.loc[df_keys['id'] == max_rating_obj.movie.id]
+        idx = str(selectedMovie['Unnamed: 0']).split(' ')
+        idx = int(idx[0])
+        
+        # scikit-learn의 CountVectorizer를 사용하여 키워드를 토큰화하여 행렬을 조사하여 각 단어의 빈도를 분석합니다.
+        cv = CountVectorizer()
+        cv_mx = cv.fit_transform(df_keys['keywords'])
+
+        # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
+        cosine_sim = cosine_similarity(cv_mx[idx:idx + 1], cv_mx)
+
+        # 일치하는 index list를 생성합니다.
+        indices = pd.Series(df_keys.index, index = df_keys['id'])
+
+        # 상위 10개의 추천 영화를 추출합니다.
+        serializer = MovieSerializer(get_movie_list(df_keys, recommend_movie(df_keys, indices, 597, cosine_sim, 50)), many=True)
+        print(serializer)
+        return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
+
+def get_movie_list(df_keys, datas):
+
+    movie_list = []
+    for index in datas.index:
+        movie_list.append(Movie.objects.get(pk=df_keys.iloc[index]['id']))
+    return movie_list
 
 # @jit(nopython=True)
 @api_view(['GET'])
 def algo(request):
-
-    print("START")
+    
+    print("TEST")
     # DB에서 모든 movie 정보를 가져옵니다.
     movies = Movie.objects.all()
     # movies 객체를 DataFrame화 합니다.
@@ -118,17 +163,18 @@ def algo(request):
     df_keys['keywords'] = movies_frame.apply(bag_words, axis=1)
 
     # 지금까지의 결과를 .csv 파일로 저장합니다.
-    # df_keys.to_csv('df_keys.csv', mode='w')
+    df_keys.to_csv('df_keys.csv', mode='w')
 
     # test 출력
     # print(df_keys.head())
 
-    # scikit-learn의 CountVectorizer를 사용하여 키워드를 토큰 수 행렬로 조사하여 각 단어의 빈도를 생성합니다.
+    # scikit-learn의 CountVectorizer를 사용하여 키워드를 토큰화하여 행렬을 조사하여 각 단어의 빈도를 분석합니다.
     cv = CountVectorizer()
     cv_mx = cv.fit_transform(df_keys['keywords'])
 
     # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
     cosine_sim = cosine_similarity(cv_mx, cv_mx)
+    # pd.DataFrame(cosine_sim).to_csv('consine_sim.csv', mode='w')
     # test 출력
     # print(cosine_sim)
 
@@ -148,11 +194,10 @@ def recommend_movie(df_keys, indices, id, cosine_sim, n):
     if id not in indices.index:
         print("Movie not in database.")
         return
-    else:
-        idx = indices[id]
 
     # 내림차순으로, Cosine Simirality을 정렬합니다.
-    scores = pd.Series(cosine_sim[idx]).sort_values(ascending=False)
+    scores = pd.Series(cosine_sim[0]).sort_values(ascending = False)
+    print(scores)
 
     # 가장 유사한 n(10)개만 추출합니다.
     # 첫번째 index의 영화의 경우 활성화된 영화와 같기 때문에 제외합니다.

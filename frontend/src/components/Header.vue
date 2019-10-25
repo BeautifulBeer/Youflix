@@ -88,7 +88,9 @@
                             <span
                                 class="label"
                             >
-                                Rating
+                                <router-link to="/evaluate">
+                                    평가하기
+                                </router-link>
                             </span>
                         </v-btn>
                     </v-row>
@@ -318,6 +320,7 @@ export default {
         },
         logoutState() {
             this.getSession().then((ret) => {
+                console.log(ret);
                 if (ret === true) {
                     this.logout(this.token).then(() => {
                         swal({

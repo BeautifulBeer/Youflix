@@ -143,30 +143,27 @@ export default {
 <style scoped>
 
 .container-settting {
-
     padding: 0px;
     margin: 0px;
 }
 
 .area {
-
     background-color: white;
     padding: 50px;
 }
 
 #background-img {
-
   background: url("../../assets/userDetail.jpg") no-repeat center center;
   height: 100%;
   background-size: cover;
 }
 
 .rating-section {
-
     background-color: white;
     margin-left: 30px;
     margin-right: 30px;
     padding-top: 20px;
     padding-bottom: 20px;
 }
+
 </style>

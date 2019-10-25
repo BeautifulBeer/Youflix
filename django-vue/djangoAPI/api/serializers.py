@@ -224,14 +224,14 @@ class RatingSerializer(serializers.ModelSerializer):
 
 
 class UserRatingSerializer(serializers.ModelSerializer):
-    movie_id = serializers.SerializerMethodField('get_movie_id')
-    movie_title = serializers.SerializerMethodField('get_movie_title')
+    id = serializers.SerializerMethodField('get_movie_id')
+    title = serializers.SerializerMethodField('get_movie_title')
     release_date = serializers.SerializerMethodField('get_release_date')
     poster_path = serializers.SerializerMethodField('get_poster_path')
 
     class Meta:
         model = Rating
-        fields = ('user', 'movie_id', 'movie_title', 'release_date', 'rating', 'timestamp', 'poster_path')
+        fields = ('user', 'id', 'title', 'release_date', 'rating', 'timestamp', 'poster_path')
 
     def get_movie_id(self, obj):
         return obj.movie.id

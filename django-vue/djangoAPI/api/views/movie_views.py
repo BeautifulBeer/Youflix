@@ -145,7 +145,6 @@ def moviesPref(request):
     if request.method == 'GET':
 
         email = request.GET.get('email', None)
-        print(email)
 
         if email is None:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
@@ -187,7 +186,48 @@ def moviesPref(request):
                 ret['4.5'] = ret.get('4.5') + 1
             else:
                 ret['5'] = ret.get('5') + 1
-
+            
             print(ret)
         return JsonResponse({'status': status.HTTP_200_OK, 'data': ret})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+
+@api_view(['GET'])
+def never_seen_movie_list(request):
+
+    if request.method == 'GET':
+        
+        email = request.GET.get('email', None)
+        page = request.GET.get('page', 1)
+
+        if email is None:
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
+        
+        user = User.objects.get(email=email)
+        ratings = Rating.objects.all()
+
+        total_page = len(ratings)
+        start = 0
+
+        ratings = ratings.exclude(user=user)
+
+        if page > total_page:
+            start = (total_page - 1) * 50
+            ratings = ratings[start:]
+        else:
+            start = (page - 1) * 50
+            ratings = ratings[start: page * 50]
+        never_seen_list = []
+
+        for rating in ratings:
+            never_seen_list.append(rating.movie)
+        serializer = MovieSerializer(never_seen_list, many=True)
+        return JsonResponse({'status': status.HTTP_200_OK, 'data': serializer.data}, safe=False)
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+
+# @api_view(['GET'])
+# def recommendation(request):
+#     print(request.GET.get('id'), None)
+#     if request.method == 'GET':
+#         topN_movies = [469172, 267752, 404604,
+#             459950, 458506, 456101, 455675,	454787,
+#             452413, 452068, 408509, 1271]

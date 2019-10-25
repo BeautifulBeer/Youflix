@@ -1,41 +1,39 @@
 <template>
-    <div class="row">
-        <div class="movie-container card">
-            <div
-                class="wrapper"
-                :style="{ background: urlMapping(element.poster_path) }"
-            >
-                <div class="data text-center">
-                    <div class="content">
-                        <h1 class="title">
-                            {{ element.movie_title }}
-                        </h1>
-                        <div class="date">
-                            <span class="year">
-                                {{ element.release_date }}
-                            </span>
-                        </div>
-                        <div>
-                            <span @click="ratingMovie()">
-                                <v-rating
-                                    id="ratingStar"
-                                    v-model="rating"
-                                    dense
-                                    color="white"
-                                    background-color="white"
-                                    half-increments
-                                    hover
-                                />
-                            </span>
-                            {{ ratingWord }}
-                        </div>
-                        <a
-                            href="#"
-                            class="button"
-                        >
-                            자세히 보기
-                        </a>
+    <div class="movie-container card">
+        <div
+            class="wrapper"
+            :style="{ background: urlMapping(element.poster_path) }"
+        >
+            <div class="data text-center">
+                <div class="content">
+                    <h1 class="title">
+                        {{ element.title }}
+                    </h1>
+                    <div class="date">
+                        <span class="year">
+                            {{ element.release_date }}
+                        </span>
                     </div>
+                    <div>
+                        <span @click="ratingMovie()">
+                            <v-rating
+                                id="ratingStar"
+                                v-model="rating"
+                                dense
+                                color="white"
+                                background-color="white"
+                                half-increments
+                                hover
+                            />
+                        </span>
+                        {{ ratingWord }}
+                    </div>
+                    <a
+                        href="#"
+                        class="button"
+                    >
+                        자세히 보기
+                    </a>
                 </div>
             </div>
         </div>
@@ -57,7 +55,7 @@ export default {
     data() {
         return {
             rating: 0,
-            ratingWord: '최고에요!'
+            ratingWord: ''
         };
     },
     computed: {
@@ -87,6 +85,8 @@ export default {
             this.ratingWord = '재미있어요';
         } else if (this.rating === 4.5) {
             this.ratingWord = '훌륭해요';
+        } else if (this.rating === 5.0) {
+            this.ratingWord = '최고에요!';
         }
     },
     methods: {
@@ -99,7 +99,7 @@ export default {
             this.rateMovie(
                 {
                     email: this.user.email,
-                    movie_id: this.element.movie_id,
+                    movie_id: this.element.id,
                     ratingValue: this.rating
                 }
             ).then((ret) => {
@@ -136,14 +136,6 @@ sans-serif;
   box-sizing: border-box;
 }
 
-body {
-  background-image: linear-gradient(to right, $regal-blue, $san-juan);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  height: 100vh;
-  font-family: $open-sans;
-}
-
 a {
   text-decoration: none;
 }
@@ -153,23 +145,17 @@ h1 {
   font-weight: 500;
 }
 
-.row {
-  margin: 20px;
-  width: 200px;
-  max-width: 200px;
-}
-
 .card {
-  float: left;
+//   float: left;
   width: 100%;
+  max-width: 200px;
+  margin: 20px;
+  position: relative;
   .menu-content {
     @include cf;
     margin: 0;
     padding: 0;
     list-style-type: none;
-    li {
-      display: inline-block;
-    }
     a {
       color: $white;
     }
@@ -218,12 +204,6 @@ h1 {
   .text {
     height: 70px;
     margin: 0;
-  }
-  input[type='checkbox'] {
-    display: none;
-  }
-  input[type='checkbox']:checked + .menu-content {
-    transform: translateY(-60px);
   }
 }
 
