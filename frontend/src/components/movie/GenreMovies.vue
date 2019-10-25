@@ -8,17 +8,15 @@
             class="title"
         >
             <v-col sm="8">
-                <!-- <transition-group name="fade" tag="span" class="span-group"> -->
                 <AnimateWhenVisible name="fadeDown">
                     <span
                         key="span1"
-                        class="section-title deepshadow"
+                        class="section-title deepshadow title-family"
                     >Genres</span>
                     <span
                         key="span2"
-                        class="section-content"
+                        class="section-content content-family"
                     >Top movies for each genre</span>
-                <!-- </transition-group> -->
                 </AnimateWhenVisible>
             </v-col>
         </v-row>
@@ -30,7 +28,7 @@
                 <a
                     v-for="genre in getUserTaste"
                     :key="'genreMoviesLabel' + genre"
-                    class="effect-4"
+                    class="effect-4 content-family"
                     @click="selectGenre(genre)"
                 >
                     {{ genre }}
@@ -54,7 +52,7 @@
                     <v-img
                         class="tile-img"
                         :src="movie.poster_path"
-                        @click="movieDetail()"
+                        @click="viewMovie(movie.id)"
                     />
                 </div>
                 <a
@@ -67,14 +65,16 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-import axios from 'axios';
+import { createNamespacedHelpers } from 'vuex';
+
+const { mapState } = createNamespacedHelpers('users');
+const movieMapActions = createNamespacedHelpers('movies').mapActions;
+const movieMapState = createNamespacedHelpers('movies').mapState;
 
 export default {
     name: 'GenreMovies',
     data() {
         return {
-            movies: {},
             selectedGenre: undefined,
             currentIndex: 0,
             currentPage: 0,
@@ -84,28 +84,53 @@ export default {
             totalCnt: 20
         };
     },
+    computed: {
+        ...mapState(['user']),
+        ...movieMapState(['genreMovies']),
+        getUserTaste() {
+            if (this.user) {
+                return this.user.movie_taste ? this.user.movie_taste : [];
+            }
+            return [];
+        },
+        currentMovies() {
+            if (this.getGenreMovies.length === 0) {
+                return [];
+            }
+            const start = this.currentIndex;
+            const end = this.currentIndex + this.showCount;
+            let result = [];
+            if (end >= this.getGenreMovies.length) {
+                result = result.concat(this.getGenreMovies.slice(start));
+                result = result.concat(this.getGenreMovies.slice(0, end - this.getGenreMovies.length));
+            } else {
+                result = result.concat(this.getGenreMovies.slice(start, end));
+            }
+            return result;
+        },
+        getGenreMovies() {
+            if (!(this.selectedGenre in this.genreMovies)) {
+                return [];
+            }
+            return this.genreMovies[this.selectedGenre];
+        }
+    },
     watch: {
         getUserTaste(val) {
             if (val) {
-                let promises = [];
-                this.getUserTaste.forEach((genre) => {
-                    promises.push(axios.get('/api/movies/', {
-                        params: {
-                            genres: genre,
-                            page: 1
-                        }
-                    }));
-                });
-                Promise.all(promises).then((responses) => {
-                    for (let i = 0; i < this.getUserTaste.length; i += 1) {
-                        this.movies[this.getUserTaste[i]] = responses[i].data;
-                    }
-                    this.selectGenre(this.getUserTaste[0]);
+                this.getMoviesByGenres(val).then((preference) => {
+                    this.selectGenre(preference);
                 });
             }
         }
     },
     mounted() {
+        if (this.currentMovies.length === 0 && this.getUserTaste.length !== 0) {
+            this.$log.debug(this.getUserTaste);
+            this.getMoviesByGenres(this.getUserTaste).then((preference) => {
+                this.selectGenre(preference);
+            });
+        }
         window.addEventListener('resize', () => {
             const windowWidth = window.innerWidth;
             let result = 2;
@@ -121,47 +146,8 @@ export default {
             this.showCount = result;
         });
     },
-    filters: {
-        staticPath(value) {
-            return require(`@/assets/img/${value}`);
-        }
-    },
-    computed: {
-        ...mapGetters({
-            getUser : 'data/getUser'
-        }),
-        getUserTaste() {
-            if (this.getUser) {
-                return this.getUser.movie_taste ? this.getUser.movie_taste : [];
-            }
-            return [];
-        },
-        currentMovies() {
-            if (this.genreMovies.length === 0) {
-                return [];
-            }
-            const start = this.currentIndex;
-            const end = this.currentIndex + this.showCount;
-            // console.log(start, end);
-            let result = [];
-            if (end >= this.genreMovies.length) {
-                result = result.concat(this.genreMovies.slice(start));
-                // console.log(result);
-                result = result.concat(this.genreMovies.slice(0, end - this.genreMovies.length));
-                // console.log(result);
-            } else {
-                result = result.concat(this.genreMovies.slice(start, end));
-            }
-            return result;
-        },
-        genreMovies() {
-            if (!(this.selectedGenre in this.movies)) {
-                return [];
-            }
-            return this.movies[this.selectedGenre];
-        }
-    },
     methods: {
+        ...movieMapActions(['getMoviesByGenres', 'addMovieView']),
         selectGenre(genre) {
             this.selectedGenre = genre;
             this.currentIndex = 0;
@@ -170,38 +156,42 @@ export default {
         },
         moveNextPage() {
             this.currentIndex = this.currentIndex + this.showCount;
-            if (this.genreMovies.length <= this.currentIndex) {
-                this.currentIndex = this.currentIndex - this.genreMovies.length;
+            if (this.getGenreMovies.length <= this.currentIndex) {
+                this.currentIndex = this.currentIndex - this.getGenreMovies.length;
             }
         },
         movePrevPage() {
             this.currentIndex = this.currentIndex - this.showCount;
             if (this.currentIndex < 0) {
-                this.currentIndex = this.genreMovies.length + this.currentIndex;
+                this.currentIndex = this.getGenreMovies.length + this.currentIndex;
             }
+        },
+        viewMovie(id) {
+            this.addMovieView(id);
+            this.$router.push(`/movies/detail/${id}`);
         }
-    }  
+    }
 };
 </script>
 
 <style lang="scss" scoped>
+@import "@/style/variables.scss";
+@import "@/style/font.scss";
 
 .section{
     height: 600px;
     background-color:transparent;
-    color: white;
+    color: $text-color;
 }
 
 .title{
     height: 100px;
-    color: white;
+    color: $text-color;
     margin-bottom: 20px;
     padding-top: 30px;
 }
 
 .section-title {
-    font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
-    font-size: 45px;
     text-align: left;
     text-transform: uppercase;
     text-rendering: optimizeLegibility;
@@ -209,8 +199,8 @@ export default {
 
 
     &.deepshadow {
-    color: #f5f5f1;
-    background-color: #221f1f;
+    color: $text-color;
+    background-color: $background-color;
     letter-spacing: .1em;
     text-shadow:
         0 5px 7px rgba(0, 0, 0, 0.9);
@@ -220,11 +210,11 @@ export default {
 
 
 .section-content{
-    font: 600 'Raleway', sans-serif;
-    color: rgba(255,255,255,.6);
+    color: $text-gray-color;
     text-align: left;
     text-transform: uppercase;
     letter-spacing: .35em;
+    font-size: 1.2em;
     position: absolute;
     width: 100%;
     margin-top: 10px;
@@ -295,8 +285,7 @@ export default {
 .movie-category a {
     text-decoration: none;
     margin: 0 10px;
-    font: 600 'Raleway', sans-serif;
-    color: rgba(245, 245, 241,.6);
+    color: $text-gray-color;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -310,7 +299,7 @@ export default {
     left: 0;
     width: 100%;
     height: 2px;
-    background: #f5f5f1;
+    background: $text-color;
   }
   &:before {
     bottom: 0;

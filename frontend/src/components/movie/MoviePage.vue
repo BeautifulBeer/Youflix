@@ -19,13 +19,13 @@ export default {
     computed: {
         isActive() {
             return this.$store.state.movieVisible;
-        },
+        }
     },
     watch: {
         isActive(newVal) {
             document.getElementById('button').checked = newVal;
-        },
-    },
+        }
+    }
 };
 </script>
 

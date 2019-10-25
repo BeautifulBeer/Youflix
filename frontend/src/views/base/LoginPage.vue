@@ -12,6 +12,7 @@
                 <div class="sign-in-page__input-group">
                     <label class="sign-input">
                         <input
+                            id="userId"
                             v-model="userId"
                             type="email"
                             required
@@ -29,6 +30,7 @@
 
                     <label class="sign-input">
                         <input
+                            id="userPassword"
                             v-model="password"
                             type="password"
                             required
@@ -45,29 +47,33 @@
                     </label>
                 </div>
 
-                <input
-                    v-if="idCheck == 1 && passwordCheck == 1"
-                    class="sign-in-page__submit"
-                    type="button"
-                    value="LOGIN"
-                    @click="userLogin()"
-                >
-                <input
-                    v-else
-                    class="sign-in-page__submit"
-                    type="button"
-                    value="LOGIN"
-                    style="opacity: 0.3"
-                    disabled
-                >
-
+                <div v-if="idCheck == 1 && passwordCheck == 1">
+                    <input
+                        class="sign-in-page__submit"
+                        type="button"
+                        value="LOGIN"
+                        @click="userLogin()"
+                    >
+                </div>
+                <div v-else>
+                    <input
+                        class="sign-in-page__submit"
+                        type="button"
+                        value="LOGIN"
+                        style="opacity: 0.3"
+                        disabled
+                    >
+                </div>
                 <div class="sign-in-page__divider" />
 
                 <p class="sign-in-page__fb-joined">
                     이전에 Facebook, Google으로 가입하셨나요?
                 </p>
 
-                <a class="sign-in-page__facebook" @click="alert()">
+                <a
+                    class="sign-in-page__facebook"
+                    @click="alert()"
+                >
                     <div class="btn-icon">
                         <span class="mdi mdi-facebook-box mdi-24px" />
                     </div>
@@ -79,12 +85,17 @@
                     </div>
                 </a><br>
 
-                <a class="sign-in-page__google" @click="alert()">
+                <a
+                    class="sign-in-page__google"
+                    @click="alert()"
+                >
                     <div class="btn-icon">
                         <span class="mdi mdi-google-plus mdi-24px" />
                     </div>
 
-                    <div style="width: 80%; display:inline-block">
+                    <div
+                        style="width: 80%; display:inline-block"
+                    >
                         <span>
                             Google로 로그인
                         </span>
@@ -96,9 +107,11 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 import swal from 'sweetalert';
 
+const { mapActions } = createNamespacedHelpers('users');
+const infoMapActions = createNamespacedHelpers('infos').mapActions;
 export default {
     data() {
         return {
@@ -138,33 +151,34 @@ export default {
         }
     },
     methods: {
-        ...mapActions('data', ['login']),
-        ...mapActions(['commingSoon']),
-
+        ...mapActions(['login']),
+        ...infoMapActions(['commingSoon']),
         userLogin() {
+            document.getElementById('userId').disabled = true;
+            document.getElementById('userPassword').disabled = true;
             this.login({ email: this.userId, password: this.password }).then((ret) => {
-
                 if (ret === true) {
                     swal({
-                        title: 'Success',
+                        title: '로그인 성공',
                         text: 'Welcome To YOUFLIX!',
                         icon: 'success',
                         button: false
                     }).then(() => {
-                        this.$router.push('/home')
+                        this.$router.push('/home');
                     });
                 } else {
                     swal({
-                        title: 'Fail',
-                        text: 'The username or password is incorrect.',
+                        title: '로그인 실패',
+                        text: '이메일이나 비밀번호가 맞지 않습니다.',
                         icon: 'error',
                         button: false
                     });
-                }                
+                    document.getElementById('userId').disabled = false;
+                    document.getElementById('userPassword').disabled = false;
+                }
             });
         },
         alert() {
-
             this.commingSoon();
         }
     }
@@ -202,7 +216,7 @@ p {
 
 .sign-in-page {
     height: 100vh;
-    background: url("../../assets/img/chernobyl.jpg") no-repeat center center;
+    background: url("/static/img/chernobyl.jpg") no-repeat center center;
     position: relative;
     background-size: cover;
 }
