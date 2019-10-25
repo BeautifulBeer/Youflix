@@ -1,60 +1,61 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-
 from django.db.models import F
 from django.http import JsonResponse
-
 from api.models import Movie, User, Genre, Rating
 from api.serializers import MovieSerializer
 
 
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
 def movies(request):
-
+    '''
+        영화를 CRUD할 수 있는 URL
+    '''
     if request.method == 'GET':
-        id = request.GET.get('id', request.GET.get('movie_id', None))
+        movie_id = request.GET.get('id', request.GET.get('movie_id', None))
         title = request.GET.get('title', None)
-        genres = request.GET.get('genres', None)
+        category = request.GET.get('category', None)
+        keyword = request.GET.get('keyword', None)
         sort = request.GET.get('sort', 1)
         page = request.GET.get('page', 1)
-        print(id, title, genres, sort, page)
-        movies = Movie.objects.all()
+        print(movie_id, title, category, keyword, sort, page)
+        movie_all = Movie.objects.all()
 
         # querySet 으로 반환됨
-        if id:
-            movies = movies.filter(pk=id)
+        if movie_id:
+            movie_all = movie_all.filter(pk=movie_id)
         if title:
-            movies = movies.filter(title__icontains=title)
-        if genres:
-            if genres != 'Total':
-                genre = Genre.objects.get(name=genres)
-                movies = movies.filter(genres=genre)
+            movie_all = movie_all.filter(title__icontains=title)
+        if category == 'genre':
+            if keyword != 'Total':
+                genre_obj = Genre.objects.get(name=keyword)
+                movie_all = movie_all.filter(genres=genre_obj)
 
         # 정렬방식
         if sort:
             if int(sort) == 1:
                 # 평균평점 순(높은순) default
-                movies = movies.order_by(F('vote_average').desc(nulls_first=False))
+                movie_all = movie_all.order_by(F('vote_average').desc(nulls_first=False))
             elif int(sort) == 2:
                 # 조회순
-                movies = movies.order_by(F('view_cnt').desc(nulls_first=False))
+                movie_all = movie_all.order_by(F('view_cnt').desc(nulls_first=False))
             elif int(sort) == 3:
                 # 최신순
-                movies = movies.order_by(F('release_date').desc(nulls_first=False))
+                movie_all = movie_all.order_by(F('release_date').desc(nulls_first=False))
 
             # 페이지 별로 나눠서 영화 정보 받아오기
             if page:
                 # 한페이지에 10개씩. 1페이지 0~9, 2페이지 10~19, ... start= 10*(page-1), end=start+10
                 # 10페이지 100 1 0~99 2 100~199
-                # 영화 총개수: 3883. page=39이면 3800:3900 인덱스 에러. 
+                # 영화 총개수: 3883. page=39이면 3800:3900 인덱스 에러.
                 page = int(page)
                 start = 50*(page-1)
                 end = start+50
-                if len(movies[start:]) < 50:
-                    movies = movies[start:]
-                movies = movies[start:end]
+                if len(movie_all[start:]) < 50:
+                    movie_all = movie_all[start:]
+                movie_all = movie_all[start:end]
 
-        serializer = MovieSerializer(movies, many=True)
+        serializer = MovieSerializer(movie_all, many=True)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
     if request.method == 'DELETE':
@@ -63,10 +64,10 @@ def movies(request):
         return JsonResponse({'status': status.HTTP_200_OK})
 
     if request.method == 'POST':
-        movies = request.data.get('movies', None)
-        for movie in movies:
-            id = movie.get('id', None)
-            id = int(id)
+        movie_all = request.data.get('movies', None)
+        for movie in movie_all:
+            movie_id = movie.get('id', None)
+            movie_id = int(movie_id)
             title = movie.get('title', None)
             genres = movie.get('genres', None)
 
@@ -84,46 +85,31 @@ def movies(request):
                 only_title = title
                 year = 0
 
-            if not (id and title and genres):
+            if not (movie_id and title and genres):
                 continue
             # if Movie.objects.filter(id=id).count() > 0 or Movie.objects.filter(title=title).count() > 0:
             #     continue
 
-            Movie(id=id, title=only_title, year=year, genres='|'.join(genres)).save()
+            Movie(id=movie_id, title=only_title, year=year, genres='|'.join(genres)).save()
 
         return JsonResponse({'status': status.HTTP_200_OK})
-
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 @api_view(['GET'])
 def views(request):
-
     if request.method == 'GET':
 
-        id = request.GET.get('id', None)
+        movie_id = request.GET.get('id', None)
 
-        if id is None:
+        if movie_id is None:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
-        movie = Movie.objects.get(pk=id)
+        movie = Movie.objects.get(pk=movie_id)
         movie.view_cnt = movie.view_cnt + 1
         movie.save()
 
         return JsonResponse({'status': status.HTTP_200_OK})
-
-# @api_view(['GET'])
-# def similarMovie(request):
-
-#     if request.method == 'GET':
-#         id=request.GET.get('id', None)
-
-#         if id:
-#             movie=Movie.objects.get(movie__id=id)
-#             movie_cluster=movie.kmeans_cluster
-#             movies=Movie.objects.filter(cluster=movie_cluster)
-
-#         serializer = SimilarMovieSerializer(movies, many=True)
-#         return JsonResponse({'data': serializer.data, 'status': status.HTTP_200_OK})
-
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 @api_view(['POST'])
 def modify(request):
@@ -133,16 +119,16 @@ def modify(request):
         modified = request.data.get('data', None)
         print(modified)
 
-        id = modified.get('id', None)
+        movie_id = modified.get('id', None)
         title = modified.get('title', None)
         overview = modified.get('overview', None)
         genres = modified.get('genres_array', None)
         runtime = modified.get('runtime', None)
 
-        if id is None:
+        if movie_id is None:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
-        movie = Movie.objects.get(pk=id)
+        movie = Movie.objects.get(pk=movie_id)
 
         movie.title = title
         movie.overview = overview
@@ -151,7 +137,7 @@ def modify(request):
 
         movie.save()
         return JsonResponse({'status': status.HTTP_200_OK})
-
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 @api_view(['GET'])
 def moviesPref(request):
@@ -167,8 +153,18 @@ def moviesPref(request):
         user = User.objects.get(email=email)
         ratings = Rating.objects.filter(user=user)
 
-        ret = dict([("0.5", 0), ("1", 0), ("1.5", 0), ("2", 0), ("2.5", 0), ("3", 0), ("3.5", 0), ("4", 0), ("4.5", 0), ("5", 0)])
-
+        ret = dict([
+            ("0.5", 0),
+            ("1", 0),
+            ("1.5", 0),
+            ("2", 0),
+            ("2.5", 0),
+            ("3", 0),
+            ("3.5", 0),
+            ("4", 0),
+            ("4.5", 0),
+            ("5", 0)
+        ])
         for rating in ratings:
 
             if rating.rating < 1:
@@ -194,17 +190,4 @@ def moviesPref(request):
 
             print(ret)
         return JsonResponse({'status': status.HTTP_200_OK, 'data': ret})
-
-# @api_view(['GET'])
-# def recommendation(request):
-#     print(request.GET.get('id'), None)
-#     if request.method == 'GET':
-#         topN_movies = [469172, 267752, 404604,
-#             459950, 458506, 456101, 455675,	454787,
-#             452413, 452068, 408509, 1271]
-
-#         movies = Movie.objects.all()
-
-#         result = movies.filter(id__in=topN_movies)
-#         serializer = MovieSerializer(result, many=True)
-#         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

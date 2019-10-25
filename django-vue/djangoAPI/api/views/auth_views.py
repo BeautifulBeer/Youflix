@@ -23,11 +23,11 @@ import time
 
 import os
 BASE_DIR = os.path.dirname(
-                os.path.dirname(
-                        os.path.dirname(
-                                os.path.abspath(__file__)
-                        )
-                )
+            os.path.dirname(
+                    os.path.dirname(
+                            os.path.abspath(__file__)
+                    )
+            )
         )
 
 
@@ -44,7 +44,6 @@ def signup_many(request):
             age = profile.get('age', None)
             occupation = profile.get('occupation', None)
             gender = profile.get('gender', None)
-
             create_profile(
                     id=userid,
                     email=email,
@@ -56,6 +55,7 @@ def signup_many(request):
                     )
 
         return JsonResponse({'status': status.HTTP_200_OK})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 # 다수의 사용자를 얻을 때 사용하는 Request
@@ -87,6 +87,7 @@ def getUsers(request):
                 'result': serializer.data,
                 'status': status.HTTP_200_OK
                 })
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 # 회원가입
@@ -120,7 +121,8 @@ def register(request):
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
                     'msg': Exception
                     })
-    return JsonResponse({'status': status.HTTP_200_OK})
+        return JsonResponse({'status': status.HTTP_200_OK})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['POST'])
@@ -149,33 +151,34 @@ def login(request):
             request.session[str(token)] = email
             profile = Profile.objects.get(user=user)
             result = {
-                    'email': email,
-                    'username': profile.username,
-                    'gender': profile.gender,
-                    'age': profile.age,
-                    'occupation': profile.occupation,
-                    'token': token,
-                    'is_staff': profile.user.is_staff,
-                    'is_auth': True,
-                    'movie_taste': profile.movie_taste
+                'email': email,
+                'username': profile.username,
+                'gender': profile.gender,
+                'age': profile.age,
+                'occupation': profile.occupation,
+                'token': token,
+                'is_staff': profile.user.is_staff,
+                'is_auth': True,
+                'movie_taste': profile.movie_taste
             }
         else:
             result = {
-                    'email': None,
-                    'username': None,
-                    'gender': None,
-                    'age': None,
-                    'occupation': None,
-                    'token': None,
-                    'is_staff': False,
-                    'is_auth': False,
-                    'movie_taste': None
+                'email': None,
+                'username': None,
+                'gender': None,
+                'age': None,
+                'occupation': None,
+                'token': None,
+                'is_staff': False,
+                'is_auth': False,
+                'movie_taste': None
             }
         serializer = SessionSerializer(result)
         return JsonResponse({
-                'status': status.HTTP_200_OK,
-                'result': serializer.data
-                }, safe=False)
+            'status': status.HTTP_200_OK,
+            'result': serializer.data
+        }, safe=False)
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['POST'])
@@ -186,19 +189,19 @@ def logout(request):
         del request.session[str(token)]
         user.auth_token.delete()
         auth.logout(request)
-    return JsonResponse({'status': status.HTTP_200_OK})
+        return JsonResponse({'status': status.HTTP_200_OK})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['DELETE'])
 def deleteUser(request):
-
     if request.method == 'DELETE':
         id = request.GET.get('id', None)
         users = User.objects.all()
         user = users.get(id=id)
         user.delete()
-
         return JsonResponse({'status': status.HTTP_200_OK})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['POST'])
@@ -256,6 +259,7 @@ def updateUser(request):
             return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': f'Keyerror {e}'})
         except User.DoesNotExist as e:
             return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': f'DoesNotExists {e}'})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['GET'])
@@ -275,6 +279,7 @@ def similarUser(request):
             'result': serializer.data,
             'status': status.HTTP_200_OK
             })
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 url = os.path.join(BASE_DIR, 'data', 'mapper')
@@ -353,6 +358,7 @@ def RecommendMovieUserBased(request):
             serializer = RecommendMovie(data, many=True)
             return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
         return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['GET', 'POST'])
@@ -369,27 +375,27 @@ def session_member(request):
             if user.is_authenticated and token == str(Token.objects.get(user=user)):
                 profile = Profile.objects.get(user=user)
                 result = {
-                        'email': user.email,
-                        'username': profile.username,
-                        'token': token,
-                        'gender': profile.gender,
-                        'age': profile.age,
-                        'occupation': profile.occupation,
-                        'is_auth': True,
-                        'is_staff': profile.user.is_staff,
-                        'movie_taste': profile.movie_taste
+                    'email': user.email,
+                    'username': profile.username,
+                    'token': token,
+                    'gender': profile.gender,
+                    'age': profile.age,
+                    'occupation': profile.occupation,
+                    'is_auth': True,
+                    'is_staff': profile.user.is_staff,
+                    'movie_taste': profile.movie_taste
                 }
             else:
                 result = {
-                        'email': None,
-                        'username': None,
-                        'token': None,
-                        'gender': None,
-                        'age': None,
-                        'occupation': None,
-                        'is_auth': False,
-                        'is_staff': False,
-                        'movie_taste': None
+                    'email': None,
+                    'username': None,
+                    'token': None,
+                    'gender': None,
+                    'age': None,
+                    'occupation': None,
+                    'is_auth': False,
+                    'is_staff': False,
+                    'movie_taste': None
                 }
             serializer = SessionSerializer(result)
             return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
@@ -407,30 +413,31 @@ def session_member(request):
             profile = Profile.objects.get(user=user)
             print(profile)
             result = {
-                    'email': user.email,
-                    'username': profile.username,
-                    'token': token,
-                    'gender': profile.gender,
-                    'age': profile.age,
-                    'occupation': profile.occupation,
-                    'is_auth': True,
-                    'is_staff': profile.user.is_staff,
-                    'movie_taste': profile.movie_taste
+                'email': user.email,
+                'username': profile.username,
+                'token': token,
+                'gender': profile.gender,
+                'age': profile.age,
+                'occupation': profile.occupation,
+                'is_auth': True,
+                'is_staff': profile.user.is_staff,
+                'movie_taste': profile.movie_taste
             }
         else:
             result = {
-                    'email': None,
-                    'username': None,
-                    'token': None,
-                    'gender': None,
-                    'age': None,
-                    'occupation': None,
-                    'is_auth': False,
-                    'is_staff':  False,
-                    'movie_taste': profile.movie_taste
+                'email': None,
+                'username': None,
+                'token': None,
+                'gender': None,
+                'age': None,
+                'occupation': None,
+                'is_auth': False,
+                'is_staff':  False,
+                'movie_taste': profile.movie_taste
             }
         serializer = SessionSerializer(result)
         return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['GET'])
@@ -447,3 +454,4 @@ def duplicate_inspection(request):
         except User.DoesNotExist:
             return JsonResponse({'status': status.HTTP_200_OK})
         return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

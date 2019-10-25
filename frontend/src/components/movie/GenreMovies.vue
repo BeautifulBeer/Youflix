@@ -11,11 +11,11 @@
                 <AnimateWhenVisible name="fadeDown">
                     <span
                         key="span1"
-                        class="section-title deepshadow"
+                        class="section-title deepshadow title-family"
                     >Genres</span>
                     <span
                         key="span2"
-                        class="section-content"
+                        class="section-content content-family"
                     >Top movies for each genre</span>
                 </AnimateWhenVisible>
             </v-col>
@@ -28,7 +28,7 @@
                 <a
                     v-for="genre in getUserTaste"
                     :key="'genreMoviesLabel' + genre"
-                    class="effect-4"
+                    class="effect-4 content-family"
                     @click="selectGenre(genre)"
                 >
                     {{ genre }}
@@ -175,23 +175,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "@/style/variables.scss";
+@import "@/style/font.scss";
 
 .section{
     height: 600px;
     background-color:transparent;
-    color: white;
+    color: $text-color;
 }
 
 .title{
     height: 100px;
-    color: white;
+    color: $text-color;
     margin-bottom: 20px;
     padding-top: 30px;
 }
 
 .section-title {
-    font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
-    font-size: 45px;
     text-align: left;
     text-transform: uppercase;
     text-rendering: optimizeLegibility;
@@ -199,8 +199,8 @@ export default {
 
 
     &.deepshadow {
-    color: #f5f5f1;
-    background-color: #221f1f;
+    color: $text-color;
+    background-color: $background-color;
     letter-spacing: .1em;
     text-shadow:
         0 5px 7px rgba(0, 0, 0, 0.9);
@@ -210,11 +210,11 @@ export default {
 
 
 .section-content{
-    font: 600 'Raleway', sans-serif;
-    color: rgba(255,255,255,.6);
+    color: $text-gray-color;
     text-align: left;
     text-transform: uppercase;
     letter-spacing: .35em;
+    font-size: 1.2em;
     position: absolute;
     width: 100%;
     margin-top: 10px;
@@ -285,8 +285,7 @@ export default {
 .movie-category a {
     text-decoration: none;
     margin: 0 10px;
-    font: 600 'Raleway', sans-serif;
-    color: rgba(245, 245, 241,.6);
+    color: $text-gray-color;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -300,7 +299,7 @@ export default {
     left: 0;
     width: 100%;
     height: 2px;
-    background: #f5f5f1;
+    background: $text-color;
   }
   &:before {
     bottom: 0;

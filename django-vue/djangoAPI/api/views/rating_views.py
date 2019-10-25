@@ -1,11 +1,8 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-
 from django.http import JsonResponse
-
 from api.serializers import RatingSerializer, UserRatingSerializer
 from api.models import Rating, Movie, Rating, User, Comment, Profile
-
 import datetime
 import pytz
 
@@ -87,6 +84,7 @@ def rate_movie(request):
         except Rating.DoesNotExist:
             Rating(user=user, movie=movie, rating=rating_value, timestamp=timestamp).save()
         return JsonResponse({'status': status.HTTP_200_OK})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['GET'])
@@ -106,6 +104,7 @@ def get_rating_for_movie(request):
 
         serializer = RatingSerializer(user, movie, rating.rating, rating.timestamp)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['GET'])
@@ -122,6 +121,7 @@ def get_ratings(request):
         ratings = Rating.objects.filter(user=user)
         serializer = UserRatingSerializer(ratings, many=True)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['GET'])
@@ -147,3 +147,4 @@ def create_comment(request):
             return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': '아직 해당 영화에 별점을 매기지 않았습니다.'})
 
         return JsonResponse({'status': status.HTTP_200_OK})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

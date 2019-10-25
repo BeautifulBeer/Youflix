@@ -4,3 +4,10 @@
 @import '~font-awesome/css/font-awesome.min.css';
 @import '~material-design-icons/iconfont/material-icons.css';
 @import '~vue2-animate/dist/vue2-animate.min.css';
+
+@font-face{
+    font-family: 'netflix-font';
+    src: local('./font/BebasNeue.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
