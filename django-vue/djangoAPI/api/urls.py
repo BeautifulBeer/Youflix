@@ -40,4 +40,7 @@ urlpatterns = [
     # clustering 실행 URL
     # url('clustering/userCharacter', clustering.getUserCharacter, name="getusercharacter"),
     # url('clustering/movieCharacter', clustering.getMovieCharacter, name="getmoviecharacter"),
+
+    # test
+    url(r'contentBased/$', test.ContentBased, name='ContentBased')
 ]

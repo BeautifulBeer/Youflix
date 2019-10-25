@@ -122,6 +122,18 @@ const actions = {
             Vue.$log.debug('Vuex movie.js getNeverSeenMovieList response', response);
             return response.data;
         });
+    },
+    // For Test
+    async getContentBased({ commit }, email) {
+        Vue.$log.debug('Vuex movie.js getContentBased', email);
+        return axios.get(`${global.API_URL}/contentBased/`, {
+            params: {
+                email
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getContentBased response', response);
+            return response.data;
+        });
     }
 };
 

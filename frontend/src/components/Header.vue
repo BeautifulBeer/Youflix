@@ -320,6 +320,7 @@ export default {
         },
         logoutState() {
             this.getSession().then((ret) => {
+                console.log(ret);
                 if (ret === true) {
                     this.logout(this.token).then(() => {
                         swal({

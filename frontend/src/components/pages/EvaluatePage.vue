@@ -40,7 +40,7 @@
                 class="content-wrapper"
             >
                 <MyTastes
-                    v-for="(element, index) in movieList.data"
+                    v-for="(element, index) in movieList"
                     :key="index"
                     :element="element"
                 />
@@ -76,13 +76,14 @@ export default {
         ...userMapState(['user'])
     },
     mounted() {
-        this.getNeverSeenMovieList(this.user.email).then((ret) => {
-            this.movieList = ret;
+        this.getContentBased(this.user.email).then((ret) => {
+            console.log(ret)
             this.loading = false;
+            this.movieList = ret.result;
         });
     },
     methods: {
-        ...movieMapActions(['getNeverSeenMovieList']),
+        ...movieMapActions(['getNeverSeenMovieList', 'getContentBased']),
         urlMapping(value) {
             return `url(${value}) center / cover no-repeat`;
         }
