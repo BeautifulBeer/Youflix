@@ -43,7 +43,7 @@
 import { createNamespacedHelpers } from 'vuex';
 import MovieGridCard from './MovieGridCard.vue';
 
-const { mapState, mapActions } = createNamespacedHelpers('movies');
+const { mapState, mapActions, mapMutations } = createNamespacedHelpers('movies');
 
 export default {
     components: {
@@ -83,8 +83,11 @@ export default {
         }
     },
     mounted() {
+        this.setIsLoaded(false);
         this.getMovieByConditions().then(() => {
             this.$forceUpdate();
+        }).then(() => {
+            this.setIsLoaded(true);
         });
         window.addEventListener('resize', () => {
             this.responsiveSlider();
@@ -92,6 +95,7 @@ export default {
     },
     methods: {
         ...mapActions(['getMovieByConditions']),
+        ...mapMutations(['setIsLoaded']),
         responsiveSlider() {
             const { innerWidth } = window;
             const containerWidth = innerWidth - 50 * 2;
