@@ -14,6 +14,7 @@
             </v-content>
             <!-- <LoadingPage/> -->
         </v-container>
+        <Loading />
     </v-app>
 </template>
 
@@ -23,13 +24,15 @@ import { createNamespacedHelpers } from 'vuex';
 import Header from '@/components/Header.vue';
 // import MoviePage from '@/components/movie/MoviePage.vue';
 import Footer from '@/components/Footer.vue';
+import Loading from '@/components/base/Loading.vue';
 
 const { mapState, mapActions, mapMutations } = createNamespacedHelpers('users');
 
 export default {
     components: {
         Header,
-        Footer
+        Footer,
+        Loading
         // MoviePage
     },
     computed: {

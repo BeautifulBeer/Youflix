@@ -13,7 +13,7 @@ const state = {
         result: []
     },
     selectedMovie: {},
-    isloaded: true
+    isLoaded: true
 };
 
 const actions = {
@@ -49,7 +49,7 @@ const actions = {
     },
     async getMovieByConditions({ state, commit }) {
         Vue.$log.debug('Vuex movie.js getMovieByConditions', state.searchResultMovies);
-        axios.get(`${global.API_URL}/movies/`, {
+        return axios.get(`${global.API_URL}/movies/`, {
             params: {
                 category: state.searchResultMovies.category,
                 keyword: state.searchResultMovies.keyword,
@@ -67,6 +67,7 @@ const actions = {
     async getMoviesByGenres({ commit }, preferences) {
         Vue.$log.debug('Vuex movie.js getMoviesByGenres', preferences);
         let promises = [];
+        commit('setIsLoaded', false);
         preferences.forEach((genre) => {
             promises.push(axios.get(`${global.API_URL}/movies/`, {
                 params: {
@@ -90,7 +91,8 @@ const actions = {
     async getMoviesByPersonal({ commit }, user) {
         Vue.$log.debug('Vuex movie.js getMoviesByPersonal', user);
         const targetUser = 5797;
-        axios.get(`${global.API_URL}/auth/recommendMovie/`, {
+        commit('setIsLoaded', false);
+        return axios.get(`${global.API_URL}/auth/recommendMovie/`, {
             params: {
                 id: targetUser
             }
@@ -98,7 +100,6 @@ const actions = {
             Vue.$log.debug('Vuex movie.js getMoviesByPersonal response', response);
             const { result } = response.data;
             commit('setPersonalMovies', result);
-            commit('setIsLoaded', true);
         });
     },
     async getRatingPref({ commit }, email) {
@@ -126,6 +127,7 @@ const actions = {
     // For Test
     async getContentBased({ commit }, email) {
         Vue.$log.debug('Vuex movie.js getContentBased', email);
+        commit('setIsLoaded', false);
         return axios.get(`${global.API_URL}/contentBased/`, {
             params: {
                 email
@@ -142,7 +144,7 @@ const mutations = {
         state.personalMovies = movies;
     },
     setIsLoaded(state, flag) {
-        state.isloaded = flag;
+        state.isLoaded = flag;
     },
     setGenreMovies(state, { genre, movies }) {
         state.genreMovies[genre] = movies;

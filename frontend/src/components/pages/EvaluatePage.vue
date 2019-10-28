@@ -1,6 +1,5 @@
 <template>
     <v-container>
-        <Loading :loading="loading" />
         <v-row
             justify="center"
             class="evaluate-header text-center"
@@ -55,21 +54,18 @@ import { createNamespacedHelpers } from 'vuex';
 
 // import Component
 import MyTastes from '../user/MyTastes.vue';
-import Loading from '../base/Loading.vue';
 
 const userMapState = createNamespacedHelpers('users').mapState;
 const movieMapActions = createNamespacedHelpers('movies').mapActions;
-
+const movieMapMutations = createNamespacedHelpers('movies').mapMutations;
 
 export default {
     components: {
-        MyTastes,
-        Loading
+        MyTastes
     },
     data() {
         return {
-            movieList: [],
-            loading: true
+            movieList: []
         };
     },
     computed: {
@@ -77,13 +73,14 @@ export default {
     },
     mounted() {
         this.getContentBased(this.user.email).then((ret) => {
-            console.log(ret)
-            this.loading = false;
+            this.$log.debug('EvaluatePage.vue getContentBased', ret);
+            this.setIsLoaded(true);
             this.movieList = ret.result;
         });
     },
     methods: {
         ...movieMapActions(['getNeverSeenMovieList', 'getContentBased']),
+        ...movieMapMutations(['setIsLoaded']),
         urlMapping(value) {
             return `url(${value}) center / cover no-repeat`;
         }

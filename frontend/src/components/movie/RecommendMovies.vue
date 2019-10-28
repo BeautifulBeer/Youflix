@@ -122,6 +122,12 @@ export default {
             return (new Date(str)).getFullYear();
         }
     },
+    props: {
+        setLoaded: {
+            type: Function,
+            default: null
+        }
+    },
     data() {
         return {
             outlined: 'false',
@@ -166,14 +172,24 @@ export default {
         // eslint-disable-next-line
         getUserPK: function (user) {
             if (user) {
-                this.getMoviesByPersonal(user);
+                this.$log.debug('RecommendMovies.vue getUserPK watch', user);
+                this.setLoaded(false);
+                this.getMoviesByPersonal(user).then(() => {
+                    this.$log.debug('RecommendMovies.vue getUserPK watch response');
+                    this.setLoaded(true);
+                });
             }
         }
     },
     mounted() {
         this.$nextTick(() => {
             if (this.user && this.currentMovies.length === 0) {
-                this.getMoviesByPersonal(this.user);
+                this.$log.debug('RecommendMovies.vue nextTick');
+                this.setLoaded(false);
+                this.getMoviesByPersonal(this.user).then(() => {
+                    this.$log.debug('RecommendMovies.vue getMoviesByPersonal response');
+                    this.setLoaded(true);
+                });
             }
             this.loadSliderWidth();
             window.addEventListener('resize', () => {

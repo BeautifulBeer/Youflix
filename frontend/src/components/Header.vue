@@ -84,13 +84,12 @@
                             text
                             color="transparent"
                             class="genre-btn"
+                            to="/evaluate"
                         >
                             <span
                                 class="label"
                             >
-                                <router-link to="/evaluate">
-                                    평가하기
-                                </router-link>
+                                RATING
                             </span>
                         </v-btn>
                     </v-row>
@@ -150,7 +149,7 @@
                                         setting
                                     </router-link>
                                     <router-link
-                                        to="#"
+                                        to="/"
                                     >
                                         likes
                                     </router-link>
@@ -160,7 +159,7 @@
                                         admin
                                     </router-link>
                                     <router-link
-                                        to="#"
+                                        to="/"
                                     >
                                         <span @click="logoutState()">
                                             logout
@@ -177,6 +176,7 @@
 </template>
 
 <script>
+import $ from 'jquery';
 import swal from 'sweetalert';
 import { createNamespacedHelpers } from 'vuex';
 
@@ -197,20 +197,14 @@ export default {
         };
     },
     computed: {
-        ...mapState({
-            user: (state) => state.user,
-            token: (state) => state.token,
-            username: (state) => {
-                return state.user ? state.user.username : state.user;
-            }
-        }),
+        ...mapState(['token', 'user']),
         ...movieMapState(['searchResultMovies']),
         ...infoMapState(['category']),
         getlogoutflag() {
             return (this.token !== null && this.token !== undefined);
         },
         getUserName() {
-            return this.username;
+            return this.user ? this.user.username : this.user;
         },
         getSelectedGenre() {
             return this.searchResultMovies.keyword;
@@ -310,7 +304,7 @@ export default {
             'setSearchConditionCategory'
         ]),
         ...movieMapActions(['getMovieByConditions']),
-        ...mapActions(['logout', 'getSession']),
+        ...mapActions(['logout', 'getUserBySession']),
         changeFlag() {
             if (this.getLoginModalOpen === true) {
                 this.$store.commit('setLoginModalOpen', false);
@@ -319,9 +313,8 @@ export default {
             }
         },
         logoutState() {
-            this.getSession().then((ret) => {
-                console.log(ret);
-                if (ret === true) {
+            this.getUserBySession(this.token).then((ret) => {
+                if (ret) {
                     this.logout(this.token).then(() => {
                         swal({
                             title: 'GoodBye',

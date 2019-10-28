@@ -367,8 +367,10 @@ def session_member(request):
     if request.method == 'GET': 
         try:
             token = request.GET.get('token', None)
+            if not request.session.get(str(token)):
+                request.session.save()
             user = User.objects.get(email=request.session.get(str(token)))
-
+            
             if user is None:
                 return JsonResponse({'msg': 'error', 'status': status.HTTP_400_BAD_REQUEST})
 
@@ -399,45 +401,45 @@ def session_member(request):
                 }
             serializer = SessionSerializer(result)
             return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
-        except:
+        except Exception:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
 
-    if request.method == 'POST':
+    # if request.method == 'POST':
 
-        result = {}
-        token = request.data.get('token', None)
-        email = request.session.get(str(token), None)
-        user = User.objects.get(email=email)
+    #     result = {}
+    #     token = request.data.get('token', None)
+    #     email = request.session.get(str(token), None)
+    #     user = User.objects.get(email=email)
 
-        if user.is_authenticated and token == str(Token.objects.get(user=user)):
-            profile = Profile.objects.get(user=user)
-            print(profile)
-            result = {
-                'email': user.email,
-                'username': profile.username,
-                'token': token,
-                'gender': profile.gender,
-                'age': profile.age,
-                'occupation': profile.occupation,
-                'is_auth': True,
-                'is_staff': profile.user.is_staff,
-                'movie_taste': profile.movie_taste
-            }
-        else:
-            result = {
-                'email': None,
-                'username': None,
-                'token': None,
-                'gender': None,
-                'age': None,
-                'occupation': None,
-                'is_auth': False,
-                'is_staff':  False,
-                'movie_taste': profile.movie_taste
-            }
-        serializer = SessionSerializer(result)
-        return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
-    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+    #     if user.is_authenticated and token == str(Token.objects.get(user=user)):
+    #         profile = Profile.objects.get(user=user)
+    #         print(profile)
+    #         result = {
+    #             'email': user.email,
+    #             'username': profile.username,
+    #             'token': token,
+    #             'gender': profile.gender,
+    #             'age': profile.age,
+    #             'occupation': profile.occupation,
+    #             'is_auth': True,
+    #             'is_staff': profile.user.is_staff,
+    #             'movie_taste': profile.movie_taste
+    #         }
+    #     else:
+    #         result = {
+    #             'email': None,
+    #             'username': None,
+    #             'token': None,
+    #             'gender': None,
+    #             'age': None,
+    #             'occupation': None,
+    #             'is_auth': False,
+    #             'is_staff':  False,
+    #             'movie_taste': profile.movie_taste
+    #         }
+    #     serializer = SessionSerializer(result)
+    #     return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
+    # return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
 @api_view(['GET'])
