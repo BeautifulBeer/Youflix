@@ -19,9 +19,15 @@ import BeforeLearn from './components/admin/BeforeLearn.vue';
 
 
 // USER PAGE
-import MyFlex from './components/user/MyFlex.vue';
+import MyFlix from './components/user/MyFlix.vue';
 import UserSetting from './components/user/UserSetting.vue';
 
+// MOVIE PAGE
+import MovieSearchPage from './components/movie/MovieSearchPage.vue';
+import MovieDetailPage from './components/pages/MovieDetailPage.vue';
+
+// UN-SORTED PAGE
+import EvaluatePage from './components/pages/EvaluatePage.vue';
 
 Vue.use(Router);
 
@@ -71,9 +77,9 @@ export default new Router({
             }
         },
         {
-            path: '/myflex',
-            name: 'myflex',
-            component: MyFlex,
+            path: '/myflix',
+            name: 'myflix',
+            component: MyFlix,
             meta: {
                 authRequired: true
             }
@@ -82,6 +88,31 @@ export default new Router({
             path: '/setting',
             name: 'setting',
             component: UserSetting,
+            meta: {
+                authRequired: true
+            }
+        },
+        {
+            path: '/movie/search',
+            name: 'movieSearch',
+            component: MovieSearchPage,
+            meta: {
+                authRequired: true
+            }
+        },
+        {
+            path: '/movies/detail/:id',
+            name: 'movieDetailPage',
+            component: MovieDetailPage,
+            meta: {
+                authRequired: true
+            },
+            props: true
+        },
+        {
+            path: '/evaluate',
+            name: 'evaluatePage',
+            component: EvaluatePage,
             meta: {
                 authRequired: true
             }

@@ -1,10 +1,11 @@
-from .models import Profile, Movie, Rating,UserCluster
+from .models import Profile, Movie, Rating, UserCluster
 from .models import User
 from rest_framework import serializers
 
 import json
 
-#================= User Serializer ===================#
+# ================= User Serializer =================== #
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
@@ -14,7 +15,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('id','user', 'email','username', 'is_staff', 'gender', 'age', 'occupation','movie_taste')
+        fields = ('id', 'user', 'email', 'username', 'is_staff', 'gender', 'age', 'occupation', 'movie_taste')
 
     def get_email(self, obj):
         return obj.user.email
@@ -34,8 +35,9 @@ class SimilarUserSerializer(serializers.ModelSerializer):
         fields = ('profile', 'kmeans_cluster', 'user_info')
 
     def get_profile(self, obj):
-        profile={'email':obj.profile.user.email,'age':obj.profile.age,'gender':obj.profile.gender,'occupation':obj.profile.occupation}
+        profile = {'email': obj.profile.user.email, 'age': obj.profile.age, 'gender': obj.profile.gender, 'occupation': obj.profile.occupation}
         return profile
+
 
 class RecommendMovie(serializers.ModelSerializer):
     genres = serializers.SerializerMethodField('getGenre')
@@ -48,43 +50,43 @@ class RecommendMovie(serializers.ModelSerializer):
         model = Movie
         fields = '__all__'
 
-    def getGenre(self,obj):
-        genres=obj.genres.all()
-        genre_list=[]
+    def getGenre(self, obj):
+        genres = obj.genres.all()
+        genre_list = []
         for genre in genres:
             genre_list.append(genre.name)
         return genre_list
 
-    def getCompany(self,obj):
-        companies=obj.production_companies.all()
-        company_list=[]
+    def getCompany(self, obj):
+        companies = obj.production_companies.all()
+        company_list = []
         for company in companies:
             company_list.append(company.name)
         return company_list
 
-    def getCountry(self,obj):
-        countries=obj.production_countries.all()
-        country_list=[]
+    def getCountry(self, obj):
+        countries = obj.production_countries.all()
+        country_list = []
         for country in countries:
             country_list.append(country.name)
         return country_list
 
-    def getLanguage(self,obj):
-        languages=obj.spoken_languages.all()
-        language_list=[]
+    def getLanguage(self, obj):
+        languages = obj.spoken_languages.all()
+        language_list = []
         for language in languages:
             language_list.append(language.name)
         return language_list
 
-    def getKeyword(self,obj):
-        keywords=obj.keywords.all()
-        keyword_list=[]
+    def getKeyword(self, obj):
+        keywords = obj.keywords.all()
+        keyword_list = []
         for keyword in keywords:
             keyword_list.append(keyword.name)
         return keyword_list
 
-#================= Movie Serializer ===================#
 
+# ================= Movie Serializer =================== #
 class MovieSerializer(serializers.ModelSerializer):
     genres = serializers.SerializerMethodField('getGenre')
     production_companies = serializers.SerializerMethodField('getCompany')
@@ -120,40 +122,40 @@ class MovieSerializer(serializers.ModelSerializer):
             'vote_average',
             'vote_count',
             'keywords',
-            'view_cnt',
+            'view_cnt'
         )
 
-    def getGenre(self,obj):
-        genres=obj.genres.all()
-        genre_list=[]
+    def getGenre(self, obj):
+        genres = obj.genres.all()
+        genre_list = []
         for genre in genres:
             genre_list.append(genre.name)
         return genre_list
 
-    def getCompany(self,obj):
-        companies=obj.production_companies.all()
-        company_list=[]
+    def getCompany(self, obj):
+        companies = obj.production_companies.all()
+        company_list = []
         for company in companies:
             company_list.append(company.name)
         return company_list
 
-    def getCountry(self,obj):
-        countries=obj.production_countries.all()
-        country_list=[]
+    def getCountry(self, obj):
+        countries = obj.production_countries.all()
+        country_list = []
         for country in countries:
             country_list.append(country.name)
         return country_list
 
-    def getLanguage(self,obj):
-        languages=obj.spoken_languages.all()
-        language_list=[]
+    def getLanguage(self, obj):
+        languages = obj.spoken_languages.all()
+        language_list = []
         for language in languages:
             language_list.append(language.name)
         return language_list
 
-    def getKeyword(self,obj):
-        keywords=obj.keywords.all()
-        keyword_list=[]
+    def getKeyword(self, obj):
+        keywords = obj.keywords.all()
+        keyword_list = []
         for keyword in keywords:
             keyword_list.append(keyword.name)
         return keyword_list
@@ -170,6 +172,7 @@ class MovieSerializer(serializers.ModelSerializer):
 #         'overview':obj.movie.overview,'runtime':obj.movie.runtime,'video_url':obj.movie.video_url,'adult':obj.movie.adult,}
 #         return movie
 
+
 class MovieAgeSerializer(serializers.ModelSerializer):
     genres_array = serializers.ReadOnlyField()
     user_age = serializers.SerializerMethodField('getWatchedUser')
@@ -180,15 +183,16 @@ class MovieAgeSerializer(serializers.ModelSerializer):
 
     def getWatchedUser(self, obj):
         movies = Rating.objects.filter(movie=obj)
-        age_dict={}
+        age_dict = {}
 
         for watched in movies:
             if watched.user.profile.age not in age_dict.keys():
-                age_dict[watched.user.profile.age]=1
+                age_dict[watched.user.profile.age] = 1
             else:
-                age_dict[watched.user.profile.age]+=1
-                
+                age_dict[watched.user.profile.age] += 1
+
         return age_dict
+
 
 class MovieGenderSerializer(serializers.ModelSerializer):
     genres_array = serializers.ReadOnlyField()
@@ -200,23 +204,47 @@ class MovieGenderSerializer(serializers.ModelSerializer):
 
     def getWatchedUser(self, obj):
         movies = Rating.objects.filter(movie=obj)
-        gender_dict={}
+        gender_dict = {}
 
         for watched in movies:
             if watched.user.profile.gender not in gender_dict.keys():
-                gender_dict[watched.user.profile.gender]=1
+                gender_dict[watched.user.profile.gender] = 1
             else:
-                gender_dict[watched.user.profile.gender]+=1
-                
+                gender_dict[watched.user.profile.gender] += 1
+
         return gender_dict
 
-#================= Rating Serializer ===================#
 
+# ================= Rating Serializer =================== #
 class RatingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Rating
-        field = ('user', 'movie', 'rating', 'timestamp')
+        fields = ('user', 'movie', 'rating', 'timestamp')
+
+
+class UserRatingSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField('get_movie_id')
+    title = serializers.SerializerMethodField('get_movie_title')
+    release_date = serializers.SerializerMethodField('get_release_date')
+    poster_path = serializers.SerializerMethodField('get_poster_path')
+
+    class Meta:
+        model = Rating
+        fields = ('user', 'id', 'title', 'release_date', 'rating', 'timestamp', 'poster_path')
+
+    def get_movie_id(self, obj):
+        return obj.movie.id
+
+    def get_movie_title(self, obj):
+        return obj.movie.title
+
+    def get_release_date(self, obj):
+        return obj.movie.release_date
+
+    def get_poster_path(self, obj):
+        return obj.movie.poster_path
+
 
 class SessionSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField('get_email')
@@ -239,13 +267,13 @@ class SessionSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         return str(obj['username'])
 
-    def get_token(self,obj):
+    def get_token(self, obj):
         return str(obj['token'])
 
-    def get_is_auth(self,obj):
+    def get_is_auth(self, obj):
         return obj['is_auth']
 
-    def get_is_staff(self,obj):
+    def get_is_staff(self, obj):
         return obj['is_staff']
 
     def get_movie_taste(self, obj):

@@ -6,17 +6,73 @@ import global from '../plugins/global';
 const state = {
     personalMovies: [],
     genreMovies: {},
-    isloaded: true
+    searchResultMovies: {
+        category: 'genre',
+        keyword: 'Total',
+        title: '',
+        result: []
+    },
+    selectedMovie: {},
+    isLoaded: true
 };
 
 const actions = {
+    async getMovieById({ commit }, movieId) {
+        Vue.$log.debug('Vuex movie.js getMovieById', movieId);
+        axios.get(`${global.API_URL}/movies/`, {
+            params: {
+                id: movieId
+            }
+        }).then((response) => {
+            if (response.data.status === global.HTTP_SUCCESS) {
+                Vue.$log.debug('Vuex movie.js getMovieById response', response.data);
+                const { result } = response.data;
+                commit('setSelectedMovie', result[0]);
+                return true;
+            }
+            return false;
+        });
+    },
+    async addMovieView({ commit }, movieId) {
+        Vue.$log.debug('Vuex movie.js addMovieView', movieId);
+        return axios.get(`${global.API_URL}/movies/views/`, {
+            params: {
+                id: movieId
+            }
+        }).then((response) => {
+            if (response.data.status === global.HTTP_SUCCESS) {
+                Vue.$log.debug('Vuex movie.js addMovieView response', true);
+                return true;
+            }
+            return false;
+        });
+    },
+    async getMovieByConditions({ state, commit }) {
+        Vue.$log.debug('Vuex movie.js getMovieByConditions', state.searchResultMovies);
+        return axios.get(`${global.API_URL}/movies/`, {
+            params: {
+                category: state.searchResultMovies.category,
+                keyword: state.searchResultMovies.keyword,
+                title: state.searchResultMovies.title
+            }
+        }).then((response) => {
+            if (response.data.status === global.HTTP_SUCCESS) {
+                const { result } = response.data;
+                commit('setSearchResultMovies', result);
+                return true;
+            }
+            return false;
+        });
+    },
     async getMoviesByGenres({ commit }, preferences) {
         Vue.$log.debug('Vuex movie.js getMoviesByGenres', preferences);
         let promises = [];
+        commit('setIsLoaded', false);
         preferences.forEach((genre) => {
             promises.push(axios.get(`${global.API_URL}/movies/`, {
                 params: {
-                    genres: genre,
+                    category: 'genre',
+                    keyword: genre,
                     page: 1
                 }
             }));
@@ -35,7 +91,8 @@ const actions = {
     async getMoviesByPersonal({ commit }, user) {
         Vue.$log.debug('Vuex movie.js getMoviesByPersonal', user);
         const targetUser = 5797;
-        axios.get(`${global.API_URL}/auth/recommendMovie/`, {
+        commit('setIsLoaded', false);
+        return axios.get(`${global.API_URL}/auth/recommendMovie/`, {
             params: {
                 id: targetUser
             }
@@ -43,7 +100,41 @@ const actions = {
             Vue.$log.debug('Vuex movie.js getMoviesByPersonal response', response);
             const { result } = response.data;
             commit('setPersonalMovies', result);
-            commit('setIsLoaded', true);
+        });
+    },
+    async getRatingPref({ commit }, email) {
+        Vue.$log.debug('Vuex movie.js getRatingPref', email);
+        return axios.get(`${global.API_URL}/movies/pref/`, {
+            params: {
+                email
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getRatingPref response', response);
+            return response.data;
+        });
+    },
+    async getNeverSeenMovieList({ commit }, email) {
+        Vue.$log.debug('Vuex movie.js getNeverSeenMovieList', email);
+        return axios.get(`${global.API_URL}/movies/neverSeenMovies/`, {
+            params: {
+                email
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getNeverSeenMovieList response', response);
+            return response.data;
+        });
+    },
+    // For Test
+    async getContentBased({ commit }, email) {
+        Vue.$log.debug('Vuex movie.js getContentBased', email);
+        commit('setIsLoaded', false);
+        return axios.get(`${global.API_URL}/contentBased/`, {
+            params: {
+                email
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getContentBased response', response);
+            return response.data;
         });
     }
 };
@@ -53,10 +144,25 @@ const mutations = {
         state.personalMovies = movies;
     },
     setIsLoaded(state, flag) {
-        state.isloaded = flag;
+        state.isLoaded = flag;
     },
     setGenreMovies(state, { genre, movies }) {
         state.genreMovies[genre] = movies;
+    },
+    setSearchResultMovies(state, result) {
+        state.searchResultMovies.result = result;
+    },
+    setSelectedMovie(state, movie) {
+        state.selectedMovie = movie;
+    },
+    setSearchConditionTitle(state, title) {
+        state.searchResultMovies.title = title;
+    },
+    setSearchConditionCategory(state, category) {
+        state.searchResultMovies.category = category;
+    },
+    setSearchConditionKeyword(state, keyword) {
+        state.searchResultMovies.keyword = keyword;
     }
 };
 

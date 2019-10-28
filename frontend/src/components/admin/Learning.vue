@@ -6,7 +6,7 @@
             v-model="model"
             :counter="max"
             :rules="rules"
-            label="First name"
+            label="Training Name"
         ></v-text-field>
         <fieldset>
             <legend>Hyper Parameter</legend>

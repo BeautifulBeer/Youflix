@@ -54,6 +54,27 @@
                                 <i class="material-icons">play_circle_outline</i>
                             </div>
                         </div>
+                        <div>
+                            <span
+                                class="taste-word"
+                                style="color: white;"
+                            >
+                                {{ ratingWord }}
+                            </span>
+                            <div style="padding-top: 7px;">
+                                <span @click="ratingMovie()">
+                                    <v-rating
+                                        id="ratingStar"
+                                        v-model="rating"
+                                        dense
+                                        color="white"
+                                        background-color="white"
+                                        half-increments
+                                        hover
+                                    />
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </v-col>
                 <v-col
@@ -81,6 +102,11 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex';
+
+const userMapState = createNamespacedHelpers('users').mapState;
+const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
+
 export default {
     filters: {
         runTimeLabel(value) {
@@ -90,13 +116,51 @@ export default {
             return value === '' ? '/static/img/no_image.jpg' : value;
         }
     },
-    props: ['visible', 'pmovie', 'close'],
+    props: {
+        visible: {
+            type: Boolean,
+            default: false
+        },
+        pmovie: {
+            type: Object,
+            default: null
+        },
+        close: {
+            type: Function,
+            default: null
+        },
+        rating: {
+            type: Number,
+            default: 0
+        },
+        ratingWord: {
+            type: String,
+            default: '이미 본 작품인가요?'
+        }
+    },
     data() {
         return {
             movie: {
                 src: 'detail.jpg'
             }
         };
+    },
+    computed: {
+        ...userMapState(['user'])
+    },
+    methods: {
+        ...ratingMapActions(['rateMovie']),
+        ratingMovie() {
+            this.rateMovie(
+                {
+                    email: this.user.email,
+                    movie_id: this.pmovie.id,
+                    ratingValue: this.rating
+                }
+            ).then((ret) => {
+                this.ratingWord = ret;
+            });
+        }
     }
 };
 </script>
@@ -248,6 +312,15 @@ export default {
         font-size: 150%;
         text-transform: uppercase;
     }
+}
+
+.taste-word {
+
+    font-size: 1.0em;
+    float: left;
+    margin-top: 10px;
+    margin-right: 20px;
+    margin-left: 10px;
 }
 
 </style>
