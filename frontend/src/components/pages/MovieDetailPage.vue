@@ -7,120 +7,155 @@
         <v-row style="height: 10vh;" />
         <v-row
             align="stretch"
-            justify="start"
+            justify="center"
             class="content-wrapper"
-            :style="{background: getMovie.backdrop_path}"
         >
-            <template v-if="isEmpty">
-                <v-col cols="6">
-                    <v-row align="stretch">
-                        <v-col style="padding: 0;">
-                            <template v-if="isVideo">
-                                <div
-                                    class="image-container"
-                                >
-                                    <iframe
-                                        :src="getMovieTrailer"
-                                        frameborder="0"
-                                        allowfullscreen
-                                        class="detail-image"
-                                        autoplay="1"
-                                    />
-                                </div>
-                            </template>
-                            <template v-else>
-                                <div class="image-container">
-                                    <v-img
-                                        class="detail-image"
-                                        :src="getMovieTrailer"
-                                    />
-                                </div>
-                            </template>
-                        </v-col>
-                    </v-row>
-                </v-col>
-                <v-col
-                    cols="6"
-                    class="detail-content"
-                    style="border: 2px solid gray;"
+            <v-col
+                cols="3"
+            >
+                <v-img
+                    class="detail-background"
+                    :src="getPoster"
+                />
+            </v-col>
+            <v-col
+                cols="8"
+            >
+                <v-row
+                    class="label-row"
                 >
-                    <v-row
-                        align="stretch"
-                        justify="start"
+                    <v-col
+                        cols="8"
                     >
-                        <v-col cols="12">
-                            <div class="detail-title title-family">
-                                {{ getMovie.title }}
-                            </div>
-                        </v-col>
-                    </v-row>
-                    <v-row style="padding: 0px 0px 0px 50px;">
-                        <div class="detail-rating">
-                            <div class="wrapper">
-                                <span class="label">
-                                    모두의
-                                </span>
-                                <span class="score">
-                                    3.4
-                                </span>
-                            </div>
-                        </div>
-                        <div class="detail-rating">
-                            <div class="wrapper">
-                                <span class="label">
-                                    나의
-                                </span>
-                                <span class="score">
-                                    3.4
-                                </span>
-                            </div>
-                        </div>
-                    </v-row>
-                    <v-row>
-                        <div class="label-wrapper">
-                            <span class="label">
-                                Overview
-                            </span>
-                            <div class="overview content content-family">
-                                {{ getMovie.overview }}
-                            </div>
-                        </div>
-                    </v-row>
-                    <v-row>
-                        <div class="label-wrapper">
-                            <span class="label">
-                                Genres
-                            </span>
-                            <div class="content">
-                                <v-chip
-                                    v-for="(genre, index) in getMovie.genres"
-                                    :key="'MovieDetailPage' + genre + index"
-                                    class="genre-chip"
-                                    :color="chip_colors[index % chip_colors.length]"
+                        <v-row>
+                            <v-col cols="12">
+                                <span
+                                    class="detail-title title-family"
                                 >
-                                    {{ genre }}
-                                </v-chip>
+                                    {{ getMovie.title }}
+                                </span>
+                            </v-col>
+                            <v-col cols="12">
+                                <span
+                                    class="detail-feature content-family"
+                                >
+                                    {{ getMovie.production_companies[0] }} | {{ getMovie.runtime }}Min
+                                </span>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                    <v-col
+                        cols="4"
+                    >
+                        <v-row
+                            justify="end"
+                            align="center"
+                        >
+                            <v-col cols="10">
+                                <div class="detail-rating">
+                                    <AnimateWhenVisible name="fade">
+                                        <div class="wrapper">
+                                            <span class="label">
+                                                예상별점
+                                            </span>
+                                            <span class="score">
+                                                3.4
+                                            </span>
+                                        </div>
+                                        <div class="wrapper">
+                                            <span class="label">
+                                                영화별점
+                                            </span>
+                                            <span class="score">
+                                                3.2
+                                            </span>
+                                        </div>
+                                    </AnimateWhenVisible>
+                                </div>
+                            </v-col>
+                        </v-row>
+                        <v-row
+                            justify="end"
+                            align="center"
+                        >
+                            <v-col cols="10">
+                                <span
+                                    class="taste-word"
+                                    style="color: white;"
+                                >
+                                    {{ ratingWord }}
+                                </span>
+                                <v-rating
+                                    id="ratingStar"
+                                    v-model="rating"
+                                    dense
+                                    color="white"
+                                    background-color="white"
+                                    half-increments
+                                    hover
+                                />
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-row>
+                <v-divider />
+                <v-row>
+                    <v-col cols="12">
+                        <span
+                            class="detail-content content-family"
+                        >
+                            {{ getMovie.overview }}
+                        </span>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols="12">
+                        <div class="detail-play">
+                            <div class="detail-play-content">
+                                <span>예고편 보기</span>
+                                <i class="material-icons">play_circle_outline</i>
                             </div>
                         </div>
-                    </v-row>
-                    <v-row>
-                        <div class="label-wrapper">
-                            <span class="label">
-                                release
-                            </span>
-                            <span class="content">
-                                {{ getMovie.release_date }}
-                            </span>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <div class="label-wrapper">
+                        <span class="label">
+                            Genre
+                        </span>
+                        <div class="content">
+                            <v-chip
+                                v-for="(genre, index) in getMovie.genres"
+                                :key="'MovieDetailPage' + genre + index"
+                                class="genre-chip"
+                                :color="chip_colors[index % chip_colors.length]"
+                            >
+                                {{ genre }}
+                            </v-chip>
                         </div>
-                    </v-row>
-                </v-col>
-            </template>
-            <template v-else>
-                욥욥
-            </template>
+                    </div>
+                </v-row>
+                <v-row>
+                    <div class="label-wrapper">
+                        <span class="label">
+                            Keyword
+                        </span>
+                        <div class="content">
+                            <v-chip
+                                v-for="(genre, index) in getMovie.genres"
+                                :key="'MovieDetailPage' + genre + index"
+                                class="genre-chip"
+                                :color="chip_colors[index % chip_colors.length]"
+                            >
+                                {{ genre }}
+                            </v-chip>
+                        </div>
+                    </div>
+                </v-row>
+            </v-col>
         </v-row>
         <v-row>
-            영화배우
+            ddd
         </v-row>
     </v-container>
 </template>
@@ -147,7 +182,8 @@ export default {
                 'green',
                 'yellow',
                 'purple'
-            ]
+            ],
+            rating: 0
         };
     },
     computed: {
@@ -168,6 +204,9 @@ export default {
             if (this.getMovie.backdrop_path) {
                 return this.getMovie.backdrop_path;
             }
+            return '/static/img/no_image.jpg';
+        },
+        getPoster() {
             if (this.getMovie.poster_path) {
                 return this.getMovie.poster_path;
             }
@@ -200,18 +239,31 @@ export default {
 
 <style lang="scss" scoped>
 @import "@/style/font.scss";
-
+@import "@/style/variables.scss";
 
 .content-wrapper{
-    padding: 0px 50px 0px 50px;
+    margin: 0px 50px 0px 50px;
     min-height: 90vh;
-    background-color: #111111;
+    // position: relative;
+}
+
+.detail-background{
+    width: 400px;
 }
 
 .detail-title{
-    color: white;
-    font-size: 3em;
+    color: $text-color;
+    font-size: 2.5em;
     font-weight: bold;
+}
+
+.detail-feature{
+    color: $text-gray-color;
+    font-size: 1.2em;
+}
+
+.detail-content{
+    color: $text-color;
 }
 
 .label-wrapper{
@@ -229,15 +281,18 @@ export default {
     span{
         margin-right: 5px;
     }
-    .content{
-        color: gray;
-        font-size: 1.2em;
-        padding-left: 1em;
-    }
+    // .content{
+    //     color: gray;
+    //     font-size: 1.2em;
+    //     padding-left: 1em;
+    // }
     .overview{
         color: white;
     }
-
+    .genre-chip{
+        margin: 10px;
+        font-size: 1.2em;
+    }
 }
 
 .detail-rating {
@@ -297,7 +352,36 @@ export default {
     // border-left: 1px solid white;
 }
 
-.genre-chip{
+
+.detail-play{
+    position: relative;
+    min-height: 50px;
     margin: 10px;
 }
+
+.detail-play-content{
+    position: relative;
+    min-height: 60px;
+    max-width: 200px;
+    box-sizing: border-box;
+    background-color: #e50914;
+    color: white;
+
+    span {
+        position: absolute;
+        top: 50%;
+        right: 3.2em;
+        font-size: 1.3em;
+        transform: translateY(-50%);
+    };
+    i {
+        position: absolute;
+        min-height: 50px;
+        font-size: 3em;
+        right: 0.2em;
+        top: 50%;
+        transform: translateY(-50%);
+    };
+}
+
 </style>
