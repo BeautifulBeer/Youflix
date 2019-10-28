@@ -42,5 +42,6 @@ urlpatterns = [
     # url('clustering/movieCharacter', clustering.getMovieCharacter, name="getmoviecharacter"),
 
     # test
-    url(r'contentBased/$', test.ContentBased, name='ContentBased')
+    url(r'contentBased/$', test.ContentBased, name='ContentBased'),
+    url(r'preprocessing/$', test.algo, name='preprocessing')
 ]

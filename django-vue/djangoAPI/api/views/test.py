@@ -151,7 +151,27 @@ def algo(request):
     movies_frame['keywords'] = movies_frame['keywords'].apply(preprocessing_keyword)
 
     # Rake(Rapid Automatic Keyword Extraction)을 이용해서 줄거리에 대한 keyword을 추출합니다.
-    movies_frame['overview'] = movies_frame['overview'].apply(preprocessing_overview)
+    # movies_frame['overview'] = movies_frame['overview'].apply(preprocessing_overview)
+
+
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf.fit_transform(movies_frame['overview'])
+
+    global col_values
+    col_values = tfidf.get_feature_names()
+    print()
+    print(col_values)
+    print()
+    print(tfidf_matrix)
+    print()
+    print(tfidf.get_params())
+
+    print(type(tfidf_matrix))
+    print(tfidf_matrix.data)
+
+    print(tfidf_matrix[0, 50962])
+    print(tfidf_matrix[1,:].toarray())
+
 
     # 앞에서 만든 데이터를 통하여 새로운 DataFrame을 생성합니다.
     df_keys = pd.DataFrame()
@@ -174,6 +194,7 @@ def algo(request):
 
     # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
     cosine_sim = cosine_similarity(cv_mx, cv_mx)
+    print(cosine_sim)
     # pd.DataFrame(cosine_sim).to_csv('consine_sim.csv', mode='w')
     # test 출력
     # print(cosine_sim)
@@ -237,6 +258,7 @@ def preprocessing_overview(data):
     rake = Rake()
     rake.extract_keywords_from_text(plot)
     scores = rake.get_word_degrees()
+    print(scores.keys())
     return(list(scores.keys()))
 
 
