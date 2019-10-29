@@ -12,6 +12,7 @@ import operator
 
 import re
 import os
+import math
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
@@ -33,7 +34,7 @@ from django.http import JsonResponse
 from django.core.cache import cache
 
 @api_view(['GET'])
-def ContentBased(request):
+def content_based(request):
 
     if request.method == 'GET':
 
@@ -41,32 +42,45 @@ def ContentBased(request):
         user = User.objects.get(email=email)
         ratings = Rating.objects.filter(user=user)
 
-        max_rating_obj = None
-        ratingValue = 0
+        movie_obj = []
+        selected_movies = []
+        selected_movies_index = []
 
         for rating in ratings:
-            if ratingValue < rating.rating:
-                max_rating_obj = rating
-                ratingValue = rating.rating
+            movie_obj.append(rating.movie)
 
         df_keys = pd.read_csv('df_keys.csv')
 
-        selectedMovie = df_keys.loc[df_keys['id'] == max_rating_obj.movie.id]
-        idx = str(selectedMovie['Unnamed: 0']).split(' ')
-        idx = int(idx[0])
-        
+        for movie in movie_obj:
+            selected_movies.append(df_keys.loc[df_keys['id'] == movie.id])
+
         # scikit-learn의 CountVectorizer를 사용하여 키워드를 토큰화하여 행렬을 조사하여 각 단어의 빈도를 분석합니다.
         cv = CountVectorizer()
         cv_mx = cv.fit_transform(df_keys['keywords'])
 
-        # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
-        cosine_sim = cosine_similarity(cv_mx[idx:idx + 1], cv_mx)
+        result = np.ndarray(shape = (1, 45433), dtype = float)
+
+        index = 0
+        offset = 0
+
+        for selected in selected_movies:
+
+            idx = selected.index.values[0]
+            # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
+            cosine_sim = cosine_similarity(cv_mx[idx:idx + 1], cv_mx)
+
+            # 유저가 점수를 매긴 값을 지수승으로 곱해줍니다.
+            offset = math.exp(ratings[index].rating)
+
+            for i in range(len(cosine_sim[0])):
+                result[0][i] += cosine_sim[0][i] * int(offset)
+            index += 1
 
         # 일치하는 index list를 생성합니다.
         indices = pd.Series(df_keys.index, index = df_keys['id'])
 
         # 상위 10개의 추천 영화를 추출합니다.
-        serializer = MovieSerializer(get_movie_list(df_keys, recommend_movie(df_keys, indices, 597, cosine_sim, 50)), many=True)
+        serializer = MovieSerializer(get_movie_list(df_keys, recommend_movie(df_keys, indices, 597, result, 50)), many=True)
         print(serializer)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
@@ -153,29 +167,16 @@ def algo(request):
     # Rake(Rapid Automatic Keyword Extraction)을 이용해서 줄거리에 대한 keyword을 추출합니다.
     # movies_frame['overview'] = movies_frame['overview'].apply(preprocessing_overview)
 
+    # TF-IDF(Term Frequency - Inverse Document Frequency)을 이용해서 Overview와 Title의 Keyword를 추출합니다.
+    cosine_sim = get_similarity(movies_frame, 'title')
+    np.savetxt("def_titles.csv", cosine_sim, delimiter=",")
 
-    tfidf = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = tfidf.fit_transform(movies_frame['overview'])
-
-    global col_values
-    col_values = tfidf.get_feature_names()
-    print()
-    print(col_values)
-    print()
-    print(tfidf_matrix)
-    print()
-    print(tfidf.get_params())
-
-    print(type(tfidf_matrix))
-    print(tfidf_matrix.data)
-
-    print(tfidf_matrix[0, 50962])
-    print(tfidf_matrix[1,:].toarray())
-
+    cosine_sim = get_similarity(movies_frame, 'overview')
+    np.savetxt("def_overviews.csv", cosine_sim, delimiter=",")
 
     # 앞에서 만든 데이터를 통하여 새로운 DataFrame을 생성합니다.
     df_keys = pd.DataFrame()
-    df_keys['title'] = movies_frame['title']
+    # df_keys['title'] = movies_frame['title']
     df_keys['keywords'] = ''
     df_keys['id'] = movies_frame['id']
 
@@ -183,28 +184,59 @@ def algo(request):
     df_keys['keywords'] = movies_frame.apply(bag_words, axis=1)
 
     # 지금까지의 결과를 .csv 파일로 저장합니다.
-    df_keys.to_csv('df_keys.csv', mode='w')
+    df_keys.to_csv('def_keywords.csv', mode='w')
 
     # test 출력
     # print(df_keys.head())
 
     # scikit-learn의 CountVectorizer를 사용하여 키워드를 토큰화하여 행렬을 조사하여 각 단어의 빈도를 분석합니다.
-    cv = CountVectorizer()
-    cv_mx = cv.fit_transform(df_keys['keywords'])
+    # cv = CountVectorizer()
+    # cv_mx = cv.fit_transform(df_keys['keywords'])
 
     # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
-    cosine_sim = cosine_similarity(cv_mx, cv_mx)
-    print(cosine_sim)
+    # cosine_sim = cosine_similarity(cv_mx, cv_mx)
     # pd.DataFrame(cosine_sim).to_csv('consine_sim.csv', mode='w')
     # test 출력
     # print(cosine_sim)
 
     # 일치하는 index list를 생성합니다.
-    indices = pd.Series(df_keys.index, index=df_keys['id'])
+    # indices = pd.Series(df_keys.index, index=df_keys['id'])
 
     # 상위 10개의 추천 영화를 추출합니다.
-    print(recommend_movie(df_keys, indices, 597, cosine_sim, 10))
+    # print(recommend_movie(df_keys, indices, 597, cosine_sim, 10))
     return Response(status=status.HTTP_200_OK)
+
+def get_similarity(data, column):
+
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf.fit_transform(data[column])
+
+    print(tfidf_matrix)
+
+    row_total = 0.0
+
+    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+
+    print("BEFORE")
+    print(cosine_sim)
+    print()
+
+    for row in range(len(cosine_sim)):
+
+        for col in range(len(cosine_sim[row])):
+            row_total += cosine_sim[row][col]
+        
+        for col in range(len(cosine_sim[row])):
+            if cosine_sim[row][col] == 0:
+                continue
+            cosine_sim[row][col] / row_total
+        row_total = 0.0
+
+    print()
+    print("AFTER")
+    print(cosine_sim)
+
+    return cosine_sim
 
 
 def recommend_movie(df_keys, indices, id, cosine_sim, n):
@@ -218,7 +250,6 @@ def recommend_movie(df_keys, indices, id, cosine_sim, n):
 
     # 내림차순으로, Cosine Simirality을 정렬합니다.
     scores = pd.Series(cosine_sim[0]).sort_values(ascending = False)
-    print(scores)
 
     # 가장 유사한 n(10)개만 추출합니다.
     # 첫번째 index의 영화의 경우 활성화된 영화와 같기 때문에 제외합니다.
@@ -258,10 +289,9 @@ def preprocessing_overview(data):
     rake = Rake()
     rake.extract_keywords_from_text(plot)
     scores = rake.get_word_degrees()
-    print(scores.keys())
     return(list(scores.keys()))
 
 
 def bag_words(x):
 
-    return (' '.join(x['genres']) + ' ' + ' '.join(x['keywords']) + ' ' + ' '.join(x['title']) + ' ' + ' '.join(x['overview']))
+    return (' '.join(x['genres']) + ' ' + ' '.join(x['keywords']) + ' ' + ' '.join(x['release_date']))

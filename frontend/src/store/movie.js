@@ -126,7 +126,7 @@ const actions = {
     // For Test
     async getContentBased({ commit }, email) {
         Vue.$log.debug('Vuex movie.js getContentBased', email);
-        return axios.get(`${global.API_URL}/contentBased/`, {
+        return axios.get(`${global.API_URL}/content_based/`, {
             params: {
                 email
             }
