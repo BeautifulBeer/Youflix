@@ -1,5 +1,5 @@
 from .models import Profile, Movie, Rating, UserCluster
-from .models import User
+from .models import User, Crew
 from rest_framework import serializers
 
 import json
@@ -214,6 +214,10 @@ class MovieGenderSerializer(serializers.ModelSerializer):
 
         return gender_dict
 
+class CrewSerializer(serializers.ModelSerializer):    
+    class Meta:
+        model = Crew
+        fields = ('id', 'movie', 'department', 'profile_path', 'gender', 'name', 'job')
 
 # ================= Rating Serializer =================== #
 class RatingSerializer(serializers.ModelSerializer):

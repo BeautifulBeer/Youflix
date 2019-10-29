@@ -50,7 +50,15 @@ export default {
         this.$log.debug('App.vue Vuex getters getToken', this.token);
         this.setToken(localStorage.getItem('token'));
         if (localStorage.getItem('token')) {
-            this.getUserBySession(localStorage.getItem('token'));
+            this.getUserBySession(localStorage.getItem('token')).then((ret) => {
+                // 로그인 세션 얻기에 실패할 경우
+                if (!ret) {
+                    localStorage.removeItem('token');
+                    this.$router.push('/');
+                    this.setUser(null);
+                    this.setToken(null);
+                }
+            });
         }
         if (this.user) {
             this.logoutflag = true;
@@ -58,7 +66,7 @@ export default {
     },
     methods: {
         ...mapActions(['logout', 'getUserBySession']),
-        ...mapMutations(['setToken']),
+        ...mapMutations(['setToken', 'setUser']),
         logoutState() {
             this.logout(this.username);
         }

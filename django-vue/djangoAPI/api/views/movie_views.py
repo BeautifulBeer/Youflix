@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.db.models import F
 from django.http import JsonResponse
-from api.models import Movie, User, Genre, Rating
-from api.serializers import MovieSerializer
+from api.models import Movie, User, Genre, Rating, Crew
+from api.serializers import MovieSerializer, CrewSerializer
 
 
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -186,7 +186,6 @@ def moviesPref(request):
                 ret['4.5'] = ret.get('4.5') + 1
             else:
                 ret['5'] = ret.get('5') + 1
-            
             print(ret)
         return JsonResponse({'status': status.HTTP_200_OK, 'data': ret})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
@@ -224,10 +223,21 @@ def never_seen_movie_list(request):
         return JsonResponse({'status': status.HTTP_200_OK, 'data': serializer.data}, safe=False)
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
-# @api_view(['GET'])
-# def recommendation(request):
-#     print(request.GET.get('id'), None)
-#     if request.method == 'GET':
-#         topN_movies = [469172, 267752, 404604,
-#             459950, 458506, 456101, 455675,	454787,
-#             452413, 452068, 408509, 1271]
+@api_view(['GET'])
+def crews(request):
+    try:
+        if request.method == 'GET':
+            movie_id = request.GET.get('movieId', None)
+            if movie_id is None:
+                raise ValueError('Movie ID Parameter is None')
+            movie = Movie.objects.get(id=movie_id)
+            if movie is None:
+                raise Movie.DoesNotExist
+            result = Crew.objects.filter(movie=movie)
+            serializer = CrewSerializer(result, many=True)
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
+    except ValueError:
+        return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': str(ValueError)})    
+    except Movie.DoesNotExist:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'Movie Object is not exist'})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

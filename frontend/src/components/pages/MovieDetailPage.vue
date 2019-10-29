@@ -14,7 +14,6 @@
                 cols="3"
             >
                 <v-img
-                    class="detail-background"
                     :src="getPoster"
                 />
             </v-col>
@@ -128,7 +127,7 @@
                                 v-for="(genre, index) in getMovie.genres"
                                 :key="'MovieDetailPage' + genre + index"
                                 class="genre-chip"
-                                :color="chip_colors[index % chip_colors.length]"
+                                :color="genre_colors[index % genre_colors.length]"
                             >
                                 {{ genre }}
                             </v-chip>
@@ -142,20 +141,79 @@
                         </span>
                         <div class="content">
                             <v-chip
-                                v-for="(genre, index) in getMovie.genres"
-                                :key="'MovieDetailPage' + genre + index"
+                                v-for="(keyword, index) in getMovie.keywords"
+                                :key="'MovieDetailPage' + keyword + index"
                                 class="genre-chip"
-                                :color="chip_colors[index % chip_colors.length]"
+                                :color="keyword_colors[index % keyword_colors.length]"
                             >
-                                {{ genre }}
+                                {{ keyword }}
                             </v-chip>
                         </div>
                     </div>
                 </v-row>
             </v-col>
         </v-row>
-        <v-row>
-            ddd
+        <v-row
+            justify="center"
+            align="center"
+        >
+            <v-col
+                cols="10"
+            >
+                <span
+                    class="detail-title title-family"
+                >
+                    Faculties
+                </span>
+            </v-col>
+        </v-row>
+        <v-row
+            :style="getCrewStyle"
+            class="slider-container"
+        >
+            <!-- <v-col
+                align-self="center"
+                style="padding: 0;"
+            >
+                <AnimateWhenVisible name="fade">
+                    <div style="position: relative;"> -->
+            <div
+                v-if="maxPageFlag"
+                class="btn prev"
+                @click="movePrevPage()"
+            />
+            <div
+                v-if="maxPageFlag"
+                class="btn next"
+                @click="moveNextPage()"
+            />
+            <div
+                v-for="(crew, index) in currentCrews"
+                :key="'personalized' + crew.id + index"
+                class="slider"
+            >
+                <v-img
+                    class="slider-img"
+                    :src="crew.profile_path | profilePath"
+                />
+            </div>
+                    <!-- </div>
+                </AnimateWhenVisible>
+            </v-col> -->
+        </v-row>
+        <v-row
+            justify="center"
+            align="center"
+        >
+            <v-col
+                cols="10"
+            >
+                <span
+                    class="detail-title title-family"
+                >
+                    Reviews
+                </span>
+            </v-col>
         </v-row>
     </v-container>
 </template>
@@ -167,6 +225,17 @@ const { mapState, mapActions } = createNamespacedHelpers('movies');
 
 export default {
     name: 'MovieDetailPage',
+    filters: {
+        profilePath(value) {
+            const min = 0;
+            const max = 2;
+            const rand = Math.floor(Math.random() * (max - min)) + min;
+            if (value && value !== '') {
+                return value;
+            }
+            return `/static/img/no_profile_image${rand}.jpg`;
+        }
+    },
     props: {
         id: {
             type: String,
@@ -175,21 +244,42 @@ export default {
     },
     data() {
         return {
-            chip_colors: [
-                'primary',
-                'secondary',
-                'red',
-                'green',
-                'yellow',
-                'purple'
+            genre_colors: [
+                '#E0FFFF',
+                '#7CFC00',
+                '#4B0082',
+                '#40E0D0',
+                '#FF6347',
+                '#FFB6C1'
             ],
-            rating: 0
+            keyword_colors: [
+                '#FFB6C1',
+                '#FF4500',
+                '#FF00FF',
+                '#8B4513',
+                '#FFFF00',
+                '#EE82EE'
+            ],
+            rating: 0,
+            ratingWord: '아직은 멀었지요',
+            showCount: 0,
+            currentIndex: 0,
+            currentPage: 0,
+            maxPage: 2,
+            sliderWidth: 200,
+            margin: 15
         };
     },
     computed: {
         ...mapState(['selectedMovie']),
         getMovie() {
-            return this.selectedMovie;
+            return this.selectedMovie.movie;
+        },
+        getCrews() {
+            if (this.selectedMovie.crews) {
+                return this.selectedMovie.crews;
+            }
+            return [];
         },
         isEmpty() {
             if (this.getMovie && 'id' in this.getMovie && this.id === this.getMovie.id) {
@@ -219,19 +309,86 @@ export default {
             return this.getMovie.video
                 && this.getMovie.backdrop_path
                 && !this.getMovie.poster_path;
+        },
+        currentCrews() {
+            const start = this.currentIndex;
+            const end = this.currentIndex + this.showCount;
+            // console.log(start, end);
+            let result = [];
+            if (end >= this.getCrews.length) {
+                result = result.concat(this.getCrews.slice(start));
+                // console.log(result);
+                result = result.concat(this.getCrews.slice(0, end - this.getCrews.length));
+                // console.log(result);
+            } else {
+                result = result.concat(this.getCrews.slice(start, end));
+            }
+            return result;
+        },
+        getCrewStyle() {
+            if (this.maxPage > 1) {
+                return {
+                    'justify-content': 'flex-start',
+                    width: '200vw'
+                };
+            }
+            return {
+                'justify-content': 'center',
+                width: '100vw'
+            };
+        },
+        maxPageFlag() {
+            return this.maxPage > 1;
         }
     },
     mounted() {
-        if (this.isEmpty) {
-            this.getMovieById(this.id).then(() => {
-                this.$forceUpdate();
+        this.$nextTick(() => {
+            if (this.isEmpty) {
+                this.getMovieById(this.id).then((ret) => {
+                    if (ret) {
+                        this.getMovieCrews(this.id).then(() => {
+                            this.$forceUpdate();
+                        });
+                    } else {
+                        this.$forceUpdate();
+                    }
+                });
+            }
+            this.loadSliderWidth();
+            window.addEventListener('resize', () => {
+                this.loadSliderWidth();
             });
-        }
+        });
     },
     methods: {
-        ...mapActions(['getMovieById']),
+        ...mapActions(['getMovieById', 'getMovieCrews']),
         back() {
             this.$router.go(-1);
+        },
+        loadSliderWidth() {
+            const { innerWidth } = window;
+            this.$log.debug('MovieDetailPage.vue loadSliderWidth innerWidth', innerWidth);
+            this.showCount = parseInt(innerWidth / (this.sliderWidth + 15), 10) + 1;
+            if (this.showCount >= this.getCrews.length) {
+                this.showCount = this.getCrews.length;
+            }
+            this.currentPage = 0;
+            if (this.showCount === 0) {
+                this.showCount = 1;
+            }
+            this.maxPage = Math.ceil(this.getCrews.length / this.showCount);
+        },
+        moveNextPage() {
+            this.currentIndex = this.currentIndex + this.showCount - 1;
+            if (this.getCrews.length <= this.currentIndex) {
+                this.currentIndex = this.currentIndex - this.getCrews.length;
+            }
+        },
+        movePrevPage() {
+            this.currentIndex = this.currentIndex - this.showCount + 1;
+            if (this.currentIndex < 0) {
+                this.currentIndex = this.getCrews.length + this.currentIndex;
+            }
         }
     }
 };
@@ -241,9 +398,43 @@ export default {
 @import "@/style/font.scss";
 @import "@/style/variables.scss";
 
+$portfolio-item-info-offset: 0px;
+
+$portfolio-link-dimensions: 35px;
+$portfolio-link-offset: 10px;
+$accent-theme-color2: #8D909B;
+$light-theme-color: #fff;
+
+$slider-width: 200px;
+$slider-height: 284px;
+$slider-scale: 1.3;
+$button-height: 284px;
+$button-width: 50px;
+
+@function scale-value($value1, $value2) {
+    @return $value1 * $value2;
+}
+
+
+//transitions mixin
+@mixin transition-mix($property: all, $duration: 0.2s, $timing: linear, $delay: 0s) {
+  transition-property: $property;
+  transition-duration: $duration;
+  transition-timing-function: $timing;
+  transition-delay: $delay;
+}
+
+//position absolute mixin
+@mixin position-absolute ($top: null, $left: null, $right: null, $bottom: null) {
+  position: absolute;
+  top: $top;
+  left: $left;
+  right: $right;
+  bottom: $bottom;
+}
+
 .content-wrapper{
     margin: 0px 50px 0px 50px;
-    min-height: 90vh;
     // position: relative;
 }
 
@@ -384,4 +575,46 @@ export default {
     };
 }
 
+.slider-container {
+    margin-top: 50px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 50px;
+}
+
+.slider{
+    width: scale-value($slider-width, 1);
+    height: scale-value($slider-height, 1);
+    margin: 0;
+    padding: 0;
+    object-fit: fill;
+    object-position: bottom;
+    display: inline-block;
+    -webkit-transition: width .5s, height .5s, transform .5s ease; /* For Safari 3.1 to 6.0 */
+    transition: width .5s, height .5s, transform .5s ease;
+    transform: translateY(0%);
+    margin: 0px 15px 0px 0px;
+}
+
+.slider-img {
+    width: 100%;
+    height: 100%;
+}
+
+
+.btn{
+    width: $button-width;
+    height: scale-value($button-height, 1);
+    background: rgba(0,0,0,0.3);
+    position: absolute;
+    top: 0;
+    z-index: 1000;
+    &.prev{
+        left: 0;
+    }
+    &.next{
+        right: 50%;
+        transform: translateX(-$scroll-width);
+    }
+}
 </style>

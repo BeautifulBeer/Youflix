@@ -126,13 +126,13 @@ const actions = {
     // },
 
     async getUserBySession({ commit }, token) {
-        Vue.$log.debug('Vuex', token);
+        Vue.$log.debug('Vuex user.js getUserBySession', token);
         return axios.get(`${global.API_URL}/auth/session/`, {
             params: {
                 token
             }
         }).then((response) => {
-            Vue.$log.debug('Vuex response', response.data);
+            Vue.$log.debug('Vuex user.js getUserBySession response', response.data);
             if (response.data.status === global.HTTP_SUCCESS) {
                 const { result } = response.data;
                 if (result.is_auth) {
@@ -150,9 +150,6 @@ const actions = {
                 }
             }
             return false;
-        }).catch((error) => {
-            Vue.$log.debug('Vuex getUserBySession error', error);
-            localStorage.removeItem('token');
         });
     }
 };

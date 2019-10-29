@@ -1,9 +1,8 @@
 <template>
     <v-container
         v-if="!isLoaded"
+        fluid
         class="loading-container"
-        justify="center"
-        align="center"
     >
         <v-row
             style="height: 100%; position: relative;"
