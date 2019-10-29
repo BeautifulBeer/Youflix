@@ -279,6 +279,7 @@ export default {
         movieList: [],
         transparent: 'rgba(255, 255, 255, 0)'
     }),
+
     watch: {
         modifyFlag() {
             this.movieInfo.title = this.movieList[this.clickedIndex].title;
@@ -322,15 +323,17 @@ export default {
                 sort: method,
                 genres: this.selectedGenre
             }).then((ret) => {
+              this.$log.debug(ret)
                 if (ret.data === undefined || ret.data.length === 0) return;
 
                 if (this.movieList.length !== 0) {
-                    this.movieList.push.spread(this.movieList, ret.data);
+                    this.movieList.push.spread(this.movieList, ret.data.result);
                 } else {
-                    this.movieList = ret.data;
+                    this.movieList = ret.data.result;
                 }
                 this.isLoading = false;
             });
+
         },
         clickMovie(index) {
             this.clickedIndex = index;

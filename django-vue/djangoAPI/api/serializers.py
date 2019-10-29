@@ -11,7 +11,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     email = serializers.SerializerMethodField('get_email')
     is_staff = serializers.SerializerMethodField('get_is_staff')
-    movie_tastes = serializers.SerializerMethodField('get_movie_taste')
+    movie_taste = serializers.SerializerMethodField('get_movie_taste')
 
     class Meta:
         model = Profile
