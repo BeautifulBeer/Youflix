@@ -13,6 +13,7 @@ import operator
 import re
 import os
 import math
+import time
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
@@ -25,6 +26,7 @@ import pandas as pd
 import numpy as np
 from numpy import dot
 from numpy.linalg import norm
+from django.conf import settings
 
 from ast import literal_eval
 from rake_nltk import Rake
@@ -32,6 +34,10 @@ from rake_nltk import Rake
 # Caching
 from django.http import JsonResponse
 from django.core.cache import cache
+
+# Numba
+from numba import jit
+import numba
 
 @api_view(['GET'])
 def content_based(request):
@@ -49,14 +55,55 @@ def content_based(request):
         for rating in ratings:
             movie_obj.append(rating.movie)
 
-        df_keys = pd.read_csv('df_keys.csv')
+        # Read preprocessing data
+        def_keywords = pd.read_csv('def_keywords.csv')
+        preprocessing_data = pd.read_csv('preprocessing.csv')
 
         for movie in movie_obj:
-            selected_movies.append(df_keys.loc[df_keys['id'] == movie.id])
+            selected_movies.append(def_keywords.loc[def_keywords['id'] == movie.id])
+            selected_movies_index.append(def_keywords.loc[def_keywords['id'] == movie.id].index.values[0])
+        print(selected_movies_index)
+
+        preprocessing_data['overview'] = preprocessing_data['overview'].fillna('')
+
+        tfidf = TfidfVectorizer(stop_words='english')
+
+        tfidf_matrix_overview = tfidf.fit_transform(preprocessing_data['overview'])
+        print(tfidf_matrix_overview)
+        # overview_total = get_total_tf_idf(tfidf_matrix_overview.toarray())
+        
+        # print("======================")
+        # print(overview_total)
+        # print("======================")
+        # print(tfidf_matrix_overview.toarray())
+        # print("======================")
+        tfidf_matrix_overview = tfidf_matrix_overview.toarray()
+        overview_matrix = np.array(get_extracted_list(tfidf_matrix_overview, selected_movies_index))
+        print(overview_matrix)
+        # overview_matrix = overview_matrix.toarray()
+        overview_matrix = adjust_similarity_values(overview_matrix, 'OVERVIEW_TF_IDF_TOTAL_VALUE')
+        print("OVERVIEW MATRIX> ")
+        overview_similarity = linear_kernel(overview_matrix, tfidf_matrix_overview)
+        print(overview_similarity)
+
+        temp3 = fast_cosine_matrix(overview_matrix, tfidf_matrix_overview)
+        print(temp3)
+        # print()
+
+        tfidf_matrix_title = tfidf.fit_transform(preprocessing_data['title'])
+        tfidf_matrix_title = tfidf_matrix_title.toarray()
+        title_matrix = np.array(get_extracted_list(tfidf_matrix_title, selected_movies_index))
+        print(title_matrix)
+        # title_matrix = title_matrix.toarray()
+        title_matrix = adjust_similarity_values(title_matrix, 'TITLE_TF_IDF_TOTAL_VALUE')
+        print("TITLE MATRIX> ")
+        title_similarity = linear_kernel(title_matrix, tfidf_matrix_title)
+        print(title_similarity)
+
 
         # scikit-learn의 CountVectorizer를 사용하여 키워드를 토큰화하여 행렬을 조사하여 각 단어의 빈도를 분석합니다.
         cv = CountVectorizer()
-        cv_mx = cv.fit_transform(df_keys['keywords'])
+        cv_mx = cv.fit_transform(def_keywords['keywords'])
 
         result = np.ndarray(shape = (1, 45433), dtype = float)
 
@@ -84,6 +131,79 @@ def content_based(request):
         print(serializer)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
+
+@numba.jit(target='cpu', nopython=True, parallel=True)
+def fast_cosine_matrix(u, M):
+    scores = np.zeros(M.shape[0])
+    for i in numba.prange(M.shape[0]):
+        v = M[i]
+        m = u.shape[0]
+        udotv = 0
+        u_norm = 0
+        v_norm = 0
+        for j in range(m):
+            if (np.isnan(u[j])) or (np.isnan(v[j])):
+                continue
+
+            udotv += u[j] * v[j]
+            u_norm += u[j] * u[j]
+            v_norm += v[j] * v[j]
+
+        u_norm = np.sqrt(u_norm)
+        v_norm = np.sqrt(v_norm)
+
+        if (u_norm == 0) or (v_norm == 0):
+            ratio = 1.0
+        else:
+            ratio = udotv / (u_norm * v_norm)
+        scores[i] = ratio
+    return scores
+
+@jit(nopython=True)
+def get_total_tf_idf(matrix):
+
+    ret = 0.0
+    for row in range(len(matrix)):
+        for col in range(len(matrix[row])):
+            ret += matrix[row][col]
+    return ret
+
+
+# @jit(nopython=True)
+def adjust_similarity_values(similarity_matrix, select):
+    
+    ret = np.zeros((len(similarity_matrix), len(similarity_matrix[0])), dtype=np.float64)
+    print(ret)
+    print("BEFORE")
+    print(similarity_matrix)
+    print('settings.GLOBAL_CONSTANTS[select] ', settings.GLOBAL_CONSTANTS[select])
+    print(type(ret))
+    print()
+
+    for row in range(len(similarity_matrix)):
+        for col in range(len(similarity_matrix[row])):
+            if similarity_matrix[row][col] == 0:
+                continue
+            print('\t', similarity_matrix[row][col])
+            print('\t', (similarity_matrix[row][col] / settings.GLOBAL_CONSTANTS[select]))
+            print(type(similarity_matrix[row][col]))
+            print(type(similarity_matrix[row][col] / settings.GLOBAL_CONSTANTS[select]))
+            ret[row][col] = (similarity_matrix[row][col] / settings.GLOBAL_CONSTANTS[select])
+            print('\t\t', similarity_matrix[row][col])
+
+    print("AFTER")
+    print(ret)
+
+    return ret
+
+
+def get_extracted_list(matrix, index_list):
+
+    ret = []
+    for index in index_list:
+        ret.append(matrix[index, :])
+    return ret
+
 def get_movie_list(df_keys, datas):
 
     movie_list = []
@@ -91,7 +211,6 @@ def get_movie_list(df_keys, datas):
         movie_list.append(Movie.objects.get(pk=df_keys.iloc[index]['id']))
     return movie_list
 
-# @jit(nopython=True)
 @api_view(['GET'])
 def algo(request):
     
@@ -117,6 +236,8 @@ def algo(request):
     movies_frame = movies_frame.drop('video', axis=1)
     movies_frame = movies_frame.drop('vote_average', axis=1)
     movies_frame = movies_frame.drop('vote_count', axis=1)
+    movies_frame = movies_frame.drop('original_title', axis=1)
+    movies_frame = movies_frame.drop('original_language', axis=1)
 
     # 각 영화에 대한 Keyword와 Genre를 추출합니다.
     keywords = []
@@ -150,7 +271,7 @@ def algo(request):
             genres.append('')
 
     # test
-    # pd.set_option('display.max_columns', 30)
+    pd.set_option('display.max_columns', 30)
 
     # 데이터 전처리 및 생성
     # 1. overview가 없는 영화에 대해서 ''로 모두 할당 해줍니다.
@@ -160,19 +281,27 @@ def algo(request):
     # 3. Keyword 데이터를 삽입합니다.
     movies_frame = movies_frame.assign(keywords=keywords)
 
+    print(movies_frame.head())
+
     # genres, keywords 데이터에 대해서 공백(' ')을 없애줍니다.
     movies_frame['genres'] = movies_frame['genres'].apply(preprocessing_genres)
     movies_frame['keywords'] = movies_frame['keywords'].apply(preprocessing_keyword)
+
+    movies_frame.to_csv('preprocessing.csv', mode='w')
 
     # Rake(Rapid Automatic Keyword Extraction)을 이용해서 줄거리에 대한 keyword을 추출합니다.
     # movies_frame['overview'] = movies_frame['overview'].apply(preprocessing_overview)
 
     # TF-IDF(Term Frequency - Inverse Document Frequency)을 이용해서 Overview와 Title의 Keyword를 추출합니다.
-    cosine_sim = get_similarity(movies_frame, 'title')
-    np.savetxt("def_titles.csv", cosine_sim, delimiter=",")
+    # tfidf = TfidfVectorizer(stop_words='english')
+    # tfidf_matrix = tfidf.fit_transform(movies_frame['title'])
 
-    cosine_sim = get_similarity(movies_frame, 'overview')
-    np.savetxt("def_overviews.csv", cosine_sim, delimiter=",")
+    # cosine_sim = get_similarity(linear_kernel(tfidf_matrix, tfidf_matrix))
+
+    # tfidf = TfidfVectorizer(stop_words='english')
+    # tfidf_matrix = tfidf.fit_transform(movies_frame['overview'])
+
+    # cosine_sim = get_similarity(linear_kernel(tfidf_matrix, tfidf_matrix))
 
     # 앞에서 만든 데이터를 통하여 새로운 DataFrame을 생성합니다.
     df_keys = pd.DataFrame()
@@ -206,16 +335,10 @@ def algo(request):
     # print(recommend_movie(df_keys, indices, 597, cosine_sim, 10))
     return Response(status=status.HTTP_200_OK)
 
-def get_similarity(data, column):
-
-    tfidf = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = tfidf.fit_transform(data[column])
-
-    print(tfidf_matrix)
+@jit(nopython=True)
+def get_similarity(cosine_sim):
 
     row_total = 0.0
-
-    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
 
     print("BEFORE")
     print(cosine_sim)
@@ -294,4 +417,4 @@ def preprocessing_overview(data):
 
 def bag_words(x):
 
-    return (' '.join(x['genres']) + ' ' + ' '.join(x['keywords']) + ' ' + ' '.join(x['release_date']))
+    return (' '.join(x['genres']) + ' ' + ' '.join(x['keywords']))
