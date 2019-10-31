@@ -103,6 +103,11 @@ def register(request):
         occupation = params.get('occupation', None)
         genres = params.get('genres', None)
 
+        if gender == 'female':
+            gender = 'F'
+        elif gender == 'male':
+            gender = 'M'
+
         max_id_object = Profile.objects.latest('id')
         max_id = max_id_object.id
         try:
