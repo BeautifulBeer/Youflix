@@ -30,6 +30,7 @@ from django.conf import settings
 
 from ast import literal_eval
 from rake_nltk import Rake
+from scipy import sparse
 
 # Caching
 from django.http import JsonResponse
@@ -38,6 +39,9 @@ from django.core.cache import cache
 # Numba
 from numba import jit
 import numba
+
+from scipy import sparse
+import sklearn.preprocessing as pp
 
 @api_view(['GET'])
 def content_based(request):
@@ -68,32 +72,52 @@ def content_based(request):
 
         tfidf = TfidfVectorizer(stop_words='english')
 
+        # <class 'numpy.ndarray'>
         tfidf_matrix_overview = tfidf.fit_transform(preprocessing_data['overview'])
         print(tfidf_matrix_overview)
         # overview_total = get_total_tf_idf(tfidf_matrix_overview.toarray())
         
-        # print("======================")
-        # print(overview_total)
-        # print("======================")
-        # print(tfidf_matrix_overview.toarray())
-        # print("======================")
-        tfidf_matrix_overview = tfidf_matrix_overview.toarray()
-        overview_matrix = np.array(get_extracted_list(tfidf_matrix_overview, selected_movies_index))
-        print(overview_matrix)
-        # overview_matrix = overview_matrix.toarray()
-        overview_matrix = adjust_similarity_values(overview_matrix, 'OVERVIEW_TF_IDF_TOTAL_VALUE')
-        print("OVERVIEW MATRIX> ")
-        overview_similarity = linear_kernel(overview_matrix, tfidf_matrix_overview)
-        print(overview_similarity)
+        # tfidf_matrix_overview = tfidf_matrix_overview.toarray()
+        overview_matrix = np.array(get_extracted_list(tfidf_matrix_overview.toarray(), selected_movies_index))
+        # ret = np.zeros((len(overview_matrix), len(overview_matrix[0])), dtype=np.float64)
 
-        temp3 = fast_cosine_matrix(overview_matrix, tfidf_matrix_overview)
-        print(temp3)
+        print("CALCULATE> ")
+        print("OVERVIEW MATRIX>")
+        print(overview_matrix)
+        print()
+        print("TFIDF TOTAL MATRIX>")
+        print(tfidf_matrix_overview)
+        print()
+        print(type(overview_matrix), " ", type(tfidf_matrix_overview))
+        # print(len(overview_matrix), " ", len(tfidf_matrix_overview))
+        print(tfidf_matrix_overview.getnnz())
+
+        overview_matrix = adjust_similarity_values(overview_matrix, np.zeros((len(overview_matrix), len(overview_matrix[0])), dtype=np.float64))
+        print(type(overview_matrix))
+        print()
+
+        print("BEFORE")
+        print(tfidf_matrix_overview)
+        print()
+
+        for row in range(45432):
+            for index in range(len(tfidf_matrix_overview[row].indices)):
+                tfidf_matrix_overview[row].data[index] /= 205631.73694292648
+        print("AFTER")
+        print(tfidf_matrix_overview)
+        # tfidf_matrix_overview = adjust_similarity_values(tfidf_matrix_overview, np.zeros((len(tfidf_matrix_overview), len(tfidf_matrix_overview[0])), dtype=np.float64))
+        
+
+        tfidf_sparse_matrix_overview = sparse.csr_matrix(tfidf_matrix_overview)
+        sparse_partial_matrix_overview = sparse.csr_matrix(overview_matrix)
+        # print("SPARSE COMPLETE")
+        # print(cosine_similarity(tfidf_sparse_matrix_overview, dense_output=False))
+        overview_similarity = linear_kernel(sparse_partial_matrix_overview, tfidf_sparse_matrix_overview, dense_output=False)
         # print()
 
         tfidf_matrix_title = tfidf.fit_transform(preprocessing_data['title'])
         tfidf_matrix_title = tfidf_matrix_title.toarray()
         title_matrix = np.array(get_extracted_list(tfidf_matrix_title, selected_movies_index))
-        print(title_matrix)
         # title_matrix = title_matrix.toarray()
         title_matrix = adjust_similarity_values(title_matrix, 'TITLE_TF_IDF_TOTAL_VALUE')
         print("TITLE MATRIX> ")
@@ -132,32 +156,35 @@ def content_based(request):
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
 
-@numba.jit(target='cpu', nopython=True, parallel=True)
-def fast_cosine_matrix(u, M):
-    scores = np.zeros(M.shape[0])
-    for i in numba.prange(M.shape[0]):
-        v = M[i]
-        m = u.shape[0]
-        udotv = 0
-        u_norm = 0
-        v_norm = 0
-        for j in range(m):
-            if (np.isnan(u[j])) or (np.isnan(v[j])):
-                continue
+def cosine_similarities(mat):
+    col_normed_mat = pp.normalize(mat.tocsc(), axis=0)
+    return col_normed_mat.T * col_normed_mat
+# @numba.jit(target='cpu', nopython=True, parallel=True)
+# def fast_cosine_matrix(u, M):
+#     scores = np.zeros(M.shape[0])
+#     for i in numba.prange(M.shape[0]):
+#         v = M[i]
+#         m = u.shape[0]
+#         udotv = 0
+#         u_norm = 0
+#         v_norm = 0
+#         for j in range(m):
+#             if (np.isnan(u[j])) or (np.isnan(v[j])):
+#                 continue
 
-            udotv += u[j] * v[j]
-            u_norm += u[j] * u[j]
-            v_norm += v[j] * v[j]
+#             udotv += u[j] * v[j]
+#             u_norm += u[j] * u[j]
+#             v_norm += v[j] * v[j]
 
-        u_norm = np.sqrt(u_norm)
-        v_norm = np.sqrt(v_norm)
+#         u_norm = np.sqrt(u_norm)
+#         v_norm = np.sqrt(v_norm)
 
-        if (u_norm == 0) or (v_norm == 0):
-            ratio = 1.0
-        else:
-            ratio = udotv / (u_norm * v_norm)
-        scores[i] = ratio
-    return scores
+#         if (u_norm == 0) or (v_norm == 0):
+#             ratio = 1.0
+#         else:
+#             ratio = udotv / (u_norm * v_norm)
+#         scores[i] = ratio
+#     return scores
 
 @jit(nopython=True)
 def get_total_tf_idf(matrix):
@@ -169,31 +196,13 @@ def get_total_tf_idf(matrix):
     return ret
 
 
-# @jit(nopython=True)
-def adjust_similarity_values(similarity_matrix, select):
-    
-    ret = np.zeros((len(similarity_matrix), len(similarity_matrix[0])), dtype=np.float64)
-    print(ret)
-    print("BEFORE")
-    print(similarity_matrix)
-    print('settings.GLOBAL_CONSTANTS[select] ', settings.GLOBAL_CONSTANTS[select])
-    print(type(ret))
-    print()
+@jit(nopython=True)
+def adjust_similarity_values(similarity_matrix, ret):
 
     for row in range(len(similarity_matrix)):
         for col in range(len(similarity_matrix[row])):
-            if similarity_matrix[row][col] == 0:
-                continue
-            print('\t', similarity_matrix[row][col])
-            print('\t', (similarity_matrix[row][col] / settings.GLOBAL_CONSTANTS[select]))
-            print(type(similarity_matrix[row][col]))
-            print(type(similarity_matrix[row][col] / settings.GLOBAL_CONSTANTS[select]))
-            ret[row][col] = (similarity_matrix[row][col] / settings.GLOBAL_CONSTANTS[select])
-            print('\t\t', similarity_matrix[row][col])
-
-    print("AFTER")
-    print(ret)
-
+            if similarity_matrix[row][col] != 0:
+                ret[row][col] = (similarity_matrix[row][col] / 205631.73694292648)
     return ret
 
 
