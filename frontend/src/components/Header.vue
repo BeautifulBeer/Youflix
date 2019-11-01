@@ -31,7 +31,7 @@
                     </v-row>
                 </v-col>
                 <v-col
-                    v-if="getlogoutflag"
+                    v-show="getlogoutflag"
                     cols="3"
                 >
                     <v-row
@@ -95,7 +95,7 @@
                     </v-row>
                 </v-col>
                 <v-col
-                    v-if="getlogoutflag"
+                    v-show="getlogoutflag"
                     cols="8"
                     class="wrapper"
                 >
@@ -176,7 +176,6 @@
 </template>
 
 <script>
-import $ from 'jquery';
 import swal from 'sweetalert';
 import { createNamespacedHelpers } from 'vuex';
 
@@ -233,51 +232,56 @@ export default {
     },
     mounted() {
         this.$nextTick(() => {
-            window.addEventListener('DOMContentLoaded', () => {
-                const headerIcon = document.getElementById('header-search-icon');
-                const headerInput = document.getElementById('header-search-input');
-                const headerEffect = document.getElementById('header-search-effect');
-                const categories = document.getElementsByClassName('category');
-                if (headerIcon) {
-                    headerIcon.addEventListener('mouseenter', () => {
-                        this.$log.debug('Header.vue headerIcon mouseenter');
-                        this.mouseOver = true;
-                    });
+            const headerIcon = document.getElementById('header-search-icon');
+            const headerInput = document.getElementById('header-search-input');
+            const headerEffect = document.getElementById('header-search-effect');
+            const categories = document.getElementsByClassName('category');
+            if (headerIcon) {
+                headerIcon.addEventListener('mouseenter', () => {
+                    this.$log.debug('Header.vue headerIcon mouseenter');
+                    this.mouseOver = true;
+                });
 
-                    headerIcon.addEventListener('mouseleave', () => {
-                        this.$log.debug('Header.vue headerIcon mouseleave');
-                        this.mouseOver = false;
-                    });
-                }
+                headerIcon.addEventListener('mouseleave', () => {
+                    this.$log.debug('Header.vue headerIcon mouseleave');
+                    this.mouseOver = false;
+                });
+            }
 
-                if (headerInput) {
-                    headerInput.addEventListener('focusout', () => {
-                        if (!this.mouseOver) {
-                            headerEffect.classList.remove('open');
-                            headerIcon.classList.remove('open');
-                            headerInput.value = '';
+            if (headerInput) {
+                headerInput.addEventListener('focusout', () => {
+                    if (!this.mouseOver) {
+                        headerEffect.classList.remove('open');
+                        headerIcon.classList.remove('open');
+                        headerInput.value = '';
+                    }
+                });
+            }
+
+            if (categories && categories.length > 0) {
+                const categoryLength = categories.length;
+                for (let i = 0; i < categoryLength; i += 1) {
+                    categories[i].addEventListener('click', (event) => {
+                        this.$log.debug('Header.vue category addEventListener', event);
+                        const classes = event.target.classList;
+                        for (let j = 0; j < categoryLength; j += 1) {
+                            categories[j].classList.remove('highlight');
                         }
+                        classes.add('highlight');
                     });
                 }
-
-                if (categories && categories.length > 0) {
-                    const categoryLength = categories.length;
-                    for (let i = 0; i < categoryLength; i += 1) {
-                        categories[i].addEventListener('click', (event) => {
-                            this.$log.debug('Header.vue category addEventListener', event);
-                            const classes = event.target.classList;
-                            for (let j = 0; j < categoryLength; j += 1) {
-                                categories[j].classList.remove('highlight');
-                            }
-                            classes.add('highlight');
-                        });
+                const categoiesLabel = Object.keys(this.category);
+                for (let i = 0; i < categoiesLabel.length; i += 1) {
+                    if (this.searchResultMovies.category === categoiesLabel[i]) {
+                        categories[i].classList.add('highlight');
+                        break;
                     }
                 }
+            }
 
-                if (this.getUser) {
-                    this.logoutflag = true;
-                }
-            });
+            if (this.getUser) {
+                this.logoutflag = true;
+            }
             window.addEventListener('scroll', () => {
                 const header = document.getElementById('header');
                 if (parseInt(window.scrollY, 10) < this.prevOffset) {
@@ -348,7 +352,9 @@ export default {
                 effect.classList.remove('open');
                 icon.classList.remove('open');
                 keywordInput.value = '';
-                this.$router.push('/movie/search');
+                if (window.location.pathname.indexOf('movie/search') === -1) {
+                    this.$router.push('/movie/search');
+                }
             } else {
                 effect.classList.add('open');
                 icon.classList.add('open');
@@ -356,8 +362,12 @@ export default {
             }
         },
         movieCategorySearch(keyword) {
-            this.setSearchConditionKeyword(keyword)
-            this.$router.push('/movie/search');
+            this.setSearchConditionKeyword(keyword);
+            if (window.location.pathname.indexOf('movie/search') === -1) {
+                this.$router.push({
+                    path: '/movie/search'
+                });
+            }
         }
     }
 };

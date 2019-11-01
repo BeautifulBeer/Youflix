@@ -8,18 +8,21 @@ const state = {
     genreMovies: {},
     searchResultMovies: {
         category: 'genre',
-        keyword: 'Total',
+        keyword: 'TV Movie',
         title: '',
         result: []
     },
-    selectedMovie: {},
+    selectedMovie: {
+        movie: {},
+        crews: []
+    },
     isLoaded: true
 };
 
 const actions = {
     async getMovieById({ commit }, movieId) {
         Vue.$log.debug('Vuex movie.js getMovieById', movieId);
-        axios.get(`${global.API_URL}/movies/`, {
+        return axios.get(`${global.API_URL}/movies/`, {
             params: {
                 id: movieId
             }
@@ -124,6 +127,38 @@ const actions = {
             return response.data;
         });
     },
+    async getMovieCrews({ commit }, movieId) {
+        Vue.$log.debug('Vuex movie.js getMovieCrews', movieId);
+        return axios.get(`${global.API_URL}/movies/crews/`, {
+            params: {
+                movieId
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getMovieCrews response', response);
+            if (response.data.status === global.HTTP_SUCCESS) {
+                const { result } = response.data;
+                commit('setSelectedCrews', result);
+                return true;
+            }
+            return false;
+        });
+    },
+    async getPrediction({ state }, [useremail, movieId]) {
+        Vue.$log.debug('Vuex movie.js getPrediction', useremail, movieId);
+        return axios.get(`${global.API_URL}/auth/predictRating/`, {
+            params: {
+                movieId,
+                useremail
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getPrediction response', response);
+            if (response.data.status === global.HTTP_SUCCESS) {
+                const { result } = response.data;
+                return result.prediction;
+            }
+            return -1;
+        });
+    },
     // For Test
     async getContentBased({ commit }, email) {
         Vue.$log.debug('Vuex movie.js getContentBased', email);
@@ -153,7 +188,10 @@ const mutations = {
         state.searchResultMovies.result = result;
     },
     setSelectedMovie(state, movie) {
-        state.selectedMovie = movie;
+        state.selectedMovie.movie = movie;
+    },
+    setSelectedCrews(state, crews) {
+        state.selectedMovie.crews = crews;
     },
     setSearchConditionTitle(state, title) {
         state.searchResultMovies.title = title;

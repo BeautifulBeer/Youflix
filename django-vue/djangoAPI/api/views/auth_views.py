@@ -149,6 +149,7 @@ def login(request):
                 user.auth_token.delete()
             token = Token.objects.create(user=user)
             request.session[str(token)] = email
+            request.session.modified = True
             profile = Profile.objects.get(user=user)
             result = {
                 'email': email,
@@ -241,7 +242,7 @@ def updateUser(request):
             auth.login(request, user)
             token = Token.objects.create(user=user)
             request.session[str(token)] = email
-
+            request.session.modified = True
             result = {
                     'email': email,
                     'username' : profile.username,
@@ -364,16 +365,25 @@ def RecommendMovieUserBased(request):
 @api_view(['GET', 'POST'])
 def session_member(request):
 
-    if request.method == 'GET': 
+    if request.method == 'GET':
         try:
             token = request.GET.get('token', None)
+            if not token:
+                raise ValueError('No Token Parameter')
+            # Request Session이 존재하지 않을 시에, logout 하고 재 로그인을 요청
+            user = None
             if not request.session.get(str(token)):
-                request.session.save()
-            user = User.objects.get(email=request.session.get(str(token)))
-            
-            if user is None:
-                return JsonResponse({'msg': 'error', 'status': status.HTTP_400_BAD_REQUEST})
-
+                auth_user = Token.objects.get(key=token)
+                user = User.objects.get(email=auth_user.user)
+                if user is None:
+                    raise User.DoesNotExist
+                user.auth_token.delete()
+                auth.logout(request)
+                raise ValueError('Request session token key None')
+            else:
+                user = User.objects.get(email=request.session.get(str(token)))
+                if user is None:
+                    raise User.DoesNotExist
             if user.is_authenticated and token == str(Token.objects.get(user=user)):
                 profile = Profile.objects.get(user=user)
                 result = {
@@ -400,47 +410,25 @@ def session_member(request):
                     'movie_taste': None
                 }
             serializer = SessionSerializer(result)
-            return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
+            return JsonResponse({
+                'result': serializer.data,
+                'status': status.HTTP_200_OK
+            })
+        except ValueError:
+            return JsonResponse({
+                'status': status.HTTP_400_BAD_REQUEST,
+                'msg': str(ValueError)
+            })
+        except User.DoesNotExist:
+            return JsonResponse({
+                'status': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                'msg': 'User does not Exists'
+            })
         except Exception:
-            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
-
-    # if request.method == 'POST':
-
-    #     result = {}
-    #     token = request.data.get('token', None)
-    #     email = request.session.get(str(token), None)
-    #     user = User.objects.get(email=email)
-
-    #     if user.is_authenticated and token == str(Token.objects.get(user=user)):
-    #         profile = Profile.objects.get(user=user)
-    #         print(profile)
-    #         result = {
-    #             'email': user.email,
-    #             'username': profile.username,
-    #             'token': token,
-    #             'gender': profile.gender,
-    #             'age': profile.age,
-    #             'occupation': profile.occupation,
-    #             'is_auth': True,
-    #             'is_staff': profile.user.is_staff,
-    #             'movie_taste': profile.movie_taste
-    #         }
-    #     else:
-    #         result = {
-    #             'email': None,
-    #             'username': None,
-    #             'token': None,
-    #             'gender': None,
-    #             'age': None,
-    #             'occupation': None,
-    #             'is_auth': False,
-    #             'is_staff':  False,
-    #             'movie_taste': profile.movie_taste
-    #         }
-    #     serializer = SessionSerializer(result)
-    #     return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
-    # return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
-
+            return JsonResponse({
+                'status': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                'msg': 'UNKNOWN ERROR'
+            })
 
 @api_view(['GET'])
 def duplicate_inspection(request):
@@ -456,4 +444,52 @@ def duplicate_inspection(request):
         except User.DoesNotExist:
             return JsonResponse({'status': status.HTTP_200_OK})
         return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+
+@api_view(['GET'])
+def predictMovieRating(request):
+    '''
+        영화 m에 대한 유저 u의 예측평점을 반환하는 메서드입니다.
+    '''
+    try:
+        if request.method == 'GET':
+            movie_id = request.GET.get('movieId', None)
+            useremail = request.GET.get('useremail', None)
+            print('predictMovieRating ', movie_id, useremail)
+            if movie_id is None or useremail is None:
+                raise ValueError('Parameters are missing')
+            user = User.objects.get(email=useremail)
+            if user is None:
+                raise User.DoesNotExist
+            movie = Movie.objects.get(id=movie_id)
+            if movie is None:
+                raise Movie.DoesNotExist
+            if str(user.id) not in user_mapper:
+                raise KeyError('user id is invalid, mapper error')
+            user_target_id = int(user_mapper[str(user.id)])
+            if user_target_id is None:
+                raise ValueError('user target id is none')
+            if str(movie.id) not in movie_mapper:
+                raise KeyError('movie id is invalid, mapper error')
+            movie_target_id = int(movie_mapper[str(movie.id)])
+            if movie_target_id is None:
+                raise ValueError('movie target id is none')
+            prediction = np.dot(
+                latent_movie[movie_target_id, :],
+                np.transpose(latent_user[user_target_id, :])
+            )
+            return JsonResponse({
+                'status': status.HTTP_200_OK,
+                'result': {
+                    'prediction': prediction
+                }
+            })
+    except ValueError as v:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': str(v)})
+    except User.DoesNotExist:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'User Object is not exist'})
+    except Movie.DoesNotExist:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'Movie Object is not exist'})
+    except KeyError as k:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': str(k)})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

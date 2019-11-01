@@ -122,7 +122,7 @@ export default {
         viewMovie(index) {
             // this.$store.commit("setSelectIndex", index);
             this.$router.push(`/movies/detail/${index}`);
-        },
-    },
+        }
+    }
 };
 </script>

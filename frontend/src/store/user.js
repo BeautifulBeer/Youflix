@@ -19,9 +19,6 @@ const actions = {
                 const { result } = response.data;
                 Vue.$log.debug('success update user info', result);
                 if (result.is_auth) {
-                    if (result.movie_taste !== '') {
-                        result.movie_taste = result.movie_taste;
-                    }
                     commit('setUser', result);
                     localStorage.setItem('token', result.token);
                     Vue.$log.debug('Vuex', 'user obj from response', result);
@@ -57,7 +54,7 @@ const actions = {
 
     async login({ commit }, params) {
         Vue.$log.debug('Vuex', params);
-        const resp = axios.post(`${global.API_URL}/auth/loginmember/`, {
+        return axios.post(`${global.API_URL}/auth/loginmember/`, {
             email: params.email,
             password: params.password
         }).then((response) => {
@@ -79,7 +76,6 @@ const actions = {
             }
             return false;
         });
-        return resp;
     },
 
     async logout({ commit }, token) {
@@ -97,42 +93,14 @@ const actions = {
             return false;
         });
     },
-    // async getSession({ commit }) {
-    //     Vue.$log.debug('Vuex getSession', localStorage.getItem('token'));
-    //     return axios.post(`${global.API_URL}/auth/session/`, {
-    //         token: localStorage.getItem('token')
-    //     }).then((result) => {
-    //         Vue.$log.debug('Vuex getSession response result', result);
-    //         // const { result } = 
-    //         if (result.data.is_auth) {
-    //             commit('setUser', {
-    //                 email: result.data.email,
-    //                 username: result.data.username,
-    //                 token: result.data.token,
-    //                 gender: result.data.gender,
-    //                 age: result.data.age,
-    //                 occupation: result.data.occupation,
-    //                 is_staff: result.data.is_staff,
-    //                 movie_taste: JSON.parse(result.data.movie_taste.replace(/'/g, '"'))
-    //             });
-    //         } else {
-    //             localStorage.removeItem('token');
-    //             commit('setUser', null);
-    //         }
-    //         return result.data.is_auth;
-    //     }).catch((err) => {
-    //         Vue.$log.debug('Vuex user.js getSession catch', err);
-    //     });
-    // },
-
     async getUserBySession({ commit }, token) {
-        Vue.$log.debug('Vuex', token);
+        Vue.$log.debug('Vuex user.js getUserBySession', token);
         return axios.get(`${global.API_URL}/auth/session/`, {
             params: {
                 token
             }
         }).then((response) => {
-            Vue.$log.debug('Vuex response', response.data);
+            Vue.$log.debug('Vuex user.js getUserBySession response', response.data);
             if (response.data.status === global.HTTP_SUCCESS) {
                 const { result } = response.data;
                 if (result.is_auth) {
@@ -150,9 +118,6 @@ const actions = {
                 }
             }
             return false;
-        }).catch((error) => {
-            Vue.$log.debug('Vuex getUserBySession error', error);
-            localStorage.removeItem('token');
         });
     }
 };

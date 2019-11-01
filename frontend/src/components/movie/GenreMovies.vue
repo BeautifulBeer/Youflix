@@ -51,7 +51,7 @@
                 >
                     <v-img
                         class="tile-img"
-                        :src="movie.poster_path"
+                        :src="movie.poster_path | imagePath"
                         @click="viewMovie(movie.id)"
                     />
                 </div>
@@ -73,6 +73,11 @@ const movieMapState = createNamespacedHelpers('movies').mapState;
 
 export default {
     name: 'GenreMovies',
+    filters: {
+        imagePath(value) {
+            return value === '' ? '/static/img/no_poster.png' : value;
+        }
+    },
     props: {
         setLoaded: {
             type: Function,
