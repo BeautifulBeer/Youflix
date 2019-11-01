@@ -113,7 +113,7 @@ export default {
     },
     filters: {
         imagePath(value) {
-            return value === '' ? '/static/img/no_image.jpg' : value;
+            return value === '' ? '/static/img/commingsoon.jpg' : value;
         },
         genreConcat(list) {
             return list.join(' | ');

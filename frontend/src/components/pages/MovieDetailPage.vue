@@ -14,7 +14,7 @@
                 cols="3"
             >
                 <v-img
-                    :src="getPoster"
+                    :src="getPoster | posterPath"
                 />
             </v-col>
             <v-col
@@ -38,7 +38,7 @@
                                 <span
                                     class="detail-feature content-family"
                                 >
-                                    {{ getMovie.production_companies[0] }} | {{ getMovie.runtime }}Min
+                                    {{ movieDetailInfo }}
                                 </span>
                             </v-col>
                         </v-row>
@@ -58,7 +58,7 @@
                                                 예상별점
                                             </span>
                                             <span class="score">
-                                                3.4
+                                                {{ predictedScore | getPredictionScore }}
                                             </span>
                                         </div>
                                         <div class="wrapper">
@@ -66,7 +66,7 @@
                                                 영화별점
                                             </span>
                                             <span class="score">
-                                                3.2
+                                                {{ getMovie.vote_average | scoreConverter }}
                                             </span>
                                         </div>
                                     </AnimateWhenVisible>
@@ -108,16 +108,22 @@
                     </v-col>
                 </v-row>
                 <v-row>
-                    <v-col cols="12">
+                    <v-col
+                        v-if="getMovie.video "
+                        cols="12"
+                    >
                         <div class="detail-play">
-                            <div class="detail-play-content">
+                            <div
+                                class="detail-play-content"
+                                @click="moveTrailerPage()"
+                            >
                                 <span>예고편 보기</span>
                                 <i class="material-icons">play_circle_outline</i>
                             </div>
                         </div>
                     </v-col>
                 </v-row>
-                <v-row>
+                <v-row v-if="getMovie & getMovie.genres.length != 0">
                     <div class="label-wrapper">
                         <span class="label">
                             Genre
@@ -134,7 +140,7 @@
                         </div>
                     </div>
                 </v-row>
-                <v-row>
+                <v-row v-if="getMovie & getMovie.keywords.length != 0">
                     <div class="label-wrapper">
                         <span class="label">
                             Keyword
@@ -171,12 +177,6 @@
             :style="getCrewStyle"
             class="slider-container"
         >
-            <!-- <v-col
-                align-self="center"
-                style="padding: 0;"
-            >
-                <AnimateWhenVisible name="fade">
-                    <div style="position: relative;"> -->
             <div
                 v-if="maxPageFlag"
                 class="btn prev"
@@ -196,10 +196,28 @@
                     class="slider-img"
                     :src="crew.profile_path | profilePath"
                 />
+                <div
+                    class="crew-overlay"
+                >
+                    <div
+                        style="height: 30%"
+                    />
+                    <div
+                        class="name"
+                    >
+                        <span>
+                            {{ crew.name }}
+                        </span>
+                    </div>
+                    <div
+                        class="department"
+                    >
+                        <span>
+                            {{ crew.department }}
+                        </span>
+                    </div>
+                </div>
             </div>
-                    <!-- </div>
-                </AnimateWhenVisible>
-            </v-col> -->
         </v-row>
         <v-row
             justify="center"
@@ -222,18 +240,31 @@
 import { createNamespacedHelpers } from 'vuex';
 
 const { mapState, mapActions } = createNamespacedHelpers('movies');
+const userMapState = createNamespacedHelpers('users').mapState;
 
 export default {
     name: 'MovieDetailPage',
     filters: {
         profilePath(value) {
-            const min = 0;
-            const max = 2;
-            const rand = Math.floor(Math.random() * (max - min)) + min;
             if (value && value !== '') {
                 return value;
             }
-            return `/static/img/no_profile_image${rand}.jpg`;
+            return '/static/img/no_profile.png';
+        },
+        posterPath(value) {
+            if (value && value !== '') {
+                return value;
+            }
+            return '/static/img/no_poster.png';
+        },
+        scoreConverter(value) {
+            return (value / 2).toFixed(1);
+        },
+        getPredictionScore(value) {
+            if (value === 0) {
+                return '-';
+            }
+            return value.toFixed(1);
         }
     },
     props: {
@@ -267,11 +298,13 @@ export default {
             currentPage: 0,
             maxPage: 2,
             sliderWidth: 200,
-            margin: 15
+            margin: 15,
+            predictedScore: 0
         };
     },
     computed: {
         ...mapState(['selectedMovie']),
+        ...userMapState(['user']),
         getMovie() {
             return this.selectedMovie.movie;
         },
@@ -294,13 +327,13 @@ export default {
             if (this.getMovie.backdrop_path) {
                 return this.getMovie.backdrop_path;
             }
-            return '/static/img/no_image.jpg';
+            return '/static/img/commingsoon.jpg';
         },
         getPoster() {
             if (this.getMovie.poster_path) {
                 return this.getMovie.poster_path;
             }
-            return '/static/img/no_image.jpg';
+            return '/static/img/no_poster.jpg';
         },
         isVideo() {
             return this.getMovie.video !== '';
@@ -315,7 +348,10 @@ export default {
             const end = this.currentIndex + this.showCount;
             // console.log(start, end);
             let result = [];
-            if (end >= this.getCrews.length) {
+            if (this.maxPage === 1) {
+                return this.getCrews.slice(start, end);
+            }
+            if (this.getCrews && end >= this.getCrews.length) {
                 result = result.concat(this.getCrews.slice(start));
                 // console.log(result);
                 result = result.concat(this.getCrews.slice(0, end - this.getCrews.length));
@@ -339,56 +375,125 @@ export default {
         },
         maxPageFlag() {
             return this.maxPage > 1;
+        },
+        getCompanies() {
+            if ('production_companies' in this.getMovie) {
+                return this.getMovie.production_companies;
+            }
+            return [];
+        },
+        movieDetailInfo() {
+            let result = '';
+            const companies = this.getCompanies;
+            const { runtime } = this.getMovie;
+            const time = (runtime === 0) ? '' : (String(runtime).concat('Min'));
+            console.log(companies);
+            if (companies && companies.length > 0) {
+                console.log('if in', companies);
+                for (let i = 0; i < companies.length; i += 1) {
+                    result += companies[i];
+                    result += ', ';
+                }
+            }
+            console.log('if out', companies);
+            if (result === '') {
+                return time;
+            }
+            console.log('if 2 out', companies);
+            if (time === '') {
+                return '';
+            }
+            console.log('result end', result);
+            result.slice(0, result.length - 2);
+            console.log('length end');
+            return result.concat(' | ', time);
         }
     },
-    mounted() {
-        this.$nextTick(() => {
-            if (this.isEmpty) {
-                this.getMovieById(this.id).then((ret) => {
-                    if (ret) {
-                        this.getMovieCrews(this.id).then(() => {
+    watch: {
+        // eslint-disable-next-line
+        id: function(val) {
+            this.$log.debug('MovieDetailPage.vue watch id', val);
+            if (val && this.getMovie && this.getMovie.id !== val) {
+                this.$log.debug('MovieDetailPage.vue watch id', val, this.getMovie);
+                this.getMovieById(val).then((result) => {
+                    this.$log.debug('MovieDetailPage.vue getMovieById response', this.user.email, val);
+                    if (result) {
+                        this.getMovieCrews(val).then(() => {
                             this.$forceUpdate();
+                        }).then(() => {
+                            this.loadSliderWidth();
                         });
                     } else {
                         this.$forceUpdate();
                     }
+                    this.getPrediction([this.user.email, val]).then((score) => {
+                        if (score !== -1) {
+                            this.predictedScore = score;
+                        }
+                        this.$forceUpdate();
+                    });
                 });
             }
-            this.loadSliderWidth();
+        }
+    },
+    mounted() {
+        this.$nextTick(() => {
             window.addEventListener('resize', () => {
                 this.loadSliderWidth();
+            });
+            this.getMovieById(this.id).then((result) => {
+                this.$log.debug('MovieDetailPage.vue getMovieById response', this.user.email, this.id);
+                if (result) {
+                    this.getMovieCrews(this.id).then(() => {
+                        this.$forceUpdate();
+                    }).then(() => {
+                        this.loadSliderWidth();
+                    });
+                } else {
+                    this.$forceUpdate();
+                }
+                this.getPrediction([this.user.email, this.id]).then((score) => {
+                    if (score !== -1) {
+                        this.predictedScore = score;
+                    }
+                    this.$forceUpdate();
+                });
             });
         });
     },
     methods: {
-        ...mapActions(['getMovieById', 'getMovieCrews']),
+        ...mapActions(['getMovieById', 'getMovieCrews', 'getPrediction']),
         back() {
             this.$router.go(-1);
         },
         loadSliderWidth() {
             const { innerWidth } = window;
             this.$log.debug('MovieDetailPage.vue loadSliderWidth innerWidth', innerWidth);
-            this.showCount = parseInt(innerWidth / (this.sliderWidth + 15), 10) + 1;
-            if (this.showCount >= this.getCrews.length) {
-                this.showCount = this.getCrews.length;
-            }
+            this.showCount = Math.ceil(innerWidth / (this.sliderWidth + 15), 10);
             this.currentPage = 0;
+            this.currentIndex = 0;
             if (this.showCount === 0) {
                 this.showCount = 1;
             }
             this.maxPage = Math.ceil(this.getCrews.length / this.showCount);
+            if (this.getCrews.length === this.showCount && this.maxPage === 1) {
+                this.maxPage += 1;
+            }
         },
         moveNextPage() {
             this.currentIndex = this.currentIndex + this.showCount - 1;
-            if (this.getCrews.length <= this.currentIndex) {
+            if (this.getCrews && this.getCrews.length <= this.currentIndex) {
                 this.currentIndex = this.currentIndex - this.getCrews.length;
             }
         },
         movePrevPage() {
             this.currentIndex = this.currentIndex - this.showCount + 1;
-            if (this.currentIndex < 0) {
+            if (this.getCrews && this.currentIndex < 0) {
                 this.currentIndex = this.getCrews.length + this.currentIndex;
             }
+        },
+        moveTrailerPage() {
+            window.open(`${this.getMovie.video}?autoplay=1`, '_blank');
         }
     }
 };
@@ -514,6 +619,7 @@ $button-width: 50px;
             text-transform: uppercase;
         }
         .score{
+            text-align: center;
             background-color: white;
             position:absolute;
             z-index: 20;
@@ -557,6 +663,7 @@ $button-width: 50px;
     box-sizing: border-box;
     background-color: #e50914;
     color: white;
+    cursor: pointer;
 
     span {
         position: absolute;
@@ -590,11 +697,41 @@ $button-width: 50px;
     object-fit: fill;
     object-position: bottom;
     display: inline-block;
-    -webkit-transition: width .5s, height .5s, transform .5s ease; /* For Safari 3.1 to 6.0 */
-    transition: width .5s, height .5s, transform .5s ease;
+    position: relative;
     transform: translateY(0%);
     margin: 0px 15px 0px 0px;
+
+    .crew-overlay{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        top: 200%;
+        left: 0;
+        opacity: 0;
+        color: white;
+        text-align: center;
+        -webkit-transition: all .5s ease; /* For Safari 3.1 to 6.0 */
+        transition: all .5s ease;
+        // transform: translateY(0%);
+        .name{
+            font-size: 1.5em;
+        }
+
+        .department{
+            font-size: 1.2em;
+            color: gray;
+        }
+    }
+
+    &:hover{
+        .crew-overlay{
+            opacity: 1;
+            transform: translateY(-200%);
+        }
+    }
 }
+
 
 .slider-img {
     width: 100%;

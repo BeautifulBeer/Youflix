@@ -445,3 +445,51 @@ def duplicate_inspection(request):
             return JsonResponse({'status': status.HTTP_200_OK})
         return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+
+@api_view(['GET'])
+def predictMovieRating(request):
+    '''
+        영화 m에 대한 유저 u의 예측평점을 반환하는 메서드입니다.
+    '''
+    try:
+        if request.method == 'GET':
+            movie_id = request.GET.get('movieId', None)
+            useremail = request.GET.get('useremail', None)
+            print('predictMovieRating ', movie_id, useremail)
+            if movie_id is None or useremail is None:
+                raise ValueError('Parameters are missing')
+            user = User.objects.get(email=useremail)
+            if user is None:
+                raise User.DoesNotExist
+            movie = Movie.objects.get(id=movie_id)
+            if movie is None:
+                raise Movie.DoesNotExist
+            if str(user.id) not in user_mapper:
+                raise KeyError('user id is invalid, mapper error')
+            user_target_id = int(user_mapper[str(user.id)])
+            if user_target_id is None:
+                raise ValueError('user target id is none')
+            if str(movie.id) not in movie_mapper:
+                raise KeyError('movie id is invalid, mapper error')
+            movie_target_id = int(movie_mapper[str(movie.id)])
+            if movie_target_id is None:
+                raise ValueError('movie target id is none')
+            prediction = np.dot(
+                latent_movie[movie_target_id, :],
+                np.transpose(latent_user[user_target_id, :])
+            )
+            return JsonResponse({
+                'status': status.HTTP_200_OK,
+                'result': {
+                    'prediction': prediction
+                }
+            })
+    except ValueError as v:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': str(v)})
+    except User.DoesNotExist:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'User Object is not exist'})
+    except Movie.DoesNotExist:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'Movie Object is not exist'})
+    except KeyError as k:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': str(k)})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

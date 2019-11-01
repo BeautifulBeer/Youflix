@@ -41,7 +41,7 @@ export default {
             return list.join(' | ');
         },
         imagePath(value) {
-            return value === '' ? '/static/img/no_image.jpg' : value;
+            return value === '' ? '/static/img/commingsoon.jpg' : value;
         },
         extractYear(str) {
             return (new Date(str)).getFullYear();

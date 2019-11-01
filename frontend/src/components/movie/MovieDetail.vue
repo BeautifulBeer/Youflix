@@ -113,7 +113,7 @@ export default {
             return ['상영시간', ':', value, '분'].join(' ');
         },
         imagePath(value) {
-            return value === '' ? '/static/img/no_image.jpg' : value;
+            return value === '' ? '/static/img/commingsoon.jpg' : value;
         }
     },
     props: {

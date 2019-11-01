@@ -8,7 +8,7 @@ const state = {
     genreMovies: {},
     searchResultMovies: {
         category: 'genre',
-        keyword: 'Total',
+        keyword: 'TV Movie',
         title: '',
         result: []
     },
@@ -141,6 +141,22 @@ const actions = {
                 return true;
             }
             return false;
+        });
+    },
+    async getPrediction({ state }, [useremail, movieId]) {
+        Vue.$log.debug('Vuex movie.js getPrediction', useremail, movieId);
+        return axios.get(`${global.API_URL}/auth/predictRating/`, {
+            params: {
+                movieId,
+                useremail
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getPrediction response', response);
+            if (response.data.status === global.HTTP_SUCCESS) {
+                const { result } = response.data;
+                return result.prediction;
+            }
+            return -1;
         });
     },
     // For Test

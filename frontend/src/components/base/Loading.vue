@@ -7,7 +7,7 @@
         <v-row
             style="height: 100%; position: relative;"
             justify="center"
-            align="cetner"
+            align="center"
         >
             <div class="logo">
                 <div class="netflix">
