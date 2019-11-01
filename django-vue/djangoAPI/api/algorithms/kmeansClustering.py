@@ -2,10 +2,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from django.http import JsonResponse
+from django.db.models import Max 
 
-from api.models import Movie, User, Profile, Rating, UserCluster,Profile
+from api.models import Movie, User, Profile, UserCluster, Profile
 
 from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 from collections import Counter
 
 import pandas as pd
@@ -65,15 +67,17 @@ def dist_raw(v1, v2):
     return np.linalg.norm(delta)
 
 
-def U_Cluster(request):
+def U_Cluster():
     profiles = Profile.objects.all()
     df = pd.DataFrame(list(profiles.values()))
+    # df = df.set_index("user_id")
+    df = df.set_index("user_id")
     # admin 제거 및 불필요한 열 삭제
-    new_df = df[df.occupation != 'admin'].drop(['id', 'username'], axis=1)
+    numeric_df = df[df.occupation != 'admin'].drop(['id', 'username'], axis=1)
     # 군집별 centroid값 구하기 위한 범주형 변수 수치화
-    new_df.loc[df['gender'] == 'M', 'gender'] = 1
-    new_df.loc[df['gender'] == 'F', 'gender'] = 2
-    new_df.loc[df['gender'] == 'other', 'gender'] = 3
+    numeric_df.loc[df['gender'] == 'M', 'gender'] = 1
+    numeric_df.loc[df['gender'] == 'F', 'gender'] = 2
+    numeric_df.loc[df['gender'] == 'other', 'gender'] = 3
     occupation_map = {
         0: "other", 1: "academic/educator", 2: "artist", 3: "clerical/admin", 4: "college/grad student",
         5: "customer service", 6: "doctor/health care", 7: "executive/managerial", 8: "farmer", 9: "homemaker",
@@ -82,13 +86,28 @@ def U_Cluster(request):
         19: "unemployed", 20: "writer"
     }
     for k, v in occupation_map.items():
-        new_df.loc[df['occupation'] == v, 'occupation'] = k
-    # 군집별 centroid
-    mean_df = new_df.drop('user_id', axis=1).groupby(['kmeans_cluster']).mean()
-    cluter_mean_vec = mean_df.to_numpy()
-    # C_Cluster되지 않은 유저 대상
-    target_users = new_df.loc[new_df.isnull()['kmeans_cluster'], ['gender', 'age', 'occupation']]
+        numeric_df.loc[df['occupation'] == v, 'occupation'] = k
 
+    # 표준화
+    # new_df : 성별, 나이, 직업 열만 추출
+    new_df = numeric_df.drop(['movie_taste', 'kmeans_cluster'], axis=1)
+    std_scaler = StandardScaler()
+    fitted = std_scaler.fit(new_df)
+    std_vec = std_scaler.transform(new_df)
+    std_df = pd.DataFrame(std_vec, columns=new_df.columns, index=list(new_df.index.values))
+    std_df['kmeans_cluster'] = numeric_df['kmeans_cluster']
+
+    # 군집별 centroid
+    # mean_df = new_df.drop('user_id', axis=1).groupby(['kmeans_cluster']).mean()
+    mean_df = std_df.groupby(['kmeans_cluster']).mean()
+    cluter_mean_vec = mean_df.to_numpy()
+
+    # 새로 들어온 유저 대상 비슷한 군집에 할당
+    max_id_object = UserCluster.objects.aggregate(user_id=Max('user_id'))
+    max_id = max_id_object['user_id']
+
+    # std_df['user_id'] = numeric_df['user_id']
+    target_users = std_df[std_df.index > max_id].loc[:, ['gender', 'age', 'occupation']]
     new_cluster_list = []
     for i, new_user in enumerate(target_users.to_numpy()):
         min_dist = sys.maxsize
@@ -100,6 +119,5 @@ def U_Cluster(request):
                 min_cluster_i = c_i
         new_cluster_list.append(min_cluster_i)
     target_users['cluster'] = new_cluster_list
-    print(target_users)
 
-    return JsonResponse({'status': status.HTTP_200_OK})
+    return target_users

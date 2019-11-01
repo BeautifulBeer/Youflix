@@ -40,7 +40,6 @@ urlpatterns = [
 
     # clustering 실행 URL
     url('clustering/kmeansClustering/C/', kmeansClustering.C_Cluster, name="c_Cluster"),
-    url('clustering/kmeansClustering/U/', kmeansClustering.U_Cluster, name="u_Cluster"),
 
     # test
     url(r'contentBased/$', test.ContentBased, name='ContentBased')
