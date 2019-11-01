@@ -346,16 +346,13 @@ export default {
         currentCrews() {
             const start = this.currentIndex;
             const end = this.currentIndex + this.showCount;
-            // console.log(start, end);
             let result = [];
             if (this.maxPage === 1) {
                 return this.getCrews.slice(start, end);
             }
             if (this.getCrews && end >= this.getCrews.length) {
                 result = result.concat(this.getCrews.slice(start));
-                // console.log(result);
                 result = result.concat(this.getCrews.slice(0, end - this.getCrews.length));
-                // console.log(result);
             } else {
                 result = result.concat(this.getCrews.slice(start, end));
             }
@@ -387,25 +384,19 @@ export default {
             const companies = this.getCompanies;
             const { runtime } = this.getMovie;
             const time = (runtime === 0) ? '' : (String(runtime).concat('Min'));
-            console.log(companies);
             if (companies && companies.length > 0) {
-                console.log('if in', companies);
                 for (let i = 0; i < companies.length; i += 1) {
                     result += companies[i];
                     result += ', ';
                 }
             }
-            console.log('if out', companies);
             if (result === '') {
                 return time;
             }
-            console.log('if 2 out', companies);
             if (time === '') {
                 return '';
             }
-            console.log('result end', result);
             result.slice(0, result.length - 2);
-            console.log('length end');
             return result.concat(' | ', time);
         }
     },
