@@ -4,6 +4,7 @@ from api.views import auth_views
 from api.views import rating_views
 # from api.views import clustering
 from api.views import test
+from api.algorithms import kmeansClustering
 
 urlpatterns = [
     # user 접근 URL
@@ -40,8 +41,7 @@ urlpatterns = [
     url(r'ratings/comment/$', rating_views.create_comment, name='create_comment'),
 
     # clustering 실행 URL
-    # url('clustering/userCharacter', clustering.getUserCharacter, name="getusercharacter"),
-    # url('clustering/movieCharacter', clustering.getMovieCharacter, name="getmoviecharacter"),
+    url('clustering/kmeansClustering/C/', kmeansClustering.C_Cluster, name="c_Cluster"),
 
     # test
     url(r'contentBased/$', test.ContentBased, name='ContentBased')
