@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'frontend')
 
@@ -22,11 +22,6 @@ FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'fronten
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '9%614ea(^@4t_=s#9c-1y=z@azlq!1q$=phwpoadz%v6adjp=5'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -79,9 +74,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'djangoAPI.wsgi.application'
-
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -130,14 +122,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
-WEBPACK_LOADER = {
-    'DEFAULT': {
-        'CACHE': DEBUG,
-        'BUNDLE_DIR_NAME': '/bundles/',  # must end with slash
-        'STATS_FILE': os.path.join(FRONTEND_DIR, 'webpack-stats.json'),
-    }
-}
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
