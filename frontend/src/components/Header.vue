@@ -1,9 +1,5 @@
 <template>
     <div>
-        <div
-            v-if="getlogoutflag"
-            style="height: 10vh;"
-        />
         <nav id="header">
             <v-row class="wrapper">
                 <v-col
@@ -28,15 +24,79 @@
                                     style="line-height: 10vh"
                                     class="log-font"
                                 >
-                                    YOUFLEX
+                                    YOUFLIX
                                 </span>
                             </v-btn>
                         </v-col>
                     </v-row>
                 </v-col>
                 <v-col
-                    v-if="getlogoutflag"
-                    cols="11"
+                    v-show="getlogoutflag"
+                    cols="3"
+                >
+                    <v-row
+                        class="genre-btn-row title-family"
+                        justify="start"
+                        align="center"
+                    >
+                        <v-btn
+                            text
+                            color="transparent"
+                            class="genre-btn"
+                        >
+                            <span
+                                class="label"
+                            >
+                                Search
+                            </span>
+                            <div
+                                class="overlay"
+                            >
+                                <div class="category-wrapper title-family">
+                                    <div
+                                        v-for="(value, key) in category"
+                                        :key="'categoryWrapper' + key"
+                                        class="category"
+                                        @click="setSearchConditionCategory(key)"
+                                    >
+                                        {{ key }}
+                                    </div>
+                                </div>
+                                <div class="genres-wrapper content-family">
+                                    <div
+                                        v-for="(categoryRow, index) in get2DCategory[getSelectedCategory]"
+                                        :key="'HeaderGenreCategory' + index"
+                                        class="genre-row"
+                                    >
+                                        <div
+                                            v-for="category in categoryRow"
+                                            :key="'HeaderGenre' + category"
+                                            class="genre"
+                                            @click="movieCategorySearch(category)"
+                                        >
+                                            {{ category }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </v-btn>
+                        <v-btn
+                            text
+                            color="transparent"
+                            class="genre-btn"
+                            to="/evaluate"
+                        >
+                            <span
+                                class="label"
+                            >
+                                RATING
+                            </span>
+                        </v-btn>
+                    </v-row>
+                </v-col>
+                <v-col
+                    v-show="getlogoutflag"
+                    cols="8"
                     class="wrapper"
                 >
                     <v-row
@@ -54,10 +114,11 @@
                                     id="header-search-input"
                                     v-model="keyword"
                                     type="search"
-                                    class="search-box"
-                                    placeholder="장르, 영화명, 배우"
+                                    class="search-box content-family"
+                                    placeholder="영화명"
                                 >
                                 <span
+                                    id="search-btn"
                                     class="search-button"
                                     @click="searchKeyword()"
                                 >
@@ -79,22 +140,31 @@
                                     </span>
                                 </v-btn>
                                 <div class="dropdown-content">
-                                    <router-link to="/myflex">
-                                        myflex
+                                    <router-link to="/myflix">
+                                        myflix
                                     </router-link>
-                                    <router-link to="/setting">
+                                    <router-link
+                                        to="/setting"
+                                    >
                                         setting
                                     </router-link>
-                                    <a href="#">likes</a>
-                                    <router-link to="/adminPage">
+                                    <router-link
+                                        to="/"
+                                    >
+                                        likes
+                                    </router-link>
+                                    <router-link
+                                        to="/adminPage"
+                                    >
                                         admin
                                     </router-link>
-                                    <a
-                                        href="#"
-                                        @click="logoutState()"
+                                    <router-link
+                                        to="/"
                                     >
-                                        logout
-                                    </a>
+                                        <span @click="logoutState()">
+                                            logout
+                                        </span>
+                                    </router-link>
                                 </div>
                             </div>
                         </v-col>
@@ -106,95 +176,150 @@
 </template>
 
 <script>
-import $ from 'jquery';
 import swal from 'sweetalert';
-import { mapActions, mapGetters } from 'vuex';
+import { createNamespacedHelpers } from 'vuex';
 
+const { mapState, mapActions } = createNamespacedHelpers('users');
+const movieMapState = createNamespacedHelpers('movies').mapState;
+const movieMapMutations = createNamespacedHelpers('movies').mapMutations;
+const movieMapActions = createNamespacedHelpers('movies').mapActions;
+const infoMapState = createNamespacedHelpers('infos').mapState;
 
 export default {
     name: 'Header',
     data() {
         return {
             keyword: '',
-            effect: null,
-            icon: null,
-            keyword_input: null,
             mouseOver: false,
-            prevOffset: 0
+            prevOffset: 0,
+            NumGenreOnRow: 3
         };
     },
     computed: {
-        ...mapGetters({
-            getUser: 'data/getUser'
-        }),
-        getLoginModalOpen() {
-            return this.$store.state.data.isLoginModalOpen;
-        },
-        getUserModalOpen() {
-            return this.$store.state.data.user;
-        },
+        ...mapState(['token', 'user']),
+        ...movieMapState(['searchResultMovies']),
+        ...infoMapState(['category']),
         getlogoutflag() {
-            return (this.$store.state.data.token !== null);
+            return (this.token !== null && this.token !== undefined);
         },
         getUserName() {
-            if (this.$store.state.data.user === undefined || this.$store.state.data.user === null) {
-                return 'GUEST';
+            return this.user ? this.user.username : this.user;
+        },
+        getSelectedGenre() {
+            return this.searchResultMovies.keyword;
+        },
+        getSelectedCategory() {
+            return this.searchResultMovies.category;
+        },
+        get2DCategory() {
+            let result = {};
+            const keys = Object.keys(this.category);
+            for (let i = 0; i < keys.length; i += 1) {
+                if ({}.hasOwnProperty.call(this.category, keys[i])) {
+                    result[keys[i]] = [];
+                    const rows = parseInt(this.category[keys[i]].length / this.NumGenreOnRow, 10);
+                    for (let j = 0; j <= rows; j += 1) {
+                        const end = (j + 1) * this.NumGenreOnRow;
+                        result[keys[i]].push(this.category[keys[i]].slice(
+                            j * this.NumGenreOnRow,
+                            end >= this.category[keys[i]].length ? this.category[keys[i]].length : end
+                        ));
+                    }
+                }
             }
-            return this.$store.state.data.user.username;
+            return result;
         }
     },
     mounted() {
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('header-search-icon').addEventListener('mouseenter', () => {
-                this.mouseOver = true;
-            });
+        this.$nextTick(() => {
+            const headerIcon = document.getElementById('header-search-icon');
+            const headerInput = document.getElementById('header-search-input');
+            const headerEffect = document.getElementById('header-search-effect');
+            const categories = document.getElementsByClassName('category');
+            if (headerIcon) {
+                headerIcon.addEventListener('mouseenter', () => {
+                    this.$log.debug('Header.vue headerIcon mouseenter');
+                    this.mouseOver = true;
+                });
 
-            document.getElementById('header-search-icon').addEventListener('mouseleave', () => {
-                this.mouseOver = false;
-            });
+                headerIcon.addEventListener('mouseleave', () => {
+                    this.$log.debug('Header.vue headerIcon mouseleave');
+                    this.mouseOver = false;
+                });
+            }
 
-            document.getElementById('header-search-input').addEventListener('focusout', () => {
-                if (!this.mouseOver) {
-                    this.effect.classList.remove('open');
-                    this.icon.classList.remove('open');
-                    this.keyword_input.value = '';
+            if (headerInput) {
+                headerInput.addEventListener('focusout', () => {
+                    if (!this.mouseOver) {
+                        headerEffect.classList.remove('open');
+                        headerIcon.classList.remove('open');
+                        headerInput.value = '';
+                    }
+                });
+            }
+
+            if (categories && categories.length > 0) {
+                const categoryLength = categories.length;
+                for (let i = 0; i < categoryLength; i += 1) {
+                    categories[i].addEventListener('click', (event) => {
+                        this.$log.debug('Header.vue category addEventListener', event);
+                        const classes = event.target.classList;
+                        for (let j = 0; j < categoryLength; j += 1) {
+                            categories[j].classList.remove('highlight');
+                        }
+                        classes.add('highlight');
+                    });
                 }
-            });
+                const categoiesLabel = Object.keys(this.category);
+                for (let i = 0; i < categoiesLabel.length; i += 1) {
+                    if (this.searchResultMovies.category === categoiesLabel[i]) {
+                        categories[i].classList.add('highlight');
+                        break;
+                    }
+                }
+            }
+
             if (this.getUser) {
                 this.logoutflag = true;
             }
-        });
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            if (parseInt(window.scrollY, 10) < this.prevOffset) {
-                header.style.transform = 'translate(0,0)';
-                header.style['-webkit-transform'] = 'translate(0,0)';
-                header.style['-moz-transform'] = 'translate(0,0)';
-                header.style['-ms-transform'] = 'translate(0,0)';
-                header.style['-o-transform'] = 'translate(0,0)';
-            } else {
-                header.style.transform = 'translate(0,-100px)';
-                header.style['-webkit-transform'] = 'translate(0,-100px)';
-                header.style['-moz-transform'] = 'translate(0,-100px)';
-                header.style['-ms-transform'] = 'translate(0,-100px)';
-                header.style['-o-transform'] = 'translate(0,-100px)';
-            }
-            this.prevOffset = window.scrollY;
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('header');
+                if (parseInt(window.scrollY, 10) < this.prevOffset) {
+                    header.style.transform = 'translate(0,0)';
+                    header.style['-webkit-transform'] = 'translate(0,0)';
+                    header.style['-moz-transform'] = 'translate(0,0)';
+                    header.style['-ms-transform'] = 'translate(0,0)';
+                    header.style['-o-transform'] = 'translate(0,0)';
+                } else {
+                    header.style.transform = 'translate(0,-100px)';
+                    header.style['-webkit-transform'] = 'translate(0,-100px)';
+                    header.style['-moz-transform'] = 'translate(0,-100px)';
+                    header.style['-ms-transform'] = 'translate(0,-100px)';
+                    header.style['-o-transform'] = 'translate(0,-100px)';
+                }
+                this.prevOffset = window.scrollY;
+            });
         });
     },
     methods: {
-        ...mapActions('data', ['logout', 'getSession']),
+        ...movieMapMutations([
+            'setSearchConditionTitle',
+            'setSearchConditionKeyword',
+            'setSearchConditionCategory'
+        ]),
+        ...movieMapActions(['getMovieByConditions']),
+        ...mapActions(['logout', 'getUserBySession']),
         changeFlag() {
             if (this.getLoginModalOpen === true) {
-                this.$store.commit('data/setLoginModalOpen', false);
+                this.$store.commit('setLoginModalOpen', false);
             } else {
-                this.$store.commit('data/setLoginModalOpen', true);
+                this.$store.commit('setLoginModalOpen', true);
             }
         },
         logoutState() {
-            this.getSession().then((ret) => {
-                if (ret === true) {
-                    this.logout().then(() => {
+            this.getUserBySession(this.token).then((ret) => {
+                if (ret) {
+                    this.logout(this.token).then(() => {
                         swal({
                             title: 'GoodBye',
                             text: '다음에 또 만나요.',
@@ -217,18 +342,31 @@ export default {
             });
         },
         searchKeyword() {
-            this.effect = document.getElementById('header-search-effect');
-            this.keyword_input = document.getElementById('header-search-input');
-            this.icon = document.getElementById('header-search-icon');
-            if (this.effect.classList.contains('open')) {
+            const effect = document.getElementById('header-search-effect');
+            const keywordInput = document.getElementById('header-search-input');
+            const icon = document.getElementById('header-search-icon');
+            if (effect.classList.contains('open')) {
                 // search function trigger
-                this.effect.classList.remove('open');
-                this.icon.classList.remove('open');
-                this.keyword_input.value = '';
+                this.setSearchConditionTitle(keywordInput.value);
+                this.getMovieByConditions();
+                effect.classList.remove('open');
+                icon.classList.remove('open');
+                keywordInput.value = '';
+                if (window.location.pathname.indexOf('movie/search') === -1) {
+                    this.$router.push('/movie/search');
+                }
             } else {
-                this.effect.classList.add('open');
-                this.icon.classList.add('open');
-                this.keyword_input.focus();
+                effect.classList.add('open');
+                icon.classList.add('open');
+                keywordInput.focus();
+            }
+        },
+        movieCategorySearch(keyword) {
+            this.setSearchConditionKeyword(keyword);
+            if (window.location.pathname.indexOf('movie/search') === -1) {
+                this.$router.push({
+                    path: '/movie/search'
+                });
             }
         }
     }
@@ -236,6 +374,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+@import '@/style/font.scss';
 
 $search-bg-color: transparent;
 $icon-color: #e50914;
@@ -247,8 +387,6 @@ $subtle-white: #f9f9f9;
 $subtle-grey: #f2f2f2;
 $masked-grey: #333;
 $blue: #F03861;
-
-$open-sans: 'Open Sans', sans-serif;
 
 #header{
     top: 0;
@@ -468,6 +606,83 @@ $open-sans: 'Open Sans', sans-serif;
 
 .dropdown:hover .dropdown-content{
     display: block;
+}
+
+.genre-btn-row{
+    width: 100%;
+    height: 100%;
+    padding-left: 0.5em;
+}
+
+// #f5f5f1
+.genre-btn{
+    position: relative;
+    height: 50px;
+    width: 70px;
+    .label{
+        color: white;
+        opacity: 0.9;
+        font-size: 1em;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    .overlay{
+        position: absolute;
+        z-index: 20;
+        background-color: black;
+        // opacity: 0.9;
+        top: 1.8em;
+        left: 0px;
+        width: 650px;
+        padding: 15px;
+        color: gray;
+        display: none;
+
+        .category-wrapper{
+            height: 100%;
+            text-align: left;
+            padding: 0px 20px 0px 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            .category{
+                width: 100%;
+                margin: 0 0 15px 0;
+                padding: 0 0 1px 0;
+                float: none;
+            }
+            .highlight{
+                // border-top: 1px gray solid;
+                text-decoration: underline;
+                color: white;
+            }
+        }
+        .genres-wrapper{
+            height: 100%;
+            width: 100%;
+            text-align: center;
+            margin: 0px 10px;
+            text-transform: capitalize;
+            .genre-row{
+                margin: 0 0 5px 0;
+                text-align: left;
+                .genre{
+                    font-size: 1em;
+                    margin: 0 15px 5px 0;
+                    display: inline-block;
+                    width: 33%;
+
+                    &:hover{
+                        color: white;
+                    }
+                }
+            }
+        }
+    }
+    &:hover{
+       .overlay{
+           display: flex;
+       }
+    }
 }
 
 </style>

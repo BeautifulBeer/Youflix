@@ -5,10 +5,12 @@
         fluid
         px-5
         ma-0
-        style="background-color: black; height: 100vh;"
+        style="background-color: black; height: 100vh; padding-top: 10vh;"
     >
         <AnimateWhenVisible name="fade">
-            <v-row justify="start">
+            <v-row
+                justify="start"
+            >
                 <v-col
                     sm="12"
                     md="3"
@@ -25,7 +27,7 @@
                                         예상별점
                                     </span>
                                     <span class="score">
-                                        3.4
+                                        {{ predictedScore | getPredictionScore }}
                                     </span>
                                 </div>
                                 <div class="wrapper">
@@ -33,7 +35,7 @@
                                         영화별점
                                     </span>
                                     <span class="score">
-                                        3.2
+                                        {{ pmovie.vote_average | scoreConverter }}
                                     </span>
                                 </div>
                             </AnimateWhenVisible>
@@ -54,14 +56,34 @@
                                 <i class="material-icons">play_circle_outline</i>
                             </div>
                         </div>
+                        <div>
+                            <span
+                                class="taste-word"
+                                style="color: white;"
+                            >
+                                {{ ratingWord }}
+                            </span>
+                            <div style="padding-top: 7px;">
+                                <span @click="ratingMovie()">
+                                    <v-rating
+                                        id="ratingStar"
+                                        v-model="rating"
+                                        dense
+                                        color="white"
+                                        background-color="white"
+                                        half-increments
+                                        hover
+                                    />
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </v-col>
                 <v-col
-                    style="position: relative;"
+                    style="position: relative; padding: 0;"
                     sm="12"
                     md="9"
                     order="2"
-                    pa-0
                 >
                     <div class="shadow" />
                     <a href="#personalized-section">
@@ -72,6 +94,7 @@
                     </a>
                     <v-img
                         class="detail-img"
+                        contain
                         :src="pmovie.backdrop_path | imagePath"
                     />
                 </v-col>
@@ -81,25 +104,114 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex';
+
+const userMapState = createNamespacedHelpers('users').mapState;
+const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
+const movieMapActions = createNamespacedHelpers('movies').mapActions;
+
 export default {
     filters: {
-        staticPath(value) {
-            return require(`@/assets/img/${value}`);
-        },
         runTimeLabel(value) {
             return ['상영시간', ':', value, '분'].join(' ');
         },
         imagePath(value) {
-            return value === '' ? '/static/img/no_image.jpg' : value;
+            return value === '' ? '/static/img/commingsoon.jpg' : value;
+        },
+        scoreConverter(value) {
+            return (value / 2).toFixed(1);
+        },
+        getPredictionScore(value) {
+            if (value === 0) {
+                return '-';
+            }
+            return value.toFixed(1);
         }
     },
-    props: ['visible', 'pmovie', 'close'],
+    props: {
+        visible: {
+            type: Boolean,
+            default: false
+        },
+        pmovie: {
+            type: Object,
+            default: null
+        },
+        close: {
+            type: Function,
+            default: null
+        },
+        rating: {
+            type: Number,
+            default: 0
+        },
+        ratingWord: {
+            type: String,
+            default: '이미 본 작품인가요?'
+        }
+    },
     data() {
         return {
-            movie: {
-                src: 'detail.jpg'
-            }
+            predictedScore: 0
         };
+    },
+    computed: {
+        ...userMapState(['user'])
+    },
+    watch: {
+        // eslint-disable-next-line
+        pmovie: function(val) {
+            this.getPrediction([this.user.email, this.pmovie.id]).then((score) => {
+                if (score !== -1) {
+                    this.predictedScore = score;
+                }
+                this.$forceUpdate();
+            });
+        },
+        // eslint-disable-next-line
+        visible: function(val) {
+            this.$log.debug('MovieDetail.vue visible watcher', val);
+            if (val) {
+                this.disableScroll();
+            } else {
+                this.enableScroll();
+            }
+        }
+    },
+    methods: {
+        ...ratingMapActions(['rateMovie']),
+        ...movieMapActions(['getPrediction']),
+        ratingMovie() {
+            this.rateMovie(
+                {
+                    email: this.user.email,
+                    movie_id: this.pmovie.id,
+                    ratingValue: this.rating
+                }
+            ).then((ret) => {
+                this.ratingWord = ret;
+            });
+        },
+        disableScroll() {
+            const sliderContainer = document.getElementById('slider-container');
+            this.$log.debug('MovieDetail.vue disableScroll sliderContainer', sliderContainer);
+            if (sliderContainer) {
+                let { left, bottom } = sliderContainer.getBoundingClientRect();
+                left += window.scrollX;
+                bottom += window.scrollY - 40;
+                if (left < 0) {
+                    left = 0;
+                }
+                this.$log.debug('MovieDetail.vue disableScroll position', left, bottom);
+                window.scrollTo(left, bottom);
+                window.onscroll = () => {
+                    window.scrollTo(left, bottom);
+                };
+            }
+        },
+        enableScroll() {
+            window.onscroll = () => {};
+        }
     }
 };
 </script>
@@ -109,7 +221,6 @@ export default {
 .detail-img{
     width: 100%;
     height: 100%;
-    object-fit: fill;
     z-index: 5;
 }
 
@@ -127,7 +238,6 @@ export default {
 .closebtn{
     z-index: 15;
     position: absolute;
-    top: 100px;
     right: 50px;
     font-size: 3em;
     color: gray;
@@ -198,6 +308,7 @@ export default {
             top: 50%;
             right: 0%;
             color: black;
+            text-align: center;
             transform: translateY(-50%);
         }
     }
@@ -244,13 +355,22 @@ export default {
     font-size: 1em;
     margin: 10px;
     line-height: 160%;
-    max-height: 200px;
+    // max-height: 300px;
     margin-bottom: 30px;
 
     &:first-letter{
         font-size: 150%;
         text-transform: uppercase;
     }
+}
+
+.taste-word {
+
+    font-size: 1.0em;
+    float: left;
+    margin-top: 10px;
+    margin-right: 20px;
+    margin-left: 10px;
 }
 
 </style>

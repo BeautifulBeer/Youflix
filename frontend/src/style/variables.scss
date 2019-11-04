@@ -14,9 +14,13 @@ $breakpoints: (
   large: 1200px,
 );
 
+$background-color: #221f1f;
+$primary-color: #e50914;
+$text-color: #f5f5f1;
+$scroll-width: 18px;
+$text-gray-color: rgba(245, 245, 241,.6);
 
 $animationDuration: 0.5s;
-$text-color: map-get($colors, dark);
 $mobile-breakpoint: 480px;
 $xsmall-breakpoint: 560px;
 $small-breakpoint: 767px;

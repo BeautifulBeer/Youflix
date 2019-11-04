@@ -13,11 +13,21 @@ import AdminPage from './views/admin/AdminPage.vue';
 import DashBoard from './components/admin/DashBoard.vue';
 import MovieList from './components/admin/MovieList.vue';
 import UserList from './components/admin/UserList.vue';
+import DataSet from './components/admin/DataSet.vue';
+import Learning from './components/admin/Learning.vue';
+import BeforeLearn from './components/admin/BeforeLearn.vue';
+
 
 // USER PAGE
-import MyFlex from './components/user/MyFlex.vue';
+import MyFlix from './components/user/MyFlix.vue';
 import UserSetting from './components/user/UserSetting.vue';
 
+// MOVIE PAGE
+import MovieSearchPage from './components/movie/MovieSearchPage.vue';
+import MovieDetailPage from './components/pages/MovieDetailPage.vue';
+
+// UN-SORTED PAGE
+import EvaluatePage from './components/pages/EvaluatePage.vue';
 
 Vue.use(Router);
 
@@ -40,6 +50,7 @@ export default new Router({
             component: HomePage,
             meta: {
                 authRequired: true
+                // scrollToTop: true
             }
         },
         {
@@ -67,9 +78,9 @@ export default new Router({
             }
         },
         {
-            path: '/myflex',
-            name: 'myflex',
-            component: MyFlex,
+            path: '/myflix',
+            name: 'myflix',
+            component: MyFlix,
             meta: {
                 authRequired: true
             }
@@ -78,6 +89,31 @@ export default new Router({
             path: '/setting',
             name: 'setting',
             component: UserSetting,
+            meta: {
+                authRequired: true
+            }
+        },
+        {
+            path: '/movie/search',
+            name: 'movieSearch',
+            component: MovieSearchPage,
+            meta: {
+                authRequired: true
+            }
+        },
+        {
+            path: '/movies/detail/:id',
+            name: 'movieDetailPage',
+            component: MovieDetailPage,
+            meta: {
+                authRequired: true
+            },
+            props: true
+        },
+        {
+            path: '/evaluate',
+            name: 'evaluatePage',
+            component: EvaluatePage,
             meta: {
                 authRequired: true
             }
@@ -112,11 +148,49 @@ export default new Router({
                     meta: {
                         authRequired: true
                     }
+                },
+                {
+                    path: 'dataset',
+                    name: 'dataset',
+                    component: DataSet,
+                    meta: {
+                        authRequired: true
+                    }
+                },
+                {
+                    path: 'Learning',
+                    name: 'Learning',
+                    component: Learning,
+                    meta: {
+                        authRequired: true
+                    }
+                },
+                {
+                    path: 'beforelearn',
+                    name: 'beforelearn',
+                    component: BeforeLearn,
+                    meta: {
+                        authRequired: true
+                    }
                 }
             ],
             meta: {
                 authRequired: true
             }
         }
-    ]
+    ],
+    scrollBehavior: (to, from, savedPosition) => {
+        if (to.path === '/home') {
+            return { x: 0, y: 0 };
+        }
+        if (savedPosition) {
+            return savedPosition;
+        }
+        if (to.hash) {
+            return {
+                selector: to.hash
+            };
+        }
+        return { x: 0, y: 0 };
+    }
 });

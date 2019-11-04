@@ -15,7 +15,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
-FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)),'frontend')
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'frontend')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -26,7 +26,7 @@ SECRET_KEY = '9%614ea(^@4t_=s#9c-1y=z@azlq!1q$=phwpoadz%v6adjp=5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -38,10 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'webpack_loader',
-    
+
     # import_export
     'import_export',
-    
+
     # restframework
     'rest_framework',
     'rest_framework.authtoken',
@@ -202,10 +202,10 @@ LOGGING = {
 #         'BACKEND': 'django_redis.cache.RedisCache',
 #         'LOCATION': 'redis://127.0.0.1:6379/1',  # 1번 DB 선택
 #         'OPTIONS': {
-            
+
 #             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
 #         }
 #     }
 # }
-    
+
 AUTH_USER_MODEL = 'api.User'

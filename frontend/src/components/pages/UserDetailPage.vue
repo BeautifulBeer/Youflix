@@ -110,19 +110,19 @@ import { mapState, mapActions } from 'vuex';
 export default {
     computed: {
         ...mapState({
-            profileList: (state) => state.data.profileList,
-        }),
+            profileList: (state) => state.profileList
+        })
     },
     mounted() {
         this.getUsers();
     },
     methods: {
-        ...mapActions('data', ['getUsers']),
+        ...mapActions(['getUsers']),
 
         viewMovie(index) {
             // this.$store.commit("setSelectIndex", index);
             this.$router.push(`/movies/detail/${index}`);
-        },
-    },
+        }
+    }
 };
 </script>

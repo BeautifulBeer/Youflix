@@ -14,8 +14,7 @@
 /django-vue/Scripts/
 /django-vue/tcl/
 
-/**/migrations/*_initial.py
-/**/migrations/**/*_initial.py
+/**/migrations/0001_initial.py
 
 /**/db.sqlite3*
 /**/data/
