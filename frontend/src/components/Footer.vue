@@ -129,23 +129,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '@/style/variables.scss';
 
 .footer-wapper{
     min-height: 400px;
     margin: 20px;
-    color: white;
-
-    .height100{
-        height: 100%;
-    }
+    color: $text-color;
 
     .icon-row{
         justify: space-between;
     }
 
     .fa-facebook-square, .fa-instagram , .fa-youtube-square, .fa-twitter{
-        color: white;
-        background-color: #221f1f;
+        color: $text-color;
+        background-color: $background-color;
     }
 
     .service-code{
