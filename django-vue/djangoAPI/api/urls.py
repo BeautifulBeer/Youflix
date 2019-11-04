@@ -29,7 +29,7 @@ urlpatterns = [
     url(r'movies/views/$', movie_views.views, name='movie_views'),
     url(r'movies/modify/$', movie_views.modify, name='movie_modify'),
     url(r'movies/neverSeenMovies/$', movie_views.never_seen_movie_list, name='never_seen_movie_list'),
-    url(r'movies/crews/$', movie_views.crews, name='crews'),
+    url(r'movies/faculites/$', movie_views.faculites, name='faculites'),
     # url(r'similarMovie/$', movie_views.similarMovie, name='similarMovie'),
     # url(r'^movies/recommend/$', movie_views.recommendation, name='movie_recommend'),
 

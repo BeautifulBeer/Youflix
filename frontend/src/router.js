@@ -50,6 +50,7 @@ export default new Router({
             component: HomePage,
             meta: {
                 authRequired: true
+                // scrollToTop: true
             }
         },
         {
@@ -171,12 +172,25 @@ export default new Router({
                     meta: {
                         authRequired: true
                     }
-                },
-                
+                }
             ],
             meta: {
                 authRequired: true
             }
         }
-    ]
+    ],
+    scrollBehavior: (to, from, savedPosition) => {
+        if (to.path === '/home') {
+            return { x: 0, y: 0 };
+        }
+        if (savedPosition) {
+            return savedPosition;
+        }
+        if (to.hash) {
+            return {
+                selector: to.hash
+            };
+        }
+        return { x: 0, y: 0 };
+    }
 });

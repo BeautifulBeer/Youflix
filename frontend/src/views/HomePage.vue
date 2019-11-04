@@ -7,6 +7,7 @@
 </template>
 
 <script>
+import $ from 'jquery';
 import { createNamespacedHelpers } from 'vuex';
 // @ is an alias to /src
 import LatestMovies from '@/components/movie/LatestMovies.vue';
