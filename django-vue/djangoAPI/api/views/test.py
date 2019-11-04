@@ -14,6 +14,7 @@ import re
 import os
 import math
 import time
+import csv
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
@@ -36,12 +37,176 @@ from scipy import sparse
 from django.http import JsonResponse
 from django.core.cache import cache
 
-# Numba
-from numba import jit
-import numba
-
 from scipy import sparse
 import sklearn.preprocessing as pp
+
+# Numba
+from numba import jit, prange
+from numba import types, typeof
+from numba.typed import Dict
+
+@api_view(['GET'])
+def tfidf(request):
+
+    print("TFIDF TEST")
+
+    # implement data set
+    # load all movie data
+    movies_frame = pd.DataFrame(Movie.objects.all().values())
+    # movies_frame = pd.DataFrame(Movie.objects.all().values())
+
+    # 각 영화의 줄거리 데이터를 CountVectorizer 라이브러리를 이용하여,
+    # Sparse Matrix를 반환 받습니다.
+
+    count_vectorizer = CountVectorizer(stop_words='english', lowercase=True)
+    count_matrix = count_vectorizer.fit_transform(movies_frame['overview'])
+
+    # bagOfWords = []
+
+    # for movie in movies:
+    #     bagOfWords.append(movie.overview.split(' '))
+
+    # uniqueWords = set(bagOfWordsA).union(set(bagOfWordsB)).union(set(bagOfWordsC))
+    # uniqueWords = set()
+
+    # set 자료형을 이용하여 중복되는 단어들을 없애줍니다.
+    # for bag in bagOfWords:
+    #     uniqueWords = uniqueWords.union(set(bag))
+    
+    # TfidfVectorizer를 이용하여 Overview의 Feature들을 추출합니다.
+    # tfidf = TfidfVectorizer(stop_words='english')
+    # matrix = tfidf.fit_transform(movies_frame['overview'])
+    # print(tfidf.get_feature_names())
+
+    # temp = tfidf.get_feature_names()
+    # temp_df = pd.DataFrame(temp)
+    # temp_df.to_csv('overview_features.csv', mode='w')
+
+
+    overview_features = count_vectorizer.get_feature_names()
+    tf_matrix = []
+    overview_list = []
+    movies_frame.iloc[31918].overview = ''
+
+    start = time.time()
+    for index in range(len(movies_frame)):
+
+        obj = movies_frame.iloc[index].overview.replace(',', '').replace('.', '')
+
+        if obj == '' or obj == ' ' or obj == None or obj == '...' or obj == 'x' or index == 31918:
+            tf_matrix.append('')
+            continue
+        
+        word_bag = CountVectorizer(stop_words='english', lowercase=True)
+        word_bag.fit_transform([obj])
+
+        matrix = count_matrix[index].toarray()
+        overview_list.append(matrix)
+
+        s = time.time()
+        tf_matrix.append(computeTF(
+            matrix,
+            word_bag.get_feature_names(),
+            overview_features))
+        print(index,'-th finish: ', time.time() - s)
+
+
+    for element in tf_matrix:
+        pd.DataFrame(element.items()).to_csv('tf.csv', mode='a', header=['key', 'value'])
+
+    result_tf = pd.read_csv('tf.csv')
+    # print(result_tf)
+
+    tf_list = []
+    temp = {}
+
+    for i in result_tf.index:
+        abc = result_tf.iloc[i]
+
+        if abc.key == 'key' and abc.value == 'value':
+
+            tf_list.append(temp)
+            temp = {}
+        else :
+            # print(abc.key, ' ', abc.value)
+            temp[abc.key] = abc.value
+    
+    tf_list.append(temp)
+    idfs = computeIDF(overview_list, overview_features)
+    
+    # print("CHECK")
+    # for key, value in idfs.items():
+    #     if value > 0:
+    #         print(key, ' ', value)
+    
+    # print(len(result_tf))
+    tfidf_matrix = []
+
+    for i in range(len(tf_list)):
+        tfidf_matrix.append(computeTFIDF(tf_list[i], idfs))
+    
+    tfidf_matrix.to_csv('tfidf_matrix.csv')
+
+
+    # for index in range(len(result_tf)):
+    #     tfidf_matrix.append(computeTFIDF(result_tf.iloc[index], idfs))
+    # print(tfidf_matrix)
+
+    # df = pd.DataFrame([tfidfA, tfidfB, tfidfC])
+    # print(df)
+    return Response(status=status.HTTP_200_OK)
+
+
+def computeTF(word_matrix, bagOfWords, features):
+
+    tfDic = {}
+    bagOfWordsCount = len(bagOfWords)
+
+    # print("IN!")
+    # print(word_matrix)
+    # print(bagOfWords, ' ', bagOfWordsCount)
+    # print()
+
+    for index in range(len(word_matrix[0])):
+        if word_matrix[0][index] != 0:
+            # print(features[index])
+            tfDic[features[index]] = word_matrix[0][index] / float(bagOfWordsCount)
+    # print()
+    # print(tfDic)
+    # print()
+    return tfDic
+
+
+def computeIDF(movies, overview_features):
+    
+    # print(movies)
+    N = len(movies)
+    # print("N: ", N)
+    
+    idfDict = dict.fromkeys(overview_features, 0)
+    # print(idfDict)
+    # print()
+
+    for movie in movies:
+        print(movie)
+        for index in range(len(movie[0])):
+            if float(movie[0][index]) > float(0):
+                idfDict[overview_features[index]] += 1
+    
+    for word, val in idfDict.items():
+        if float(val) > float(0):
+            idfDict[word] = math.log(N / float(val))
+    return idfDict
+
+
+def computeTFIDF(tfBagOfWords, idfs):
+
+    tfidf = {}
+
+    for word, val in tfBagOfWords.items():
+        tfidf[word] = float(val) * float(idfs[word])
+    return tfidf
+
 
 @api_view(['GET'])
 def content_based(request):
@@ -427,3 +592,73 @@ def preprocessing_overview(data):
 def bag_words(x):
 
     return (' '.join(x['genres']) + ' ' + ' '.join(x['keywords']))
+
+
+
+@api_view(['GET'])
+def testing(request):
+
+    documentA = 'the man went out for a walk'
+    documentB = 'the children sat around the fire'
+
+    bagOfWordsA = documentA.split(' ')
+    bagOfWordsB = documentB.split(' ')
+    uniqueWords = set(bagOfWordsA).union(set(bagOfWordsB))
+
+    numOfWordsA = dict.fromkeys(uniqueWords, 0)
+    for word in bagOfWordsA:
+        numOfWordsA[word] += 1
+    numOfWordsB = dict.fromkeys(uniqueWords, 0)
+    for word in bagOfWordsB:
+        numOfWordsB[word] += 1
+
+    tfA = computeTF1(numOfWordsA, bagOfWordsA)
+    tfB = computeTF1(numOfWordsB, bagOfWordsB)
+
+    idfs = computeIDF1([numOfWordsA, numOfWordsB])
+
+    tfidfA = computeTFIDF1(tfA, idfs)
+    tfidfB = computeTFIDF1(tfB, idfs)
+
+    
+    pd.set_option('display.max_columns', 30)
+
+
+    df = pd.DataFrame([tfidfA, tfidfB])
+    print(df)
+
+    vectorizer = TfidfVectorizer()
+    vectors = vectorizer.fit_transform([documentA, documentB])
+    feature_names = vectorizer.get_feature_names()
+    dense = vectors.todense()
+    denselist = dense.tolist()
+    df = pd.DataFrame(denselist, columns=feature_names)
+    print(df)
+
+
+def computeTFIDF1(tfBagOfWords, idfs):
+    tfidf = {}
+    for word, val in tfBagOfWords.items():
+        tfidf[word] = val * idfs[word]
+    return tfidf
+
+def computeIDF1(documents):
+    import math
+    N = len(documents)
+    
+    idfDict = dict.fromkeys(documents[0].keys(), 0)
+    for document in documents:
+        for word, val in document.items():
+            if val > 0:
+                idfDict[word] += 1
+    
+    for word, val in idfDict.items():
+        idfDict[word] = math.log(N / float(val))
+    return idfDict
+
+def computeTF1(wordDict, bagOfWords):
+    tfDict = {}
+    bagOfWordsCount = len(bagOfWords)
+    for word, count in wordDict.items():
+        tfDict[word] = count / float(bagOfWordsCount)
+    return tfDict

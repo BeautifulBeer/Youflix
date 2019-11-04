@@ -43,5 +43,7 @@ urlpatterns = [
 
     # test
     url(r'content_based/$', test.content_based, name='content_based'),
-    url(r'preprocessing/$', test.algo, name='preprocessing')
+    url(r'preprocessing/$', test.algo, name='preprocessing'),
+    url(r'tfidf/$', test.tfidf, name='tfidf'),
+    url(r'testing/$', test.testing, name='testing')
 ]
