@@ -123,7 +123,7 @@
                         </div>
                     </v-col>
                 </v-row>
-                <v-row v-if="getMovie & getMovie.genres.length != 0">
+                <v-row v-if="getMovie && getMovie.genres && getMovie.genres.length != 0">
                     <div class="label-wrapper">
                         <span class="label">
                             Genre
@@ -140,7 +140,7 @@
                         </div>
                     </div>
                 </v-row>
-                <v-row v-if="getMovie & getMovie.keywords.length != 0">
+                <v-row v-if="getMovie && getMovie.keywords && getMovie.keywords.length != 0">
                     <div class="label-wrapper">
                         <span class="label">
                             Keyword
@@ -212,9 +212,7 @@
                     <div
                         class="department"
                     >
-                        <span>
-                            {{ crew.department }}
-                        </span>
+                        {{ getFacultyInform(crew) }}
                     </div>
                 </div>
             </div>
@@ -292,7 +290,7 @@ export default {
                 '#EE82EE'
             ],
             rating: 0,
-            ratingWord: '아직은 멀었지요',
+            ratingWord: '평가해주세요',
             showCount: 0,
             currentIndex: 0,
             currentPage: 0,
@@ -309,10 +307,14 @@ export default {
             return this.selectedMovie.movie;
         },
         getCrews() {
-            if (this.selectedMovie.crews) {
-                return this.selectedMovie.crews;
+            let result = [];
+            if (this.selectedMovie.faculties.casts) {
+                result = result.concat(this.selectedMovie.faculties.casts);
             }
-            return [];
+            if (this.selectedMovie.faculties.crews) {
+                result = result.concat(this.selectedMovie.faculties.crews);
+            }
+            return result;
         },
         isEmpty() {
             if (this.getMovie && 'id' in this.getMovie && this.id === this.getMovie.id) {
@@ -347,6 +349,9 @@ export default {
             const start = this.currentIndex;
             const end = this.currentIndex + this.showCount;
             let result = [];
+            if (!this.getCrews && this.getCrews.length <= 0) {
+                return result;
+            }
             if (this.maxPage === 1) {
                 return this.getCrews.slice(start, end);
             }
@@ -409,7 +414,7 @@ export default {
                 this.getMovieById(val).then((result) => {
                     this.$log.debug('MovieDetailPage.vue getMovieById response', this.user.email, val);
                     if (result) {
-                        this.getMovieCrews(val).then(() => {
+                        this.getMovieFaculties(val).then(() => {
                             this.$forceUpdate();
                         }).then(() => {
                             this.loadSliderWidth();
@@ -435,7 +440,7 @@ export default {
             this.getMovieById(this.id).then((result) => {
                 this.$log.debug('MovieDetailPage.vue getMovieById response', this.user.email, this.id);
                 if (result) {
-                    this.getMovieCrews(this.id).then(() => {
+                    this.getMovieFaculties(this.id).then(() => {
                         this.$forceUpdate();
                     }).then(() => {
                         this.loadSliderWidth();
@@ -453,7 +458,7 @@ export default {
         });
     },
     methods: {
-        ...mapActions(['getMovieById', 'getMovieCrews', 'getPrediction']),
+        ...mapActions(['getMovieById', 'getMovieFaculties', 'getPrediction']),
         back() {
             this.$router.go(-1);
         },
@@ -485,6 +490,15 @@ export default {
         },
         moveTrailerPage() {
             window.open(`${this.getMovie.video}?autoplay=1`, '_blank');
+        },
+        getFacultyInform(obj) {
+            if (obj.department) {
+                return obj.department;
+            }
+            if (obj.character) {
+                return obj.character;
+            }
+            return '';
         }
     }
 };

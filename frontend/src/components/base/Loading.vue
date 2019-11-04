@@ -40,18 +40,15 @@ export default {
                 setTimeout(() => {
                     this.enableScroll();
                 }, 500);
-            } else {
-                window.scrollTo(0, 0);
             }
             this.disableScroll();
         }
     },
     methods: {
         disableScroll() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+            window.scrollTo(0, 0);
             window.onscroll = () => {
-                window.scrollTo(scrollLeft, scrollTop);
+                window.scrollTo(0, 0);
             };
         },
         enableScroll() {

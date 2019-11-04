@@ -27,11 +27,12 @@
             </v-col>
         </v-row>
         <v-row
+            id="slider-container"
             justify="start"
             align="end"
             class="slider-container"
         >
-            <v-col>
+            <v-col style="padding: 0;">
                 <AnimateWhenVisible name="fade">
                     <div style="position: relative;">
                         <div
@@ -46,6 +47,7 @@
                             v-for="(movie, index) in currentMovies"
                             :key="'personalized' + movie.id + index"
                             class="slider"
+                            @click.stop="viewMovie(movie.id)"
                         >
                             <v-img
                                 class="slider-img"
@@ -72,7 +74,7 @@
                                                     class="portfolio-item__link"
                                                     href="#movie-detail"
                                                     title="Link Title"
-                                                    @click="chooseDetail(index)"
+                                                    @click.stop="chooseDetail(index)"
                                                 >
                                                     <i class="material-icons">keyboard_arrow_down</i>
                                                 </a>
@@ -86,7 +88,9 @@
                 </AnimateWhenVisible>
             </v-col>
         </v-row>
-        <v-row>
+        <v-row
+            id="movie-detail-row"
+        >
             <MovieDetail
                 :visible="visible"
                 :pmovie="personalMovies[calcSelectedIndex]"
@@ -198,7 +202,7 @@ export default {
         });
     },
     methods: {
-        ...movieMapActions(['getMoviesByPersonal']),
+        ...movieMapActions(['getMoviesByPersonal', 'addMovieView']),
         loadSliderWidth() {
             const { innerWidth } = window;
             this.showCount = parseInt(innerWidth / 355, 10) + 1;
@@ -223,6 +227,10 @@ export default {
         },
         closeMovieDetail() {
             this.visible = false;
+        },
+        viewMovie(movieId) {
+            this.addMovieView(movieId);
+            this.$router.push(`/movies/detail/${movieId}`);
         }
     }
 };
@@ -288,7 +296,7 @@ $button-height: 200px;
     display: relative;
     overflow: hidden;
     width: 200vw;
-    margin-bottom: 20px;
+    // margin-bottom: 20px;
 }
 
 .btn{
@@ -316,6 +324,7 @@ $button-height: 200px;
     object-fit: fill;
     object-position: bottom;
     display:block;
+    cursor: pointer;
     -webkit-transition: width .5s, height .5s, transform .5s ease; /* For Safari 3.1 to 6.0 */
     transition: width .5s, height .5s, transform .5s ease;
     transform: translateY(0%);
