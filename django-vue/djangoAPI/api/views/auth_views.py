@@ -33,6 +33,13 @@ BASE_DIR = os.path.dirname(
             )
         )
 
+url = os.path.join(BASE_DIR, 'data')
+latent_user = np.load(os.path.join(url, 'mapper/latent_user.npy'))
+latent_movie = np.load(os.path.join(url, 'mapper/latent_movie.npy'))
+user_mapper = open(os.path.join(url, 'mapper/userMapper.json')).read()
+user_mapper = json.loads(user_mapper)
+movie_mapper = open(os.path.join(url, 'mapper/movieMapper.json')).read()
+movie_mapper = json.loads(movie_mapper)
 
 # 여러명의 사용자들을 가입시키는 Request
 @api_view(['POST'])
@@ -293,146 +300,6 @@ def similarUser(request):
             'result': serializer.data,
             'status': status.HTTP_200_OK
             })
-    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
-
-
-url = os.path.join(BASE_DIR, 'data', 'mapper')
-latent_user = np.load(os.path.join(url, 'latent_user.npy'))
-latent_movie = np.load(os.path.join(url, 'latent_movie.npy'))
-user_mapper = open(os.path.join(url, 'userMapper.json')).read()
-user_mapper = json.loads(user_mapper)
-movie_mapper = open(os.path.join(url, 'movieMapper.json')).read()
-movie_mapper = json.loads(movie_mapper)
-
-
-@api_view(['GET'])
-def RecommendMovieUserBased(request):
-    start = time.time()
-    topN = 20
-    if request.method == 'GET':
-
-        target_id = request.GET.get('id', None)
-        if target_id:
-            max_id_object = UserCluster.objects.aggregate(user_id=Max('user_id'))
-            max_id = max_id_object['user_id']
-            # 군집 할당 안된 새로운 유저에 대해
-            if int(target_id) > max_id:
-                new_users = U_Cluster()
-                target_user_df = new_users[new_users.index == int(target_id)]
-                target_cluster = int(target_user_df['cluster'].values)
-                target_user = Profile.objects.get(id=target_id)
-                print('START')
-                # cache hit
-                if cache.get(target_cluster, default=None) is not None:
-                    print("cache HIT!!!")
-                    start = time.time()
-                    df = pd.DataFrame(cache.get(target_cluster))
-                    print(time.time() - start)
-                # cache miss
-                else:
-                    print("cache miss...")
-                    start = time.time()
-                    similar_users = Profile.objects.filter(kmeans_cluster=target_cluster)
-                    similar_user_list = [user.id for user in similar_users]
-
-                    # 2. 해당 군집 모든 유저가 가장 많이 시청한 영화
-                    movie_list = []
-                    for userid in similar_user_list:
-                        ratings = Rating.objects.filter(user__id=userid)
-                        for rating in ratings:
-                            movie_list.append(rating.movie.id)
-
-                    movie_counts = Counter(movie_list)
-                    movie_dict = dict(movie_counts)
-                    df = pd.DataFrame(list(movie_dict.items()), columns=['id', 'count'])
-                    # 5개 미만의 평점수를 가진 영화 제거
-                    df = df[df['count'] >= 5]
-                    # 3. 많이 본 영화 내림차순 정렬
-                    df = df.sort_values(["count"], ascending=[False])
-
-                    # cache에 target_cluster를 key로하는 value를 삽입.
-                    cache.set(target_cluster, df, None)
-                    print(time.time() - start)
-
-                # 4. 타켓유저가 보지 않은 영화들 중 재밌을 것 같은 영화 TopN 추천
-                print(df)
-                target_user_watched = [rating.movie.id for rating in target_user.user.rating_set.all()]
-                topN_movies = []
-                for idx in range(len(df)):
-                    if df.iloc[idx].id not in target_user_watched:
-                        topN_movies.append([df.iloc[idx].id, 0])
-                topN_movies = topN_movies[:topN]
-                print(topN_movies)
-                movie_list = []
-                for movie in topN_movies:
-                    movie_list.append(movie[0])
-                data = Movie.objects.filter(id__in=movie_list)
-                print(data)
-
-                serializer = RecommendMovie(data, many=True)
-                return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
-
-            # 이미 군집에 할당된 유저에 대해
-            else:
-                # 1. target_id user와 같은 군집인 users
-                target_user = Profile.objects.get(id=target_id)
-                target_cluster = target_user.kmeans_cluster
-                print('START')
-                # cache hit
-                if cache.get(target_cluster, default=None) is not None:
-                    print("cache HIT!!!")
-                    start = time.time()
-                    df = pd.DataFrame(cache.get(target_cluster))
-                    print(time.time() - start)
-                # cache miss
-                else:
-                    print("cache miss...")
-                    start = time.time()
-                    similar_users = Profile.objects.filter(kmeans_cluster=target_cluster)
-                    similar_user_list = [user.id for user in similar_users]
-
-                    # 2. 해당 군집 모든 유저가 가장 많이 시청한 영화
-                    movie_list = []
-                    for userid in similar_user_list:
-                        ratings = Rating.objects.filter(user__id=userid)
-                        for rating in ratings:
-                            movie_list.append(rating.movie.id)
-
-                    movie_counts = Counter(movie_list)
-                    movie_dict = dict(movie_counts)
-                    df = pd.DataFrame(list(movie_dict.items()), columns=['id', 'count'])
-                    # 5개 미만의 평점수를 가진 영화 제거
-                    df = df[df['count'] >= 5]
-                    # 3. 많이 본 영화 내림차순 정렬
-                    df = df.sort_values(["count"], ascending=[False])
-
-                    # cache에 target_cluster를 key로하는 value를 삽입.
-                    cache.set(target_cluster, df, None)
-                    print(time.time() - start)
-
-                # 4. 타켓유저가 보지 않은 영화들 중 재밌을 것 같은 영화 TopN 추천
-                target_user_watched = [rating.movie.id for rating in target_user.user.rating_set.all()]
-                target_user_id = int(user_mapper[str(target_user.id)])
-                topN_movies = []
-                for idx in range(len(df)):
-                    if df.iloc[idx].id not in target_user_watched:
-                        topN_movies.append([df.iloc[idx].id, 0])
-                for movie in topN_movies:
-                    if str(movie[0]) in movie_mapper:
-                        movie_id = int(movie_mapper[str(movie[0])])
-                        movie[1] = np.dot(latent_movie[movie_id, :], np.transpose(latent_user[target_user_id, :]))
-                topN_movies.sort(key=lambda movie: movie[1], reverse=True)
-                topN_movies = topN_movies[:topN]
-
-                movie_list = []
-                for movie in topN_movies:
-                    movie_list.append(movie[0])
-                data = Movie.objects.filter(id__in=movie_list)
-                print(data)
-
-                serializer = RecommendMovie(data, many=True)
-                return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
-        return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
