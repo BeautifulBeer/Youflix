@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.db.models import F
 from django.http import JsonResponse
-from api.models import Movie, User, Genre, Rating, Crew
-from api.serializers import MovieSerializer, CrewSerializer
+from api.models import Movie, User, Genre, Rating, Crew, Cast
+from api.serializers import MovieSerializer, CrewSerializer, CastSerializer
 
 
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -225,7 +225,7 @@ def never_seen_movie_list(request):
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 @api_view(['GET'])
-def crews(request):
+def faculites(request):
     try:
         if request.method == 'GET':
             movie_id = request.GET.get('movieId', None)
@@ -234,9 +234,14 @@ def crews(request):
             movie = Movie.objects.get(id=movie_id)
             if movie is None:
                 raise Movie.DoesNotExist
-            result = Crew.objects.filter(movie=movie)
-            serializer = CrewSerializer(result, many=True)
-            return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
+            crews_list = Crew.objects.filter(movie=movie)
+            casts_list = Cast.objects.filter(movie=movie)
+            cast_serializer = CastSerializer(casts_list, many=True)
+            crew_serializer = CrewSerializer(crews_list, many=True)
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': {
+                'crews': crew_serializer.data,
+                'casts': cast_serializer.data
+            }})
     except ValueError:
         return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': str(ValueError)})    
     except Movie.DoesNotExist:
