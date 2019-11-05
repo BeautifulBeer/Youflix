@@ -15,6 +15,7 @@ import os
 import math
 import time
 import csv
+from django.core.cache import cache
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
@@ -44,6 +45,11 @@ import sklearn.preprocessing as pp
 from numba import jit, prange
 from numba import types, typeof
 from numba.typed import Dict
+
+# CONSTANT VARIABLES
+movie_count = 45433
+threshold = movie_count / 15
+
 
 @api_view(['GET'])
 def testing(request):
@@ -120,123 +126,232 @@ def preprocessing_concatenate(data):
 @api_view(['GET'])
 def tfidf(request):
 
-    print("TFIDF TEST")
+    '''
+    TF-IDF Test
+    '''
+    
+    if request.method == 'GET':
 
-    movies_frame = pd.DataFrame(Movie.objects.all().values())
+        print("TFIDF TEST")
 
-    # 각 영화의 줄거리 데이터를 CountVectorizer 라이브러리를 이용하여,
-    # Sparse Matrix를 반환 받습니다.
+        result = []
 
-    count_vectorizer = CountVectorizer(stop_words='english', lowercase=True)
-    count_matrix = count_vectorizer.fit_transform(movies_frame['overview'])
+        movies_frame = pd.DataFrame(Movie.objects.all().values())
+        total_features = dict()
+        index_total_features = []
 
-    # title + overview에서 나올 수 있는 모든 keyword
-    total_features = pd.read_csv('total_features.csv')
+        print(len(movies_frame))
 
-    temp = total_features.values.tolist()
+        if cache.get('total_features', default=None) is not None:
+            print("Total Features CACHE HIT!!!")
 
-    overview_features = list()
-    for data in temp:
-        overview_features.append(data[1])
-    # overview_features = count_vectorizer.get_feature_names()
+            start = time.time()
+            total_features = cache.get('total_features')
+            index_total_features = cache.get('index_total_features')
+            print(time.time() - start)
+        else:
+            print("Total Features CACHE MISS...")
+            title_features = pd.read_csv('title_features.csv')
+            overview_features = pd.read_csv('overview_features.csv')
+            
+            for index in title_features.index:
+                feature_array = title_features.iloc[index].array
+                total_features[feature_array[1]] = feature_array[0]
 
-    tf_matrix = []
-    overview_list = []
+            for index in overview_features.index:
+                feature_array = overview_features.iloc[index].array
+                total_features[feature_array[1]] = feature_array[0]
+            
+            index_total_features = list(total_features.keys())
+            cache.set('total_features', total_features, None)
+            cache.set('index_total_features', index_total_features, None)
+            print("\ttotal features save to cache... ", len(total_features))
 
-    for index in range(len(movies_frame)):
+        for select in ['title', 'overview']:
 
-        obj = movies_frame.iloc[index].overview.replace(',', '').replace('.', '')
+            vectorizer = CountVectorizer(
+                stop_words='english',
+                lowercase=True,
+                vocabulary=list(total_features.keys())
+                )
+            total_matrix = vectorizer.fit_transform(movies_frame[select])
 
-        if obj == '' or obj == ' ' or obj == None or obj == '...' or obj == 'x' or index == 31918:
-            # no_overview_idx.append(movies_frame.iloc[index].id)
-            tf_matrix.append('')
-            continue
+            tf_matrix = []
+            dp_list = []
+            dp_key_list = []
+            rating_list = []
+
+            for index in range(len(movies_frame)):
+
+                if select == 'title':
+                    obj = movies_frame.iloc[index].title
+                else:
+                    obj = movies_frame.iloc[index].overview
+                    obj = obj.replace('...', ' ')
+
+                rating_list.append(movies_frame.iloc[index].vote_average / 2)
+                obj = obj.replace(',', '').replace('.', '')
+
+                try:
+                    selected_vectorizer = CountVectorizer(
+                        stop_words='english',
+                        lowercase=True
+                    )
+                    selected_keyword_bag = selected_vectorizer.fit_transform([obj])
+                except ValueError:
+                    tf_matrix.append('')
+                    continue
+
+                row = total_matrix[index].tocoo().row
+                col = total_matrix[index].tocoo().col
+
+                # 경과 시간 체크
+                # ========================
+                start_time = time.time()
+                # ========================
+                tf_matrix.append(
+                    compute_tf(
+                        total_matrix[index],
+                        row,
+                        col,
+                        len(row),
+                        len(selected_vectorizer.get_feature_names()),
+                        index_total_features
+                    )
+                )
+                # 경과 시간 출력
+                # ======================================================
+                print(index, '-th Finish: ', time.time() - start_time)
+                # ======================================================
+                dp_list.append(selected_keyword_bag)
+                dp_key_list.append(selected_vectorizer.get_feature_names())
+
+            # print("FINISH TF AND START IDF")
+            idf_dict = compute_idf(dp_list, dp_key_list)
+
+            # print(idf_dict)
+            # print("FINISH IDF")
+
+            tfidf_matrix = []
+
+            # print(idf_dict)
+
+            # print("START TF_IDF")
+            for i in range(len(tf_matrix)):
+                if select == 'title':
+                    tfidf_matrix.append(compute_tfidf(tf_matrix[i], idf_dict, True))
+                else:
+                    tfidf_matrix.append(compute_tfidf(tf_matrix[i], idf_dict, False))
+            # print("FINISH CALCULATE TF-IDF")
+
+            if select == 'title':
+                print("TITLE")
+                i = 0
+                for matrix in tfidf_matrix:
+                    
+                    temp_dict = {}
+
+                    for key, value in matrix.items():
+                        if key not in result:
+                            temp_dict[key] = value * math.exp(rating_list[i])
+                        else:
+                            temp_dict[key] += value * math.exp(rating_list[i])
+                    result.append(temp_dict)
+                    i += 1
+            else:
+                print("OVERVIEW")
+                i = 0
+                for matrix in tfidf_matrix:
+                    
+                    for key, value in matrix.items():
+                        if key not in result[i]:
+                            result[i][key] = value * math.exp(rating_list[i])
+                        else:
+                            result[i][key] += value * math.exp(rating_list[i])
+                    i += 1
+
         
-        word_bag = CountVectorizer(stop_words='english', lowercase=True)
-        word_bag.fit_transform([obj])
+        adjacent_matrix = []
+        for matrix in result:
 
-        matrix = count_matrix[index].toarray()
-        overview_list.append(matrix[0])
+            if type(matrix) is str:
+                continue
+            print(matrix)
+            temp = []
 
-        s = time.time()
-        tf_matrix.append(computeTF(
-            matrix,
-            word_bag.get_feature_names(),
-            overview_features))
-        print(index, '-th finish: ', time.time() - s)
+            for key, value in matrix.items():
+                temp.append([total_features[key], value])
+            temp.sort(key=lambda x: x[0])
+            adjacent_matrix.append(temp)
 
-    # print(overview_list)
-    # for element in overview_list:
-    #     print(type(element))
-    print("FINISH TF")
-    idfs = computeIDF(np.asarray(overview_list), overview_features)
-    print("FINISH IDF")
+        print(adjacent_matrix)
 
-    # address = 0
-    # for data in idfs:
-    #     if data != 0.0:
-    #         print(overview_features[address], ' ', data)
-    #     address += 1
+        np.save('result.npy', adjacent_matrix)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+def compute_tf(sparse_matrix, row, col, size, bag_of_words_count, features):
+    '''
+        TF(Term Frequency) 값을 구하는 method 입니다.
+    '''
+    tf_dict = {}
+    for index in range(size):
+        tf_dict[features[col[index]]] = sparse_matrix[row[index], col[index]] / float(bag_of_words_count)
+    return tf_dict
+
+
+def compute_idf(overview_dp_list, features):
+    '''
+        IDF(Inversion Document Frequency) 값을 구하는 method입니다.
+    '''
+    n = len(overview_dp_list)
+
     idf_dict = {}
-    idx = 0
-    for data in idfs:
-        idf_dict[overview_features[idx]] = data
-        idx += 1
+    i = 0
 
-    tfidf_matrix = []
+    for sparse_matrix in overview_dp_list:
+        row = sparse_matrix.tocoo().row
+        col = sparse_matrix.tocoo().col
+        size = len(row)
 
-    for i in range(len(tf_matrix)):
-        tfidf_matrix.append(computeTFIDF(tf_matrix[i], idf_dict))
-    print("FINISH CALCULATE TF-IDF")
+        for index in range(size):
+            if features[i][col[index]] in idf_dict:
+                idf_dict[features[i][col[index]]] += 1
+            else:
+                idf_dict[features[i][col[index]]] = 1
+        i += 1
 
-    print("SAVING...")
-    pd.DataFrame(tfidf_matrix).to_csv('tfidf_matrix.csv')
-    print("SAVED!")
-
-    return Response(status=status.HTTP_200_OK)
-
-
-def computeTF(word_matrix, bagOfWords, features):
-
-    tfDic = {}
-    bagOfWordsCount = len(bagOfWords)
-
-    for index in range(len(word_matrix[0])):
-        if word_matrix[0][index] != 0:
-            tfDic[features[index]] = word_matrix[0][index] / float(bagOfWordsCount)
-    return tfDic
+    for key, value in idf_dict.items():
+        idf_dict[key] = math.log(n / float(value))
+    return idf_dict
 
 
-def computeIDF(movies, overview_features):
-    
-    # movies = np.array(movies)
-    N = len(movies)
-    
-    # idfDict = dict.fromkeys(overview_features, 0)
+def compute_tfidf(tf_matrix, idf_dict, flag):
+    '''
+        TF-IDF를 최종적으로 연산하는 method입니다.
+    '''
+    if type(tf_matrix) is str:
+        return {}
+    tfidf_dict = {}
 
-    # for movie in movies:
-    #     print(number)
-    #     for index in range(len(movie[0])):
-    #         if float(movie[0][index]) > float(0):
-    #             idfDict[overview_features[index]] += 1
-    count_matrix = np.sum(movies, where=movies >= float(0), axis=0)
-    
-    # for word, val in idfDict.items():
-    #     if float(val) > float(0):
-    #         idfDict[word] = math.log(N / float(val))
-    
-    idf_matrix = np.where(count_matrix > 0, np.log(N / count_matrix), 0)
-    return idf_matrix
+    # flag => true면 title
+    if flag:
+        for key, value in tf_matrix.items():
+            if key not in idf_dict:
+                continue
+            
+            if float(idf_dict[key]) < threshold:
+                tfidf_dict[key] = float(value) * float(idf_dict[key])
+            else:
+                tfidf_dict[key] = 1 * float(idf_dict[key])
+    else:
+        for key, value in tf_matrix.items():
+            if key not in idf_dict:
+                continue
+            tfidf_dict[key] = float(value) * float(idf_dict[key])
 
-
-def computeTFIDF(tfBagOfWords, idfs):
-
-    tfidf = {}
-
-    for word, val in tfBagOfWords.items():
-        print(word, ' ', val)
-        tfidf[word] = float(val) * float(idfs[word])
-    return tfidf
+    return tfidf_dict
 
 
 @api_view(['GET'])
