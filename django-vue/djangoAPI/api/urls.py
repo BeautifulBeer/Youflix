@@ -2,6 +2,8 @@ from django.conf.urls import url
 from api.views import movie_views
 from api.views import auth_views
 from api.views import rating_views
+from api.views import recommend_views
+from api.views import collabo_test
 # from api.views import clustering
 from api.views import test
 from api.algorithms import kmeansClustering
@@ -12,7 +14,6 @@ urlpatterns = [
     url(r'auth/getUsers/$', auth_views.getUsers, name='get_users'),
     url(r'auth/deleteUser/$', auth_views.deleteUser, name='delete_user'),
     url(r'auth/similarUser/$', auth_views.similarUser, name='similarUser'),
-    url(r'auth/recommendMovie/$', auth_views.RecommendMovieUserBased, name='recommendMovie'),
     url(r'^auth/loginmember/$', auth_views.login, name='login_member'),
     url(r'^auth/registermember/$', auth_views.register, name='register_member'),
     url(r'^auth/logoutmember/$', auth_views.logout, name='logout_member'),
@@ -33,6 +34,9 @@ urlpatterns = [
     # url(r'similarMovie/$', movie_views.similarMovie, name='similarMovie'),
     # url(r'^movies/recommend/$', movie_views.recommendation, name='movie_recommend'),
 
+    # 추천 URL
+    url(r'auth/recommendMovie/$', recommend_views.RecommendMovie, name='recommendMovie'),
+
     # 평점정보 접근 URL
     # url(r'ratings/$', rating_views.ratings, name='rating_list'),
     url(r'rateMovie/$', rating_views.rate_movie, name='rate_movie'),
@@ -44,5 +48,7 @@ urlpatterns = [
     url('clustering/kmeansClustering/C/', kmeansClustering.C_Cluster, name="c_Cluster"),
 
     # test
-    url(r'contentBased/$', test.ContentBased, name='ContentBased')
+    url(r'contentBased/$', test.ContentBased, name='ContentBased'),
+    url(r'test/$', collabo_test.test, name='collabo_test')
+
 ]
