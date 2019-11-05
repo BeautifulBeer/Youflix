@@ -157,8 +157,10 @@ def RecommendMovie(request):
 
         # 2. 유저가 매긴 평점 개수가 20개 미만인 경우 content based filtering
         else:
+            print('평점개수 20개 미만')
             # 2-1. 0인 경우 따로 빼서 -> kmeans 안되있는경우 가져오고. (신규 유저)
             if rating_num == 0:  # 신규 유저
+                print('rating 0개')
                 # 2-1-2. 해당 군집 movie_list
                 # (1) 해당 군집 모든 유저
                 cluster_users = Profile.objects.filter(kmeans_cluster=target_cluster)

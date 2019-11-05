@@ -33,6 +33,13 @@ BASE_DIR = os.path.dirname(
             )
         )
 
+url = os.path.join(BASE_DIR, 'data')
+latent_user = np.load(os.path.join(url, 'mapper/latent_user.npy'))
+latent_movie = np.load(os.path.join(url, 'mapper/latent_movie.npy'))
+user_mapper = open(os.path.join(url, 'mapper/userMapper.json')).read()
+user_mapper = json.loads(user_mapper)
+movie_mapper = open(os.path.join(url, 'mapper/movieMapper.json')).read()
+movie_mapper = json.loads(movie_mapper)
 
 # 여러명의 사용자들을 가입시키는 Request
 @api_view(['POST'])
