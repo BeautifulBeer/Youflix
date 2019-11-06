@@ -76,7 +76,9 @@ def U_Cluster():
     numeric_df = df[df.occupation != 'admin'].drop(['id', 'username'], axis=1)
     # 군집별 centroid값 구하기 위한 범주형 변수 수치화
     numeric_df.loc[df['gender'] == 'M', 'gender'] = 1
+    numeric_df.loc[df['gender'] == 'male', 'gender'] = 1
     numeric_df.loc[df['gender'] == 'F', 'gender'] = 2
+    numeric_df.loc[df['gender'] == 'female', 'gender'] = 2
     numeric_df.loc[df['gender'] == 'other', 'gender'] = 3
     occupation_map = {
         0: "other", 1: "academic/educator", 2: "artist", 3: "clerical/admin", 4: "college/grad student",

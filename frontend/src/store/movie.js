@@ -91,13 +91,12 @@ const actions = {
             return preferences[0];
         });
     },
-    async getMoviesByPersonal({ commit }, user) {
-        Vue.$log.debug('Vuex movie.js getMoviesByPersonal', user);
-        const targetUser = 5797;
+    async getMoviesByPersonal({ commit }, id) {
+        Vue.$log.debug('Vuex movie.js getMoviesByPersonal', id);
         commit('setIsLoaded', false);
         return axios.get(`${global.API_URL}/auth/recommendMovie/`, {
             params: {
-                id: targetUser
+                id
             }
         }).then((response) => {
             Vue.$log.debug('Vuex movie.js getMoviesByPersonal response', response);

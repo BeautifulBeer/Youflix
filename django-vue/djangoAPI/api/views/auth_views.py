@@ -173,6 +173,7 @@ def login(request):
             profile = Profile.objects.get(user=user)
             result = {
                 'email': email,
+                'id': profile.id,
                 'username': profile.username,
                 'gender': profile.gender,
                 'age': profile.age,
@@ -185,6 +186,7 @@ def login(request):
         else:
             result = {
                 'email': None,
+                'id': None,
                 'username': None,
                 'gender': None,
                 'age': None,
@@ -265,6 +267,7 @@ def updateUser(request):
             request.session.modified = True
             result = {
                     'email': email,
+                    'id': profile.id,
                     'username': profile.username,
                     'gender': profile.gender,
                     'age': profile.age,
@@ -327,8 +330,10 @@ def session_member(request):
                     raise User.DoesNotExist
             if user.is_authenticated and token == str(Token.objects.get(user=user)):
                 profile = Profile.objects.get(user=user)
+                print('profile ID: ',profile.id)
                 result = {
                     'email': user.email,
+                    'id': profile.id,
                     'username': profile.username,
                     'token': token,
                     'gender': profile.gender,
@@ -341,6 +346,7 @@ def session_member(request):
             else:
                 result = {
                     'email': None,
+                    'id': None,
                     'username': None,
                     'token': None,
                     'gender': None,

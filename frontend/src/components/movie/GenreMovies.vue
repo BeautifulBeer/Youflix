@@ -100,9 +100,9 @@ export default {
         ...movieMapState(['genreMovies']),
         getUserTaste() {
             if (this.user) {
-                return this.user.movie_taste ? this.user.movie_taste : [];
+                return this.user.movie_taste || this.user.movie_taste !== '' ? this.user.movie_taste : ['Animation', 'Action'];
             }
-            return [];
+            return ['Animation', 'Action'];
         },
         currentMovies() {
             if (this.getGenreMovies.length === 0) {
