@@ -14,7 +14,7 @@ const state = {
     },
     selectedMovie: {
         movie: {},
-        crews: []
+        faculties: []
     },
     isLoaded: true
 };
@@ -127,17 +127,17 @@ const actions = {
             return response.data;
         });
     },
-    async getMovieCrews({ commit }, movieId) {
-        Vue.$log.debug('Vuex movie.js getMovieCrews', movieId);
-        return axios.get(`${global.API_URL}/movies/crews/`, {
+    async getMovieFaculties({ commit }, movieId) {
+        Vue.$log.debug('Vuex movie.js getMovieFaculties', movieId);
+        return axios.get(`${global.API_URL}/movies/faculites/`, {
             params: {
                 movieId
             }
         }).then((response) => {
-            Vue.$log.debug('Vuex movie.js getMovieCrews response', response);
+            Vue.$log.debug('Vuex movie.js getMovieFaculties response', response);
             if (response.data.status === global.HTTP_SUCCESS) {
                 const { result } = response.data;
-                commit('setSelectedCrews', result);
+                commit('setMovieFaculties', result);
                 return true;
             }
             return false;
@@ -190,8 +190,8 @@ const mutations = {
     setSelectedMovie(state, movie) {
         state.selectedMovie.movie = movie;
     },
-    setSelectedCrews(state, crews) {
-        state.selectedMovie.crews = crews;
+    setMovieFaculties(state, faculties) {
+        state.selectedMovie.faculties = faculties;
     },
     setSearchConditionTitle(state, title) {
         state.searchResultMovies.title = title;
