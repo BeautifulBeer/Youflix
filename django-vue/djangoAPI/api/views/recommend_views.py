@@ -142,10 +142,12 @@ def RecommendMovie(request):
             user_watched = [[rating.movie.id, rating.movie.imdb_id] for rating in Rating.objects.filter(user__id=target_id)]
 
             # 2. 해당 군집 유저들이 본 모든 영화
+            # == 속도 개선 버전 ==
             movie_list = cluster_movie_list_v2[0][str(target_cluster)]
             # 해당 유저가 본 영화 제외
             movies = filter(lambda x: x not in user_watched, movie_list)
 
+            # =================기존 버전 =================== #
             # cluster_users = Profile.objects.filter(kmeans_cluster=target_cluster)
             # cluster_users_list = [user.id for user in cluster_users]
 
@@ -157,6 +159,8 @@ def RecommendMovie(request):
 
             # 중복제거
             # movies = list(set(movies))
+            # =================기존 버전 =================== #
+
             movie_list = collaborative_filtering(target_user, movies)
             movies = Movie.objects.filter(id__in=movie_list)
 
