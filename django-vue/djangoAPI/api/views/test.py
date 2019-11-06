@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-from api.models import Movie, Rating, User, Crew
+from api.models import Movie, Rating, User, Crew, UserCluster
+from api.algorithms.kmeansClustering import U_Cluster
 # from django.contrib.auth.models import User
 from api.serializers import MovieSerializer,MovieAgeSerializer,MovieGenderSerializer
 from rest_framework.response import Response
@@ -41,7 +42,7 @@ def ContentBased(request):
         user = User.objects.get(email=email)
         ratings = Rating.objects.filter(user=user)
 
-        max_rating_obj = None
+        max_rating_obj = 862
         ratingValue = 0
 
         for rating in ratings:
@@ -50,8 +51,8 @@ def ContentBased(request):
                 ratingValue = rating.rating
 
         df_keys = pd.read_csv('df_keys.csv')
-
         selectedMovie = df_keys.loc[df_keys['id'] == max_rating_obj.movie.id]
+        # selectedMovie = df_keys.loc[df_keys['id'] == 862]
         idx = str(selectedMovie['Unnamed: 0']).split(' ')
         idx = int(idx[0])
         
@@ -60,13 +61,14 @@ def ContentBased(request):
         cv_mx = cv.fit_transform(df_keys['keywords'])
 
         # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
+        print(cv_mx[idx:idx + 1])
         cosine_sim = cosine_similarity(cv_mx[idx:idx + 1], cv_mx)
 
         # 일치하는 index list를 생성합니다.
         indices = pd.Series(df_keys.index, index = df_keys['id'])
 
         # 상위 10개의 추천 영화를 추출합니다.
-        serializer = MovieSerializer(get_movie_list(df_keys, recommend_movie(df_keys, indices, 597, cosine_sim, 50)), many=True)
+        serializer = MovieSerializer(get_movie_list(df_keys, recommend_movie(df_keys, indices, max_rating_obj.movie.id, cosine_sim, 50)), many=True)
         print(serializer)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 

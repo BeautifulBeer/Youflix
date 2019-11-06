@@ -14,6 +14,10 @@ from api.models import User, Profile, Movie, Rating, UserCluster
 
 from api.algorithms.kmeansClustering import U_Cluster
 
+import scipy.sparse as sp
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import CountVectorizer
+
 from collections import Counter
 
 import pandas as pd
@@ -43,6 +47,8 @@ cluster_movie_list = open(os.path.join(url, 'movie_list.json')).read()
 cluster_movie_list = json.loads(cluster_movie_list)
 cluster_movie_list_v2 = open(os.path.join(url, 'movie_list_v2.json')).read()
 cluster_movie_list_v2 = json.loads(cluster_movie_list_v2)
+df_keys = pd.read_csv('df_keys.csv')
+cv_mx = CountVectorizer().fit_transform(df_keys['keywords'])
 
 # 추천 시스템
 # 앞으로 가입할 새로운 유저: 기존 유저 kmeans 이용해 앞으로 가입할 새로운 유저 군집에 할당(정보가 없는 새로운 유저에게 영화 추천 어려움이 있기 때문에 기존의 27만명의 유저 kmeans 군집 정보 이용해 새로운 유저를 가까운 군집 특성에 맞춰 추천해주려고)
@@ -63,6 +69,32 @@ def get_ratingNum(userid):
     rating_num = len(ratings)
     return rating_num
 
+def get_movie_list(df_keys, datas):
+
+    movie_list = []
+    for index in datas.index:
+        movie_list.append(Movie.objects.get(pk=df_keys.iloc[index]['id']))
+    return movie_list
+
+def recommend_movie(df_keys, indices, id, cosine_sim, n):
+
+    movies = []
+
+    # 일치하는 영화가 있는지 검사합니다.
+    if id not in indices.index:
+        print("Movie not in database.")
+        return
+
+    # 내림차순으로, Cosine Simirality을 정렬합니다.
+    scores = pd.Series(cosine_sim[0]).sort_values(ascending = False)
+    print(scores)
+
+    # 가장 유사한 n(10)개만 추출합니다.
+    # 첫번째 index의 영화의 경우 활성화된 영화와 같기 때문에 제외합니다.
+    top_n_idx = list(scores.iloc[1:n].index)
+
+    # 타이틀을 기준으로 추출합니다.
+    return df_keys['title'].iloc[top_n_idx]
 
 def collaborative_filtering(user, movies):
     # 1. 해당 유저의 예측 평점
@@ -111,6 +143,8 @@ def collaborative_filtering(user, movies):
 def RecommendMovie(request):
     start = time.time()
     topN = 20
+    print(request.method)
+    
     if request.method == 'GET':
         target_id = request.GET.get('id', request.GET.get('movie_id', None))
 
@@ -177,7 +211,7 @@ def RecommendMovie(request):
                 # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
                 movie_list = cluster_movie_list[0][str(target_cluster)]
 
-                movie_list = random.sample(movie_list, 5)
+                movie_list = random.sample(movie_list, 20)
 
                 movies = Movie.objects.filter(id__in=movie_list)
                 # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
@@ -199,11 +233,35 @@ def RecommendMovie(request):
 
             # 2-2. rating이 조금이라도 있는 경우, 해당 유저가 본 영화 list 추출
             else:
+
                 ratings = Rating.objects.filter(user__id=target_id)
                 movie_list = [rating.movie.id for rating in ratings]
-                movie_list = random.sample(movie_list, 5)
+                if len(movie_list) >= 20:
+                    movie_list = random.sample(movie_list, 20)
 
-                movies = Movie.objects.filter(id__in=movie_list)
+                content_based_movies = []
+                print(movie_list)
+                for movie_id in movie_list:
+                    selectedMovie = df_keys.loc[df_keys['id'] == movie_id]
+                    # selectedMovie = df_keys.loc[df_keys['id'] == 862]
+                    idx = str(selectedMovie['Unnamed: 0']).split(' ')
+                    idx = int(idx[0])
+                    content_based_movies.append(cv_mx[idx:idx + 1])
+                
+                sum_vector = []
+                for movie_vector in content_based_movies:
+                    print(movie_vector.toarray())
+                    if len(sum_vector) == 0:
+                        sum_vector = movie_vector.toarray()    
+                    sum_vector += movie_vector.toarray()
+
+                print(sum_vector)
+                
+                cosine_sim = cosine_similarity(sp.csr_matrix(sum_vector), cv_mx)
+                indices = pd.Series(df_keys.index, index = df_keys['id'])
+
+                serializer = MovieSerializer(get_movie_list(df_keys, recommend_movie(df_keys, indices, movie_list[0], cosine_sim, 50)), many=True)
+                return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
         serializer = MovieSerializer(movies, many=True)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)

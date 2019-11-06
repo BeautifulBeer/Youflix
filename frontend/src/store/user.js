@@ -106,13 +106,14 @@ const actions = {
                 if (result.is_auth) {
                     commit('setUser', {
                         email: result.email,
+                        id: result.id,
                         username: result.username,
                         token: result.token,
                         gender: result.gender,
                         age: result.age,
                         occupation: result.occupation,
                         is_staff: result.is_staff,
-                        movie_taste: JSON.parse(result.movie_taste.replace(/'/g, '"'))
+                        movie_taste: result.movie_taste === '' ? '' : JSON.parse(result.movie_taste.replace(/'/g, '"'))
                     });
                     return true;
                 }

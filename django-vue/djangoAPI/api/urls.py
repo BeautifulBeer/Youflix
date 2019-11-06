@@ -35,7 +35,7 @@ urlpatterns = [
     # url(r'^movies/recommend/$', movie_views.recommendation, name='movie_recommend'),
 
     # 추천 URL
-    url(r'auth/recommendMovie/$', recommend_views.RecommendMovie, name='recommendMovie'),
+    url(r'^auth/recommendMovie/$', recommend_views.RecommendMovie, name='recommendMovie'),
 
     # 평점정보 접근 URL
     # url(r'ratings/$', rating_views.ratings, name='rating_list'),

@@ -167,7 +167,7 @@ export default {
         },
         getUserPK() {
             if (this.user) {
-                return this.user.email;
+                return this.user;
             }
             return null;
         }
@@ -178,7 +178,7 @@ export default {
             if (user) {
                 this.$log.debug('RecommendMovies.vue getUserPK watch', user);
                 this.setLoaded(false);
-                this.getMoviesByPersonal(user).then(() => {
+                this.getMoviesByPersonal(user.id).then(() => {
                     this.$log.debug('RecommendMovies.vue getUserPK watch response');
                     this.setLoaded(true);
                 });
@@ -190,7 +190,7 @@ export default {
             if (this.user && this.currentMovies.length === 0) {
                 this.$log.debug('RecommendMovies.vue nextTick');
                 this.setLoaded(false);
-                this.getMoviesByPersonal(this.user).then(() => {
+                this.getMoviesByPersonal(this.getUserPK.id).then(() => {
                     this.$log.debug('RecommendMovies.vue getMoviesByPersonal response');
                     this.setLoaded(true);
                 });

@@ -11,12 +11,12 @@
                 152
             </v-col>
 
-            <v-col
+            <!-- <v-col
                 cols="12"
                 class="view-count-content"
             >
                 오, 정말 많이 보셨네요. 인정합니다! :)
-            </v-col>
+            </v-col> -->
             <v-col
                 cols="7"
                 style="width: 50%;"
@@ -69,14 +69,34 @@ export default {
         };
     },
     computed: {
-        ...userMapState(['user'])
+        ...userMapState(['user']),
+        getUserEmail() {
+            if (this.user) {
+                return this.user.email;
+            }
+            return false;
+        }
+    },
+    watch: {
+        // eslint-disable-next-line
+        getUserEmail: function(val) {
+            if (val) {
+                this.getContentBased(val).then((ret) => {
+                    this.$log.debug('EvaluatePage.vue getContentBased', ret);
+                    this.setIsLoaded(true);
+                    this.movieList = ret.result;
+                });
+            }
+        }
     },
     mounted() {
-        this.getContentBased(this.user.email).then((ret) => {
-            this.$log.debug('EvaluatePage.vue getContentBased', ret);
-            this.setIsLoaded(true);
-            this.movieList = ret.result;
-        });
+        if (this.getUserEmail) {
+            this.getContentBased(this.getUserEmail).then((ret) => {
+                this.$log.debug('EvaluatePage.vue getContentBased', ret);
+                this.setIsLoaded(true);
+                this.movieList = ret.result;
+            });
+        }
     },
     methods: {
         ...movieMapActions(['getNeverSeenMovieList', 'getContentBased']),
