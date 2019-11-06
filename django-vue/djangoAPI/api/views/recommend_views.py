@@ -39,6 +39,10 @@ user_mapper = json.loads(user_mapper)
 movie_mapper = open(os.path.join(url, 'mapper/movieMapper.json')).read()
 movie_mapper = json.loads(movie_mapper)
 link = pd.read_csv(os.path.join(url, 'the-movies-dataset/links.csv'))
+cluster_movie_list = open(os.path.join(url, 'movie_list.json')).read()
+cluster_movie_list = json.loads(cluster_movie_list)
+cluster_movie_list_v2 = open(os.path.join(url, 'movie_list_v2.json')).read()
+cluster_movie_list_v2 = json.loads(cluster_movie_list_v2)
 
 # 추천 시스템
 # 앞으로 가입할 새로운 유저: 기존 유저 kmeans 이용해 앞으로 가입할 새로운 유저 군집에 할당(정보가 없는 새로운 유저에게 영화 추천 어려움이 있기 때문에 기존의 27만명의 유저 kmeans 군집 정보 이용해 새로운 유저를 가까운 군집 특성에 맞춰 추천해주려고)
@@ -135,25 +139,32 @@ def RecommendMovie(request):
         if rating_num >= 20:
 
             # 1. 해당 유저가 본 영화
-            user_watched = [rating.movie.id for rating in Rating.objects.filter(user__id=target_id)]
+            user_watched = [[rating.movie.id, rating.movie.imdb_id] for rating in Rating.objects.filter(user__id=target_id)]
 
-            # 2. 해당 군집 유저들이 본 모든 영화(해당 유저가 본 영화 제외)
-            cluster_users = Profile.objects.filter(kmeans_cluster=target_cluster)
-            cluster_users_list = [user.id for user in cluster_users]
-            print(len(cluster_users_list))
+            # 2. 해당 군집 유저들이 본 모든 영화
 
-            movies = []
-            ratings = Rating.objects.filter(user__id__in=cluster_users_list).exclude(user__id=target_id)
+            # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
+            movie_list = cluster_movie_list_v2[0][str(target_cluster)]
             # 해당 유저가 본 영화 제외
-            start=time.time()
-            print(start)
-            movies = [(rating.movie.id, rating.movie.imdb_id) for rating in ratings if rating.movie.id not in user_watched]
-            print(time.time() - start)
+            movies = filter(lambda x: x not in user_watched, movie_list)
 
-            # 중복제거
-            movies = list(set(movies))
             movie_list = collaborative_filtering(target_user, movies)
             movies = Movie.objects.filter(id__in=movie_list)
+            # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
+
+            # =================기존 버전 =================== #
+            # cluster_users = Profile.objects.filter(kmeans_cluster=target_cluster)
+            # cluster_users_list = [user.id for user in cluster_users]
+
+            # movies = []
+            # ratings = Rating.objects.filter(user__id__in=cluster_users_list).exclude(user__id=target_id)
+
+            # # 해당 유저가 본 영화 제외
+            # movies = [(rating.movie.id, rating.movie.imdb_id) for rating in ratings if rating.movie.id not in user_watched]
+
+            # 중복제거
+            # movies = list(set(movies))
+            # =================기존 버전 =================== #
 
         # 2. 유저가 매긴 평점 개수가 20개 미만인 경우 content based filtering
         else:
@@ -163,17 +174,28 @@ def RecommendMovie(request):
                 print('rating 0개')
                 # 2-1-2. 해당 군집 movie_list
                 # (1) 해당 군집 모든 유저
-                cluster_users = Profile.objects.filter(kmeans_cluster=target_cluster)
-                cluster_users_list = [user.id for user in cluster_users]
-
-                for i, user in enumerate(cluster_users_list):
-                    print(i)
-                    ratings = Rating.objects.filter(user__id=user)
-                    movie_list += [rating.movie.id for rating in ratings]
+                # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
+                movie_list = cluster_movie_list[0][str(target_cluster)]
 
                 movie_list = random.sample(movie_list, 5)
 
                 movies = Movie.objects.filter(id__in=movie_list)
+                # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
+
+                # ================= 기존 버전 =================== #
+                # cluster_users = Profile.objects.filter(kmeans_cluster=target_cluster)
+                # cluster_users_list = [user.id for user in cluster_users]
+
+                # for i, user in enumerate(cluster_users_list):
+                #     print(i)
+                #     ratings = Rating.objects.filter(user__id=user)
+                #     movie_list += [rating.movie.id for rating in ratings]
+
+                # movie_list = random.sample(movie_list, 5)
+
+                # movies = Movie.objects.filter(id__in=movie_list)
+                # ================= 기존 버전 =================== #
+
 
             # 2-2. rating이 조금이라도 있는 경우, 해당 유저가 본 영화 list 추출
             else:
