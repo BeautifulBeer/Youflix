@@ -175,7 +175,7 @@ def RecommendMovie(request):
                 # 2-1-2. 해당 군집 movie_list
                 # (1) 해당 군집 모든 유저
                 # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
-                movie_list = cluster_movie_list[str(target_cluster)]
+                movie_list = cluster_movie_list[0][str(target_cluster)]
 
                 movie_list = random.sample(movie_list, 5)
 
