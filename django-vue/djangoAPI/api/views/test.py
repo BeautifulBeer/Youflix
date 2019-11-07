@@ -8,6 +8,9 @@ from rest_framework.response import Response
 from django.http import JsonResponse
 from .tmdb import getMovieInfo
 
+# Django Database Model
+from django.db.models import F
+
 import json
 import operator
 
@@ -44,6 +47,15 @@ def ContentBased(request):
 
         max_rating_obj = 862
         ratingValue = 0
+        if ratings.count() == 0:
+            movie_all = Movie.objects.all()
+            movie_all = movie_all.order_by(F('vote_average').desc(nulls_first=False))
+            movie_all = movie_all.order_by(F('release_date').desc(nulls_first=False))
+            movie_all = movie_all[:50]
+            serializer = MovieSerializer(movie_all, many=True)
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
+        
+        user_seen_movies = [rating.movie.id for rating in ratings]
 
         for rating in ratings:
             if ratingValue < rating.rating:
@@ -61,28 +73,28 @@ def ContentBased(request):
         cv_mx = cv.fit_transform(df_keys['keywords'])
 
         # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
-        print(cv_mx[idx:idx + 1])
         cosine_sim = cosine_similarity(cv_mx[idx:idx + 1], cv_mx)
-
         # 일치하는 index list를 생성합니다.
         indices = pd.Series(df_keys.index, index = df_keys['id'])
 
-        # 상위 10개의 추천 영화를 추출합니다.
-        serializer = MovieSerializer(get_movie_list(df_keys, recommend_movie(df_keys, indices, max_rating_obj.movie.id, cosine_sim, 50)), many=True)
-        print(serializer)
+        # 상위 50개의 추천 영화를 추출합니다.
+        serializer = MovieSerializer(get_movie_list(df_keys, 50, user_seen_movies, recommend_movie(df_keys, indices, max_rating_obj.movie.id, cosine_sim)), many=True)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
-
-def get_movie_list(df_keys, datas):
-
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+    
+def get_movie_list(df_keys, n, user_seen_movies, datas):
     movie_list = []
-    for index in datas.index:
-        movie_list.append(Movie.objects.get(pk=df_keys.iloc[index]['id']))
+    for index in datas:
+        print(index)
+        if index not in user_seen_movies:
+            movie_list.append(Movie.objects.get(pk=index))
+        if len(movie_list) >= n:
+            break
     return movie_list
 
 # @jit(nopython=True)
 @api_view(['GET'])
 def algo(request):
-    
     print("TEST")
     # DB에서 모든 movie 정보를 가져옵니다.
     movies = Movie.objects.all()
@@ -188,25 +200,24 @@ def algo(request):
     return Response(status=status.HTTP_200_OK)
 
 
-def recommend_movie(df_keys, indices, id, cosine_sim, n):
-
+def recommend_movie(df_keys, indices, id, cosine_sim):
     movies = []
-
     # 일치하는 영화가 있는지 검사합니다.
     if id not in indices.index:
         print("Movie not in database.")
-        return
+        return movies
 
     # 내림차순으로, Cosine Simirality을 정렬합니다.
     scores = pd.Series(cosine_sim[0]).sort_values(ascending = False)
-    print(scores)
 
     # 가장 유사한 n(10)개만 추출합니다.
     # 첫번째 index의 영화의 경우 활성화된 영화와 같기 때문에 제외합니다.
-    top_n_idx = list(scores.iloc[1:n].index)
+    top_n_idx = []
+    for idx in scores.index:
+        top_n_idx.append(idx)
 
     # 타이틀을 기준으로 추출합니다.
-    return df_keys['title'].iloc[top_n_idx]
+    return df_keys['id'].iloc[top_n_idx]
 
 
 def preprocessing_keyword(data):
