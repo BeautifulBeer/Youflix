@@ -51,7 +51,7 @@
                 >
                     <v-img
                         class="tile-img"
-                        :src="movie.poster_path"
+                        :src="movie.poster_path | imagePath"
                         @click="viewMovie(movie.id)"
                     />
                 </div>
@@ -73,6 +73,17 @@ const movieMapState = createNamespacedHelpers('movies').mapState;
 
 export default {
     name: 'GenreMovies',
+    filters: {
+        imagePath(value) {
+            return value === '' ? '/static/img/no_poster.png' : value;
+        }
+    },
+    props: {
+        setLoaded: {
+            type: Function,
+            default: null
+        }
+    },
     data() {
         return {
             selectedGenre: undefined,
@@ -89,9 +100,9 @@ export default {
         ...movieMapState(['genreMovies']),
         getUserTaste() {
             if (this.user) {
-                return this.user.movie_taste ? this.user.movie_taste : [];
+                return this.user.movie_taste || this.user.movie_taste !== '' ? this.user.movie_taste : ['Animation', 'Action'];
             }
-            return [];
+            return ['Animation', 'Action'];
         },
         currentMovies() {
             if (this.getGenreMovies.length === 0) {
@@ -118,8 +129,14 @@ export default {
     watch: {
         getUserTaste(val) {
             if (val) {
+                this.$log.debug('GenreMovies.vue getUserTaste watch', val);
+                this.setLoaded(false);
                 this.getMoviesByGenres(val).then((preference) => {
+                    this.$log.debug('GenreMovies.vue getMoviesByGenres response preference', preference);
                     this.selectGenre(preference);
+                }).then(() => {
+                    this.$log.debug('GenreMovies.vue getMoviesByGenres setLoaded');
+                    this.setLoaded(true);
                 });
             }
         }
@@ -127,9 +144,12 @@ export default {
     mounted() {
         if (this.currentMovies.length === 0 && this.getUserTaste.length !== 0) {
             this.$log.debug(this.getUserTaste);
+            this.setLoaded(false);
             this.getMoviesByGenres(this.getUserTaste).then((preference) => {
                 this.selectGenre(preference);
-            });
+            }).then((() => {
+                this.setLoaded(true);
+            }));
         }
         window.addEventListener('resize', () => {
             const windowWidth = window.innerWidth;

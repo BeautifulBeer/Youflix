@@ -98,19 +98,19 @@ import API from '../../../api/user/userApi';
 import 'vue-loading-overlay/dist/vue-loading.css';
 
 export default {
-    components: {
-        Loading
-    },
-    data: () => ({
-        userList: [],
-        page: 1,
+  components: {
+    Loading
+  },
+  data: () => ({
+    userList: [],
+    page: 1,
 
-        isLoading: true,
-        fullPage: true
-    }),
-    mounted() {
-        this.getUsers();
-    },
+    isLoading: true,
+    fullPage: true
+  }),
+  mounted() {
+    this.getUsers();
+  },
     methods: {
         async getUsers() {
             this.isLoading = true;
@@ -133,5 +133,6 @@ export default {
             this.getUsers();
         }
     }
-};
+}
+
 </script>

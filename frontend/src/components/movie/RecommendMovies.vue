@@ -27,11 +27,12 @@
             </v-col>
         </v-row>
         <v-row
+            id="slider-container"
             justify="start"
             align="end"
             class="slider-container"
         >
-            <v-col>
+            <v-col style="padding: 0;">
                 <AnimateWhenVisible name="fade">
                     <div style="position: relative;">
                         <div
@@ -46,6 +47,7 @@
                             v-for="(movie, index) in currentMovies"
                             :key="'personalized' + movie.id + index"
                             class="slider"
+                            @click.stop="viewMovie(movie.id)"
                         >
                             <v-img
                                 class="slider-img"
@@ -72,7 +74,7 @@
                                                     class="portfolio-item__link"
                                                     href="#movie-detail"
                                                     title="Link Title"
-                                                    @click="chooseDetail(index)"
+                                                    @click.stop="chooseDetail(index)"
                                                 >
                                                     <i class="material-icons">keyboard_arrow_down</i>
                                                 </a>
@@ -86,7 +88,9 @@
                 </AnimateWhenVisible>
             </v-col>
         </v-row>
-        <v-row>
+        <v-row
+            id="movie-detail-row"
+        >
             <MovieDetail
                 :visible="visible"
                 :pmovie="personalMovies[calcSelectedIndex]"
@@ -113,13 +117,19 @@ export default {
     },
     filters: {
         imagePath(value) {
-            return value === '' ? '/static/img/no_image.jpg' : value;
+            return value === '' ? '/static/img/commingsoon.jpg' : value;
         },
         genreConcat(list) {
             return list.join(' | ');
         },
         extractYear(str) {
             return (new Date(str)).getFullYear();
+        }
+    },
+    props: {
+        setLoaded: {
+            type: Function,
+            default: null
         }
     },
     data() {
@@ -157,7 +167,7 @@ export default {
         },
         getUserPK() {
             if (this.user) {
-                return this.user.email;
+                return this.user;
             }
             return null;
         }
@@ -166,14 +176,24 @@ export default {
         // eslint-disable-next-line
         getUserPK: function (user) {
             if (user) {
-                this.getMoviesByPersonal(user);
+                this.$log.debug('RecommendMovies.vue getUserPK watch', user);
+                this.setLoaded(false);
+                this.getMoviesByPersonal(user.id).then(() => {
+                    this.$log.debug('RecommendMovies.vue getUserPK watch response');
+                    this.setLoaded(true);
+                });
             }
         }
     },
     mounted() {
         this.$nextTick(() => {
             if (this.user && this.currentMovies.length === 0) {
-                this.getMoviesByPersonal(this.user);
+                this.$log.debug('RecommendMovies.vue nextTick');
+                this.setLoaded(false);
+                this.getMoviesByPersonal(this.getUserPK.id).then(() => {
+                    this.$log.debug('RecommendMovies.vue getMoviesByPersonal response');
+                    this.setLoaded(true);
+                });
             }
             this.loadSliderWidth();
             window.addEventListener('resize', () => {
@@ -182,7 +202,7 @@ export default {
         });
     },
     methods: {
-        ...movieMapActions(['getMoviesByPersonal']),
+        ...movieMapActions(['getMoviesByPersonal', 'addMovieView']),
         loadSliderWidth() {
             const { innerWidth } = window;
             this.showCount = parseInt(innerWidth / 355, 10) + 1;
@@ -207,6 +227,10 @@ export default {
         },
         closeMovieDetail() {
             this.visible = false;
+        },
+        viewMovie(movieId) {
+            this.addMovieView(movieId);
+            this.$router.push(`/movies/detail/${movieId}`);
         }
     }
 };
@@ -272,7 +296,7 @@ $button-height: 200px;
     display: relative;
     overflow: hidden;
     width: 200vw;
-    margin-bottom: 20px;
+    // margin-bottom: 20px;
 }
 
 .btn{
@@ -300,6 +324,7 @@ $button-height: 200px;
     object-fit: fill;
     object-position: bottom;
     display:block;
+    cursor: pointer;
     -webkit-transition: width .5s, height .5s, transform .5s ease; /* For Safari 3.1 to 6.0 */
     transition: width .5s, height .5s, transform .5s ease;
     transform: translateY(0%);

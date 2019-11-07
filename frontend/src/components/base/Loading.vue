@@ -1,11 +1,14 @@
 <template>
     <v-container
-        v-if="loading"
+        v-if="!isLoaded"
+        fluid
         class="loading-container"
-        justify="center"
-        align="center"
     >
-        <v-row justify="center">
+        <v-row
+            style="height: 100%; position: relative;"
+            justify="center"
+            align="center"
+        >
             <div class="logo">
                 <div class="netflix">
                     <span style="height: 35%;" />
@@ -21,9 +24,39 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex';
+
+const { mapState } = createNamespacedHelpers('movies');
+
 export default {
-    props: {
-        loading: { type: Boolean, default: false }
+    computed: {
+        ...mapState(['isLoaded'])
+    },
+    watch: {
+        // eslint-disable-next-line
+        isLoaded: function(val) {
+            this.$log.debug('Loading.vue isLoaded watch', val);
+            if (val) {
+                setTimeout(() => {
+                    this.enableScroll();
+                }, 500);
+            } else {
+                window.scrollTo(0, 0);
+            }
+            this.disableScroll();
+        }
+    },
+    methods: {
+        disableScroll() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+            window.onscroll = () => {
+                window.scrollTo(scrollLeft, scrollTop);
+            };
+        },
+        enableScroll() {
+            window.onscroll = () => {};
+        }
     }
 };
 </script>
@@ -31,10 +64,8 @@ export default {
 <style lang="scss" scoped>
 
 .loading-container {
-
     position: absolute;
     background-color: rgba(0, 0, 0);
-
     width: 100vw;
     height: 100vh;
     z-index: 200;
@@ -43,7 +74,7 @@ export default {
 .netflix{
   position: relative;
   width: 360px;
-  height: 520px;
+  height: 510px;
   overflow: hidden;
   transform: scale(.7);
 }
@@ -124,5 +155,11 @@ export default {
   font-family: arial;
   font-size: 45px;
   letter-spacing: 10px;
+}
+
+.logo{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
 }
 </style>

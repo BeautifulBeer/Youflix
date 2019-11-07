@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from django.db.models import F
 from django.http import JsonResponse
-from api.models import Movie, User, Genre, Rating
-from api.serializers import MovieSerializer
+from api.models import Movie, User, Genre, Rating, Crew, Cast
+from api.serializers import MovieSerializer, CrewSerializer, CastSerializer
 
 
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -11,88 +11,92 @@ def movies(request):
     '''
         영화를 CRUD할 수 있는 URL
     '''
-    if request.method == 'GET':
-        movie_id = request.GET.get('id', request.GET.get('movie_id', None))
-        title = request.GET.get('title', None)
-        category = request.GET.get('category', None)
-        keyword = request.GET.get('keyword', None)
-        sort = request.GET.get('sort', 1)
-        page = request.GET.get('page', 1)
-        print(movie_id, title, category, keyword, sort, page)
-        movie_all = Movie.objects.all()
+    try:
+        if request.method == 'GET':
+            movie_id = request.GET.get('id', request.GET.get('movie_id', None))
+            title = request.GET.get('title', None)
+            category = request.GET.get('category', None)
+            keyword = request.GET.get('keyword', None)
+            sort = request.GET.get('sort', 1)
+            page = request.GET.get('page', 1)
+            print(movie_id, title, category, keyword, sort, page)
+            movie_all = Movie.objects.all()
 
-        # querySet 으로 반환됨
-        if movie_id:
-            movie_all = movie_all.filter(pk=movie_id)
-        if title:
-            movie_all = movie_all.filter(title__icontains=title)
-        if category == 'genre':
-            if keyword != 'Total':
-                genre_obj = Genre.objects.get(name=keyword)
-                movie_all = movie_all.filter(genres=genre_obj)
+            # querySet 으로 반환됨
+            if movie_id:
+                movie_all = movie_all.filter(pk=movie_id)
+            if title:
+                movie_all = movie_all.filter(title__icontains=title)
+            if category == 'genre':
+                if keyword != 'Total':
+                    genre_obj = Genre.objects.get(name=keyword)
+                    movie_all = movie_all.filter(genres=genre_obj)
 
-        # 정렬방식
-        if sort:
-            if int(sort) == 1:
-                # 평균평점 순(높은순) default
-                movie_all = movie_all.order_by(F('vote_average').desc(nulls_first=False))
-            elif int(sort) == 2:
-                # 조회순
-                movie_all = movie_all.order_by(F('view_cnt').desc(nulls_first=False))
-            elif int(sort) == 3:
-                # 최신순
-                movie_all = movie_all.order_by(F('release_date').desc(nulls_first=False))
+            # 정렬방식
+            if sort:
 
-            # 페이지 별로 나눠서 영화 정보 받아오기
-            if page:
-                # 한페이지에 10개씩. 1페이지 0~9, 2페이지 10~19, ... start= 10*(page-1), end=start+10
-                # 10페이지 100 1 0~99 2 100~199
-                # 영화 총개수: 3883. page=39이면 3800:3900 인덱스 에러.
-                page = int(page)
-                start = 50*(page-1)
-                end = start+50
-                if len(movie_all[start:]) < 50:
-                    movie_all = movie_all[start:]
-                movie_all = movie_all[start:end]
+                if int(sort) == 1:
+                    # 평균평점 순(높은순) default
+                    movie_all = movie_all.order_by(F('vote_average').desc(nulls_first=False))
+                elif int(sort) == 2:
+                    # 조회순
+                    movie_all = movie_all.order_by(F('view_cnt').desc(nulls_first=False))
+                elif int(sort) == 3:
+                    # 최신순
+                    movie_all = movie_all.order_by(F('release_date').desc(nulls_first=False))
 
-        serializer = MovieSerializer(movie_all, many=True)
-        return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
+                # 페이지 별로 나눠서 영화 정보 받아오기
+                if page:
+                    # 한페이지에 10개씩. 1페이지 0~9, 2페이지 10~19, ... start= 10*(page-1), end=start+10
+                    # 10페이지 100 1 0~99 2 100~199
+                    # 영화 총개수: 3883. page=39이면 3800:3900 인덱스 에러.
+                    page = int(page)
+                    start = 50*(page-1)
+                    end = start+50
+                    if len(movie_all[start:]) < 50:
+                        movie_all = movie_all[start:]
+                    movie_all = movie_all[start:end]
 
-    if request.method == 'DELETE':
-        movie = Movie.objects.all()
-        movie.delete()
-        return JsonResponse({'status': status.HTTP_200_OK})
+            serializer = MovieSerializer(movie_all, many=True)
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
-    if request.method == 'POST':
-        movie_all = request.data.get('movies', None)
-        for movie in movie_all:
-            movie_id = movie.get('id', None)
-            movie_id = int(movie_id)
-            title = movie.get('title', None)
-            genres = movie.get('genres', None)
+        if request.method == 'DELETE':
+            movie = Movie.objects.all()
+            movie.delete()
+            return JsonResponse({'status': status.HTTP_200_OK})
 
-            try:
-                if title[-1] == '"':
-                    only_title = title[1:len(title)-7]
-                    year = int(title[len(title)-6:len(title)-2])
-                elif title[-1] == " ":
-                    only_title = title[:len(title)-8]
-                    year = int(title[len(title)-6:len(title)-2])
-                else:
-                    only_title = title[:len(title)-6]
-                    year = int(title[len(title)-5:len(title)-1])
-            except ValueError:
-                only_title = title
-                year = 0
+        if request.method == 'POST':
+            movie_all = request.data.get('movies', None)
+            for movie in movie_all:
+                movie_id = movie.get('id', None)
+                movie_id = int(movie_id)
+                title = movie.get('title', None)
+                genres = movie.get('genres', None)
 
-            if not (movie_id and title and genres):
-                continue
-            # if Movie.objects.filter(id=id).count() > 0 or Movie.objects.filter(title=title).count() > 0:
-            #     continue
+                try:
+                    if title[-1] == '"':
+                        only_title = title[1:len(title)-7]
+                        year = int(title[len(title)-6:len(title)-2])
+                    elif title[-1] == " ":
+                        only_title = title[:len(title)-8]
+                        year = int(title[len(title)-6:len(title)-2])
+                    else:
+                        only_title = title[:len(title)-6]
+                        year = int(title[len(title)-5:len(title)-1])
+                except ValueError:
+                    only_title = title
+                    year = 0
 
-            Movie(id=movie_id, title=only_title, year=year, genres='|'.join(genres)).save()
+                if not (movie_id and title and genres):
+                    continue
+                # if Movie.objects.filter(id=id).count() > 0 or Movie.objects.filter(title=title).count() > 0:
+                #     continue
 
-        return JsonResponse({'status': status.HTTP_200_OK})
+                Movie(id=movie_id, title=only_title, year=year, genres='|'.join(genres)).save()
+
+            return JsonResponse({'status': status.HTTP_200_OK})
+    except Exception:
+        return JsonResponse({'status': status.HTTP_500_BAD_REQUEST, 'msg': str(Exception)})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 @api_view(['GET'])
@@ -143,12 +147,9 @@ def modify(request):
 def moviesPref(request):
 
     if request.method == 'GET':
-
         email = request.GET.get('email', None)
-
         if email is None:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
-
         user = User.objects.get(email=email)
         ratings = Rating.objects.filter(user=user)
 
@@ -186,7 +187,6 @@ def moviesPref(request):
                 ret['4.5'] = ret.get('4.5') + 1
             else:
                 ret['5'] = ret.get('5') + 1
-            
             print(ret)
         return JsonResponse({'status': status.HTTP_200_OK, 'data': ret})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
@@ -224,10 +224,26 @@ def never_seen_movie_list(request):
         return JsonResponse({'status': status.HTTP_200_OK, 'data': serializer.data}, safe=False)
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
-# @api_view(['GET'])
-# def recommendation(request):
-#     print(request.GET.get('id'), None)
-#     if request.method == 'GET':
-#         topN_movies = [469172, 267752, 404604,
-#             459950, 458506, 456101, 455675,	454787,
-#             452413, 452068, 408509, 1271]
+@api_view(['GET'])
+def faculites(request):
+    try:
+        if request.method == 'GET':
+            movie_id = request.GET.get('movieId', None)
+            if movie_id is None:
+                raise ValueError('Movie ID Parameter is None')
+            movie = Movie.objects.get(id=movie_id)
+            if movie is None:
+                raise Movie.DoesNotExist
+            crews_list = Crew.objects.filter(movie=movie)
+            casts_list = Cast.objects.filter(movie=movie)
+            cast_serializer = CastSerializer(casts_list, many=True)
+            crew_serializer = CrewSerializer(crews_list, many=True)
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': {
+                'crews': crew_serializer.data,
+                'casts': cast_serializer.data
+            }})
+    except ValueError:
+        return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': str(ValueError)})    
+    except Movie.DoesNotExist:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'Movie Object is not exist'})
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

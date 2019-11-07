@@ -13,6 +13,10 @@ import AdminPage from './views/admin/AdminPage.vue';
 import DashBoard from './components/admin/DashBoard.vue';
 import MovieList from './components/admin/MovieList.vue';
 import UserList from './components/admin/UserList.vue';
+import DataSet from './components/admin/DataSet.vue';
+import Learning from './components/admin/Learning.vue';
+import BeforeLearn from './components/admin/BeforeLearn.vue';
+
 
 // USER PAGE
 import MyFlix from './components/user/MyFlix.vue';
@@ -46,6 +50,7 @@ export default new Router({
             component: HomePage,
             meta: {
                 authRequired: true
+                // scrollToTop: true
             }
         },
         {
@@ -143,11 +148,49 @@ export default new Router({
                     meta: {
                         authRequired: true
                     }
+                },
+                {
+                    path: 'dataset',
+                    name: 'dataset',
+                    component: DataSet,
+                    meta: {
+                        authRequired: true
+                    }
+                },
+                {
+                    path: 'Learning',
+                    name: 'Learning',
+                    component: Learning,
+                    meta: {
+                        authRequired: true
+                    }
+                },
+                {
+                    path: 'beforelearn',
+                    name: 'beforelearn',
+                    component: BeforeLearn,
+                    meta: {
+                        authRequired: true
+                    }
                 }
             ],
             meta: {
                 authRequired: true
             }
         }
-    ]
+    ],
+    scrollBehavior: (to, from, savedPosition) => {
+        if (to.path === '/home') {
+            return { x: 0, y: 0 };
+        }
+        if (savedPosition) {
+            return savedPosition;
+        }
+        if (to.hash) {
+            return {
+                selector: to.hash
+            };
+        }
+        return { x: 0, y: 0 };
+    }
 });

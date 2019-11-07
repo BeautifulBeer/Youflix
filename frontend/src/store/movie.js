@@ -1,5 +1,4 @@
 import Vue from 'vue';
-// import Axios
 import axios from 'axios';
 import global from '../plugins/global';
 
@@ -8,18 +7,21 @@ const state = {
     genreMovies: {},
     searchResultMovies: {
         category: 'genre',
-        keyword: 'Total',
+        keyword: 'TV Movie',
         title: '',
         result: []
     },
-    selectedMovie: {},
-    isloaded: true
+    selectedMovie: {
+        movie: {},
+        faculties: []
+    },
+    isLoaded: true
 };
 
 const actions = {
     async getMovieById({ commit }, movieId) {
         Vue.$log.debug('Vuex movie.js getMovieById', movieId);
-        axios.get(`${global.API_URL}/movies/`, {
+        return axios.get(`${global.API_URL}/movies/`, {
             params: {
                 id: movieId
             }
@@ -49,7 +51,7 @@ const actions = {
     },
     async getMovieByConditions({ state, commit }) {
         Vue.$log.debug('Vuex movie.js getMovieByConditions', state.searchResultMovies);
-        axios.get(`${global.API_URL}/movies/`, {
+        return axios.get(`${global.API_URL}/movies/`, {
             params: {
                 category: state.searchResultMovies.category,
                 keyword: state.searchResultMovies.keyword,
@@ -67,6 +69,7 @@ const actions = {
     async getMoviesByGenres({ commit }, preferences) {
         Vue.$log.debug('Vuex movie.js getMoviesByGenres', preferences);
         let promises = [];
+        commit('setIsLoaded', false);
         preferences.forEach((genre) => {
             promises.push(axios.get(`${global.API_URL}/movies/`, {
                 params: {
@@ -87,18 +90,17 @@ const actions = {
             return preferences[0];
         });
     },
-    async getMoviesByPersonal({ commit }, user) {
-        Vue.$log.debug('Vuex movie.js getMoviesByPersonal', user);
-        const targetUser = 5797;
-        axios.get(`${global.API_URL}/auth/recommendMovie/`, {
+    async getMoviesByPersonal({ commit }, id) {
+        Vue.$log.debug('Vuex movie.js getMoviesByPersonal', id);
+        commit('setIsLoaded', false);
+        return axios.get(`${global.API_URL}/auth/recommendMovie/`, {
             params: {
-                id: targetUser
+                id
             }
         }).then((response) => {
             Vue.$log.debug('Vuex movie.js getMoviesByPersonal response', response);
             const { result } = response.data;
             commit('setPersonalMovies', result);
-            commit('setIsLoaded', true);
         });
     },
     async getRatingPref({ commit }, email) {
@@ -123,13 +125,44 @@ const actions = {
             return response.data;
         });
     },
-    // For Test
-    async getContentBased({ commit }, email) {
-        Vue.$log.debug('Vuex movie.js getContentBased', email);
-        return axios.get(`${global.API_URL}/content_based/`, {
+    async getMovieFaculties({ commit }, movieId) {
+        Vue.$log.debug('Vuex movie.js getMovieFaculties', movieId);
+        return axios.get(`${global.API_URL}/movies/faculites/`, {
             params: {
-                email
+                movieId
             }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getMovieFaculties response', response);
+            if (response.data.status === global.HTTP_SUCCESS) {
+                const { result } = response.data;
+                commit('setMovieFaculties', result);
+                return true;
+            }
+            return false;
+        });
+    },
+    async getPrediction({ state }, [useremail, movieId]) {
+        Vue.$log.debug('Vuex movie.js getPrediction', useremail, movieId);
+        return axios.get(`${global.API_URL}/auth/predictRating/`, {
+            params: {
+                movieId,
+                useremail
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getPrediction response', response);
+            if (response.data.status === global.HTTP_SUCCESS) {
+                const { result } = response.data;
+                return result.prediction;
+            }
+            return -1;
+        });
+    },
+    // For Test
+    async getContentBased({ commit }, params) {
+        Vue.$log.debug('Vuex movie.js getContentBased', params);
+        commit('setIsLoaded', params.flag);
+        return axios.get(`${global.API_URL}/content_based/`, {
+            params
         }).then((response) => {
             Vue.$log.debug('Vuex movie.js getContentBased response', response);
             return response.data;
@@ -142,7 +175,7 @@ const mutations = {
         state.personalMovies = movies;
     },
     setIsLoaded(state, flag) {
-        state.isloaded = flag;
+        state.isLoaded = flag;
     },
     setGenreMovies(state, { genre, movies }) {
         state.genreMovies[genre] = movies;
@@ -151,7 +184,10 @@ const mutations = {
         state.searchResultMovies.result = result;
     },
     setSelectedMovie(state, movie) {
-        state.selectedMovie = movie;
+        state.selectedMovie.movie = movie;
+    },
+    setMovieFaculties(state, faculties) {
+        state.selectedMovie.faculties = faculties;
     },
     setSearchConditionTitle(state, title) {
         state.searchResultMovies.title = title;

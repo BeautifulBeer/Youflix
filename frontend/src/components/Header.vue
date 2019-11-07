@@ -31,7 +31,7 @@
                     </v-row>
                 </v-col>
                 <v-col
-                    v-if="getlogoutflag"
+                    v-show="getlogoutflag"
                     cols="3"
                 >
                     <v-row
@@ -84,19 +84,18 @@
                             text
                             color="transparent"
                             class="genre-btn"
+                            to="/evaluate"
                         >
                             <span
                                 class="label"
                             >
-                                <router-link to="/evaluate">
-                                    평가하기
-                                </router-link>
+                                RATING
                             </span>
                         </v-btn>
                     </v-row>
                 </v-col>
                 <v-col
-                    v-if="getlogoutflag"
+                    v-show="getlogoutflag"
                     cols="8"
                     class="wrapper"
                 >
@@ -150,7 +149,7 @@
                                         setting
                                     </router-link>
                                     <router-link
-                                        to="#"
+                                        to="/"
                                     >
                                         likes
                                     </router-link>
@@ -160,7 +159,7 @@
                                         admin
                                     </router-link>
                                     <router-link
-                                        to="#"
+                                        to="/"
                                     >
                                         <span @click="logoutState()">
                                             logout
@@ -197,20 +196,14 @@ export default {
         };
     },
     computed: {
-        ...mapState({
-            user: (state) => state.user,
-            token: (state) => state.token,
-            username: (state) => {
-                return state.user ? state.user.username : state.user;
-            }
-        }),
+        ...mapState(['token', 'user']),
         ...movieMapState(['searchResultMovies']),
         ...infoMapState(['category']),
         getlogoutflag() {
             return (this.token !== null && this.token !== undefined);
         },
         getUserName() {
-            return this.username;
+            return this.user ? this.user.username : this.user;
         },
         getSelectedGenre() {
             return this.searchResultMovies.keyword;
@@ -239,51 +232,56 @@ export default {
     },
     mounted() {
         this.$nextTick(() => {
-            window.addEventListener('DOMContentLoaded', () => {
-                const headerIcon = document.getElementById('header-search-icon');
-                const headerInput = document.getElementById('header-search-input');
-                const headerEffect = document.getElementById('header-search-effect');
-                const categories = document.getElementsByClassName('category');
-                if (headerIcon) {
-                    headerIcon.addEventListener('mouseenter', () => {
-                        this.$log.debug('Header.vue headerIcon mouseenter');
-                        this.mouseOver = true;
-                    });
+            const headerIcon = document.getElementById('header-search-icon');
+            const headerInput = document.getElementById('header-search-input');
+            const headerEffect = document.getElementById('header-search-effect');
+            const categories = document.getElementsByClassName('category');
+            if (headerIcon) {
+                headerIcon.addEventListener('mouseenter', () => {
+                    this.$log.debug('Header.vue headerIcon mouseenter');
+                    this.mouseOver = true;
+                });
 
-                    headerIcon.addEventListener('mouseleave', () => {
-                        this.$log.debug('Header.vue headerIcon mouseleave');
-                        this.mouseOver = false;
-                    });
-                }
+                headerIcon.addEventListener('mouseleave', () => {
+                    this.$log.debug('Header.vue headerIcon mouseleave');
+                    this.mouseOver = false;
+                });
+            }
 
-                if (headerInput) {
-                    headerInput.addEventListener('focusout', () => {
-                        if (!this.mouseOver) {
-                            headerEffect.classList.remove('open');
-                            headerIcon.classList.remove('open');
-                            headerInput.value = '';
+            if (headerInput) {
+                headerInput.addEventListener('focusout', () => {
+                    if (!this.mouseOver) {
+                        headerEffect.classList.remove('open');
+                        headerIcon.classList.remove('open');
+                        headerInput.value = '';
+                    }
+                });
+            }
+
+            if (categories && categories.length > 0) {
+                const categoryLength = categories.length;
+                for (let i = 0; i < categoryLength; i += 1) {
+                    categories[i].addEventListener('click', (event) => {
+                        this.$log.debug('Header.vue category addEventListener', event);
+                        const classes = event.target.classList;
+                        for (let j = 0; j < categoryLength; j += 1) {
+                            categories[j].classList.remove('highlight');
                         }
+                        classes.add('highlight');
                     });
                 }
-
-                if (categories && categories.length > 0) {
-                    const categoryLength = categories.length;
-                    for (let i = 0; i < categoryLength; i += 1) {
-                        categories[i].addEventListener('click', (event) => {
-                            this.$log.debug('Header.vue category addEventListener', event);
-                            const classes = event.target.classList;
-                            for (let j = 0; j < categoryLength; j += 1) {
-                                categories[j].classList.remove('highlight');
-                            }
-                            classes.add('highlight');
-                        });
+                const categoiesLabel = Object.keys(this.category);
+                for (let i = 0; i < categoiesLabel.length; i += 1) {
+                    if (this.searchResultMovies.category === categoiesLabel[i]) {
+                        categories[i].classList.add('highlight');
+                        break;
                     }
                 }
+            }
 
-                if (this.getUser) {
-                    this.logoutflag = true;
-                }
-            });
+            if (this.getUser) {
+                this.logoutflag = true;
+            }
             window.addEventListener('scroll', () => {
                 const header = document.getElementById('header');
                 if (parseInt(window.scrollY, 10) < this.prevOffset) {
@@ -310,7 +308,7 @@ export default {
             'setSearchConditionCategory'
         ]),
         ...movieMapActions(['getMovieByConditions']),
-        ...mapActions(['logout', 'getSession']),
+        ...mapActions(['logout', 'getUserBySession']),
         changeFlag() {
             if (this.getLoginModalOpen === true) {
                 this.$store.commit('setLoginModalOpen', false);
@@ -319,9 +317,8 @@ export default {
             }
         },
         logoutState() {
-            this.getSession().then((ret) => {
-                console.log(ret);
-                if (ret === true) {
+            this.getUserBySession(this.token).then((ret) => {
+                if (ret) {
                     this.logout(this.token).then(() => {
                         swal({
                             title: 'GoodBye',
@@ -355,7 +352,9 @@ export default {
                 effect.classList.remove('open');
                 icon.classList.remove('open');
                 keywordInput.value = '';
-                this.$router.push('/movie/search');
+                if (window.location.pathname.indexOf('movie/search') === -1) {
+                    this.$router.push('/movie/search');
+                }
             } else {
                 effect.classList.add('open');
                 icon.classList.add('open');
@@ -363,8 +362,12 @@ export default {
             }
         },
         movieCategorySearch(keyword) {
-            this.setSearchConditionKeyword(keyword)
-            this.$router.push('/movie/search');
+            this.setSearchConditionKeyword(keyword);
+            if (window.location.pathname.indexOf('movie/search') === -1) {
+                this.$router.push({
+                    path: '/movie/search'
+                });
+            }
         }
     }
 };

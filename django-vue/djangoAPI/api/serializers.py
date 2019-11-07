@@ -1,5 +1,5 @@
 from .models import Profile, Movie, Rating, UserCluster
-from .models import User
+from .models import User, Crew, Cast
 from rest_framework import serializers
 
 import json
@@ -11,7 +11,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     id = serializers.ReadOnlyField()
     email = serializers.SerializerMethodField('get_email')
     is_staff = serializers.SerializerMethodField('get_is_staff')
-    movie_tastes = serializers.SerializerMethodField('get_movie_taste')
+    movie_taste = serializers.SerializerMethodField('get_movie_taste')
 
     class Meta:
         model = Profile
@@ -214,6 +214,16 @@ class MovieGenderSerializer(serializers.ModelSerializer):
 
         return gender_dict
 
+class CrewSerializer(serializers.ModelSerializer):    
+    class Meta:
+        model = Crew
+        fields = ('id', 'movie', 'department', 'profile_path', 'gender', 'name', 'job')
+
+class CastSerializer(serializers.ModelSerializer):    
+    class Meta:
+        model = Cast
+        fields = ('id', 'movie', 'character', 'profile_path', 'gender', 'name', 'order')
+
 
 # ================= Rating Serializer =================== #
 class RatingSerializer(serializers.ModelSerializer):
@@ -248,6 +258,7 @@ class UserRatingSerializer(serializers.ModelSerializer):
 
 class SessionSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField('get_email')
+    id = serializers.SerializerMethodField('get_id')
     username = serializers.SerializerMethodField('get_user')
     token = serializers.SerializerMethodField('get_token')
     gender = serializers.SerializerMethodField('get_gender')
@@ -259,7 +270,10 @@ class SessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('email', 'username', 'token', 'gender', 'age', 'occupation', 'is_auth', 'is_staff', 'movie_taste')
+        fields = ('email', 'id', 'username', 'token', 'gender', 'age', 'occupation', 'is_auth', 'is_staff', 'movie_taste')
+
+    def get_id(self, obj):
+        return str(obj['id'])
 
     def get_email(self, obj):
         return str(obj['email'])
