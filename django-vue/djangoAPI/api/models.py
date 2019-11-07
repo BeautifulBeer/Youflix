@@ -94,14 +94,7 @@ def create_profile(**kwargs):
             movie_taste=kwargs['movie_taste']
         )
     except:
-        profile = Profile.objects.create(
-            id=kwargs['id'],
-            user=user,
-            username=kwargs['username'],
-            gender=kwargs['gender'],
-            age=kwargs['age'],
-            occupation=kwargs['occupation'],
-        )
+        print('profile 저장 오류')
 
     return profile
 
@@ -235,7 +228,3 @@ class Comment(models.Model):
 class UserCluster(models.Model):
     user_id = models.IntegerField(primary_key=True)
     kmeans_cluster = models.IntegerField(blank=True)
-
-# class MovieCluster(models.Model):
-#     movie_id=models.IntegerField(primary_key=True)
-#     kmeans_cluster=models.IntegerField(blank=True)
