@@ -6,7 +6,6 @@ from api.algorithms.kmeansClustering import U_Cluster
 from api.serializers import MovieSerializer,MovieAgeSerializer,MovieGenderSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .tmdb import getMovieInfo
 
 # Django Database Model
 from django.db.models import F

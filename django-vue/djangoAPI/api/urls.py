@@ -49,6 +49,6 @@ urlpatterns = [
 
     # test
     url(r'contentBased/$', test.ContentBased, name='ContentBased'),
-    url(r'test/$', collabo_test.test, name='collabo_test')
+    url(r'test/$', collabo_test.test, name='collabo_test'),
 
 ]
