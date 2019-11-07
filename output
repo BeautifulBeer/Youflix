@@ -1,0 +1,150 @@
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Mon 2019-11-04 15:48:39 UTC; 1min 4s ago
+     Docs: man:nginx(8)
+  Process: 19660 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 19513 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 23348 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 19515 (code=exited, status=0/SUCCESS)
+
+Nov 04 15:48:39 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 04 15:48:39 ip-172-26-9-208 nginx[23348]: nginx: [emerg] unexpected end of file, expecting ";" or "}" in /home/ubuntu/Youflix/youflix/django-vue/djangoAPI/djangoAPI/.config_secret/uwsgi/production.ini:31
+Nov 04 15:48:39 ip-172-26-9-208 nginx[23348]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 04 15:48:39 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 04 15:48:39 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 04 15:48:39 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Mon 2019-11-04 15:52:34 UTC; 4s ago
+     Docs: man:nginx(8)
+  Process: 19660 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 19513 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 23981 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 19515 (code=exited, status=0/SUCCESS)
+
+Nov 04 15:52:34 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 04 15:52:34 ip-172-26-9-208 nginx[23981]: nginx: [emerg] unknown directive "[uwsgi]" in /home/ubuntu/Youflix/youflix/django-vue/djangoAPI/djangoAPI/.config_secret/uwsgi/production.ini:31
+Nov 04 15:52:34 ip-172-26-9-208 nginx[23981]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 04 15:52:34 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 04 15:52:34 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 04 15:52:34 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Mon 2019-11-04 15:54:07 UTC; 2s ago
+     Docs: man:nginx(8)
+  Process: 19660 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 19513 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 24271 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 19515 (code=exited, status=0/SUCCESS)
+
+Nov 04 15:54:07 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 04 15:54:07 ip-172-26-9-208 nginx[24271]: nginx: [emerg] unexpected end of file, expecting ";" or "}" in /home/ubuntu/Youflix/youflix/django-vue/djangoAPI/djangoAPI/.config_secret/uwsgi/production.ini:16
+Nov 04 15:54:07 ip-172-26-9-208 nginx[24271]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 04 15:54:07 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 04 15:54:07 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 04 15:54:07 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Mon 2019-11-04 16:50:49 UTC; 1min 7s ago
+     Docs: man:nginx(8)
+  Process: 19660 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 19513 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 25633 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 19515 (code=exited, status=0/SUCCESS)
+
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 04 16:50:49 ip-172-26-9-208 nginx[25633]: nginx: [emerg] unexpected end of file, expecting ";" or "}" in /home/ubuntu/Youflix/youflix/django-vue/djangoAPI/djangoAPI/.config_secret/uwsgi/production.ini:16
+Nov 04 16:50:49 ip-172-26-9-208 nginx[25633]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Mon 2019-11-04 16:50:49 UTC; 1min 15s ago
+     Docs: man:nginx(8)
+  Process: 19660 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 19513 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 25633 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 19515 (code=exited, status=0/SUCCESS)
+
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 04 16:50:49 ip-172-26-9-208 nginx[25633]: nginx: [emerg] unexpected end of file, expecting ";" or "}" in /home/ubuntu/Youflix/youflix/django-vue/djangoAPI/djangoAPI/.config_secret/uwsgi/production.ini:16
+Nov 04 16:50:49 ip-172-26-9-208 nginx[25633]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Mon 2019-11-04 16:50:49 UTC; 1min 20s ago
+     Docs: man:nginx(8)
+  Process: 19660 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 19513 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 25633 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 19515 (code=exited, status=0/SUCCESS)
+
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 04 16:50:49 ip-172-26-9-208 nginx[25633]: nginx: [emerg] unexpected end of file, expecting ";" or "}" in /home/ubuntu/Youflix/youflix/django-vue/djangoAPI/djangoAPI/.config_secret/uwsgi/production.ini:16
+Nov 04 16:50:49 ip-172-26-9-208 nginx[25633]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 04 16:50:49 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Mon 2019-11-04 16:53:34 UTC; 6s ago
+     Docs: man:nginx(8)
+  Process: 19660 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 19513 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 27817 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 19515 (code=exited, status=0/SUCCESS)
+
+Nov 04 16:53:34 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 04 16:53:34 ip-172-26-9-208 nginx[27817]: nginx: [emerg] unexpected end of file, expecting ";" or "}" in /home/ubuntu/Youflix/youflix/django-vue/djangoAPI/djangoAPI/.config_secret/uwsgi/production.ini:16
+Nov 04 16:53:34 ip-172-26-9-208 nginx[27817]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 04 16:53:34 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 04 16:53:34 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 04 16:53:34 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Mon 2019-11-04 17:00:12 UTC; 1min 48s ago
+     Docs: man:nginx(8)
+  Process: 19660 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 19513 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 28466 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 19515 (code=exited, status=0/SUCCESS)
+
+Nov 04 17:00:12 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 04 17:00:12 ip-172-26-9-208 nginx[28466]: nginx: [emerg] unexpected end of file, expecting ";" or "}" in /home/ubuntu/Youflix/youflix/django-vue/djangoAPI/djangoAPI/.config_secret/uwsgi/production.ini:16
+Nov 04 17:00:12 ip-172-26-9-208 nginx[28466]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 04 17:00:12 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 04 17:00:12 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 04 17:00:12 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Tue 2019-11-05 00:38:37 UTC; 1min 2s ago
+     Docs: man:nginx(8)
+  Process: 2228 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 1600 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 2229 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 1602 (code=exited, status=0/SUCCESS)
+
+Nov 05 00:38:37 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 05 00:38:37 ip-172-26-9-208 nginx[2229]: nginx: [emerg] open() "/etc/nginx/sites-enabled/default" failed (2: No such file or directory) in /etc/nginx/nginx.conf:62
+Nov 05 00:38:37 ip-172-26-9-208 nginx[2229]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 05 00:38:37 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 05 00:38:37 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 05 00:38:37 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
+● nginx.service - A high performance web server and a reverse proxy server
+   Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
+   Active: failed (Result: exit-code) since Tue 2019-11-05 00:38:37 UTC; 1min 10s ago
+     Docs: man:nginx(8)
+  Process: 2228 ExecStop=/sbin/start-stop-daemon --quiet --stop --retry QUIT/5 --pidfile /run/nginx.pid (code=exited, status=0/SUCCESS)
+  Process: 1600 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+  Process: 2229 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=1/FAILURE)
+ Main PID: 1602 (code=exited, status=0/SUCCESS)
+
+Nov 05 00:38:37 ip-172-26-9-208 systemd[1]: Starting A high performance web server and a reverse proxy server...
+Nov 05 00:38:37 ip-172-26-9-208 nginx[2229]: nginx: [emerg] open() "/etc/nginx/sites-enabled/default" failed (2: No such file or directory) in /etc/nginx/nginx.conf:62
+Nov 05 00:38:37 ip-172-26-9-208 nginx[2229]: nginx: configuration file /etc/nginx/nginx.conf test failed
+Nov 05 00:38:37 ip-172-26-9-208 systemd[1]: nginx.service: Control process exited, code=exited status=1
+Nov 05 00:38:37 ip-172-26-9-208 systemd[1]: nginx.service: Failed with result 'exit-code'.
+Nov 05 00:38:37 ip-172-26-9-208 systemd[1]: Failed to start A high performance web server and a reverse proxy server.
