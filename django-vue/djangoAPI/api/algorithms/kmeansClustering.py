@@ -4,11 +4,10 @@ from rest_framework.decorators import api_view
 from django.http import JsonResponse
 from django.db.models import Max 
 
-from api.models import Movie, User, Profile, UserCluster, Profile
+from api.models import User, Profile, UserCluster
 
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from collections import Counter
 
 import pandas as pd
 import numpy as np
@@ -34,8 +33,7 @@ user_mapper = json.loads(user_mapper)
 
 @api_view(['GET'])
 def C_Cluster(request):
-    # 주기적으로 할 예정
-    # user Cluster
+    # collaborative filtering을 위한 학습된 유저에 한해 주기적으로 할 예정
     # kmeans 클러스터링
     kmeans = KMeans(n_clusters=7).fit(latent_user)
 
@@ -43,16 +41,16 @@ def C_Cluster(request):
     df['cluster'] = kmeans.labels_
     print(df)
 
-    for userid, index in user_mapper.items():
+    for userid, df_index in user_mapper.items():
         print(userid)
         try:
             profile = Profile.objects.get(id=userid)
-            cluster = df.loc[index]['cluster']
+            cluster = df.loc[df_index]['cluster']
             profile.kmeans_cluster = cluster
             profile.save()
             UserCluster(user_id=userid, kmeans_cluster=cluster).save()
         except Profile.DoesNotExist:
-            cluster = df.loc[index]['cluster']
+            cluster = df.loc[df_index]['cluster']
             UserCluster(user_id=userid, kmeans_cluster=cluster).save()
 
     return JsonResponse({'status': status.HTTP_200_OK})
@@ -70,7 +68,6 @@ def dist_raw(v1, v2):
 def U_Cluster():
     profiles = Profile.objects.all()
     df = pd.DataFrame(list(profiles.values()))
-    # df = df.set_index("user_id")
     df = df.set_index("user_id")
     # admin 제거 및 불필요한 열 삭제
     numeric_df = df[df.occupation != 'admin'].drop(['id', 'username'], axis=1)
@@ -100,7 +97,6 @@ def U_Cluster():
     std_df['kmeans_cluster'] = numeric_df['kmeans_cluster']
 
     # 군집별 centroid
-    # mean_df = new_df.drop('user_id', axis=1).groupby(['kmeans_cluster']).mean()
     mean_df = std_df.groupby(['kmeans_cluster']).mean()
     cluter_mean_vec = mean_df.to_numpy()
 

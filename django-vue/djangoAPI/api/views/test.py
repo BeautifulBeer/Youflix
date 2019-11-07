@@ -6,7 +6,9 @@ from api.algorithms.kmeansClustering import U_Cluster
 from api.serializers import MovieSerializer,MovieAgeSerializer,MovieGenderSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
-from .tmdb import getMovieInfo
+
+# Django Database Model
+from django.db.models import F
 
 import json
 import operator
@@ -90,9 +92,13 @@ def content_based(request):
             # 영화에 대한 유사도 값을 저장할 배열입니다.
             selected_movies = [[0 for i in range(88317)]]
 
-            for user_rating in ratings:
-                movie_frame = df_keys.loc[df_keys['id'] == user_rating.movie.id]
+            # 평가한 영화를 제외하기 위한 Set 입니다.
+            seen_movie_set = set()
 
+            for user_rating in ratings:
+                seen_movie_set.add(user_rating.movie.id)
+                movie_frame = df_keys.loc[df_keys['id'] == user_rating.movie.id]
+                
                 idx = int(str(movie_frame['Unnamed: 0']).split(' ')[0])
                 movie = tf_mx[idx: idx + 1]
 
@@ -113,6 +119,8 @@ def content_based(request):
             movies = []
 
             for movie_idx in n_rank_list:
+                if movie_idx in seen_movie_set:
+                    continue
                 movies.append(Movie.objects.get(id=movie_idx))
         serializer = MovieSerializer(movies, many=True)
         return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data, 'msg': rating_count }, safe=False)

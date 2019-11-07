@@ -61,7 +61,8 @@ def signup_many(request):
                     password=password,
                     age=age,
                     occupation=occupation,
-                    gender=gender
+                    gender=gender,
+                    movie_taste=None
                     )
 
         return JsonResponse({'status': status.HTTP_200_OK})
