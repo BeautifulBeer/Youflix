@@ -48,7 +48,6 @@ urlpatterns = [
     url('clustering/kmeansClustering/C/', kmeansClustering.C_Cluster, name="c_Cluster"),
 
     # test
-    url(r'contentBased/$', test.ContentBased, name='ContentBased'),
-    url(r'test/$', collabo_test.test, name='collabo_test'),
-
+    url(r'content_based/$', test.content_based, name='content_based'),
+    url(r'test/$', collabo_test.test, name='collabo_test')
 ]

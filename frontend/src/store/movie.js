@@ -1,5 +1,4 @@
 import Vue from 'vue';
-// import Axios
 import axios from 'axios';
 import global from '../plugins/global';
 
@@ -181,13 +180,11 @@ const actions = {
         });
     },
     // For Test
-    async getContentBased({ commit }, email) {
-        Vue.$log.debug('Vuex movie.js getContentBased', email);
-        commit('setIsLoaded', false);
-        return axios.get(`${global.API_URL}/contentBased/`, {
-            params: {
-                email
-            }
+    async getContentBased({ commit }, params) {
+        Vue.$log.debug('Vuex movie.js getContentBased', params);
+        commit('setIsLoaded', params.flag);
+        return axios.get(`${global.API_URL}/content_based/`, {
+            params
         }).then((response) => {
             Vue.$log.debug('Vuex movie.js getContentBased response', response);
             return response.data;
