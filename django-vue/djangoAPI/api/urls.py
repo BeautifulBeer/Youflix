@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'movies/modify/$', movie_views.modify, name='movie_modify'),
     url(r'movies/neverSeenMovies/$', movie_views.never_seen_movie_list, name='never_seen_movie_list'),
     url(r'movies/faculites/$', movie_views.faculites, name='faculites'),
+    url(r'movies/rating/$', movie_views.get_rating_movie, name='get_rating_movie'),
     # url(r'similarMovie/$', movie_views.similarMovie, name='similarMovie'),
     # url(r'^movies/recommend/$', movie_views.recommendation, name='movie_recommend'),
 

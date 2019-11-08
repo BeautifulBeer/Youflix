@@ -179,7 +179,6 @@ const actions = {
             return -1;
         });
     },
-    // For Test
     async getContentBased({ commit }, params) {
         Vue.$log.debug('Vuex movie.js getContentBased', params);
         commit('setIsLoaded', params.flag);
@@ -189,7 +188,18 @@ const actions = {
             Vue.$log.debug('Vuex movie.js getContentBased response', response);
             return response.data;
         });
-    }
+    },
+    async getRatingForMovie({ commit }, movieId) {
+        Vue.$log.debug('Vuex movie.js getRatingForMovie', movieId);
+        return axios.get(`${global.API_URL}/content_based/`, {
+            params: {
+                movie_id: movieId
+            }
+        }).then((response) => {
+            Vue.$log.debug('Vuex movie.js getRatingForMovie response', response);
+            return response.data;
+        });
+    },    
 };
 
 const mutations = {

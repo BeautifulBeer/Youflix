@@ -4,6 +4,7 @@ from django.db.models import F
 from django.http import JsonResponse
 from api.models import Movie, User, Genre, Rating, Crew, Cast
 from api.serializers import MovieSerializer, CrewSerializer, CastSerializer
+import json
 
 
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -247,3 +248,28 @@ def faculites(request):
     except Movie.DoesNotExist:
         return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'Movie Object is not exist'})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+
+@api_view(['GET'])
+def get_rating_movie(requset):
+
+    if requset.method == 'GET':
+
+        email = requset.GET.get('email', None)
+        movie_id = requset.GET.get('movieId', None)
+
+        print(email)
+        print(movie_id)
+
+        if email is None or movie_id is None:
+            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+        
+        user = User.objects.get(email=email)
+        ratings = Rating.objects.filter(user=user)
+
+        rating_value = 0
+
+        for user_rating in ratings:
+            if user_rating.movie.id == movie_id:
+                rating_value = user_rating.rating
+                break
+        return JsonResponse({'status': status.HTTP_200_OK, 'data': json.dumps(rating_value)}, safe=False)
