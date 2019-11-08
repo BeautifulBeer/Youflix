@@ -428,12 +428,6 @@ export default {
                     } else {
                         this.$forceUpdate();
                     }
-                    this.getPrediction([this.user.email, val]).then((score) => {
-                        if (score !== -1) {
-                            this.predictedScore = score;
-                        }
-                        this.$forceUpdate();
-                    });
                 });
             }
         }
