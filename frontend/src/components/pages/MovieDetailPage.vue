@@ -303,6 +303,12 @@ export default {
     computed: {
         ...mapState(['selectedMovie']),
         ...userMapState(['user']),
+        getUserEmail() {
+            if (this.user) {
+                return this.user.email;
+            }
+            return false;
+        },
         getMovie() {
             return this.selectedMovie.movie;
         },
@@ -422,12 +428,6 @@ export default {
                     } else {
                         this.$forceUpdate();
                     }
-                    this.getPrediction([this.user.email, val]).then((score) => {
-                        if (score !== -1) {
-                            this.predictedScore = score;
-                        }
-                        this.$forceUpdate();
-                    });
                 });
             }
         }
@@ -445,6 +445,9 @@ export default {
                     }).then(() => {
                         this.loadSliderWidth();
                     });
+                    this.getRatingForMovie(this.id).then((ret) => {
+                        this.rating = ret;
+                    });
                 } else {
                     this.$forceUpdate();
                 }
@@ -458,7 +461,7 @@ export default {
         });
     },
     methods: {
-        ...mapActions(['getMovieById', 'getMovieFaculties', 'getPrediction']),
+        ...mapActions(['getMovieById', 'getMovieFaculties', 'getPrediction', 'getRatingForMovie']),
         back() {
             this.$router.go(-1);
         },
