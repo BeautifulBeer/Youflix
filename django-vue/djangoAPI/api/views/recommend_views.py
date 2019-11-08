@@ -69,12 +69,14 @@ def get_ratingNum(userid):
     rating_num = len(ratings)
     return rating_num
 
+
 def get_movie_list(df_keys, datas):
 
     movie_list = []
     for index in datas.index:
         movie_list.append(Movie.objects.get(pk=df_keys.iloc[index]['id']))
     return movie_list
+
 
 def recommend_movie(df_keys, indices, id, cosine_sim, n):
 
@@ -139,21 +141,47 @@ def collaborative_filtering(user, movies):
     return movie_list
 
 
+def content_based_filtering(movie_list):
+
+    content_based_movies = []
+    print(movie_list)
+    for movie_id in movie_list:
+        selectedMovie = df_keys.loc[df_keys['id'] == movie_id]
+        idx = str(selectedMovie['Unnamed: 0']).split(' ')
+        idx = int(idx[0])
+        content_based_movies.append(cv_mx[idx:idx + 1])
+
+    sum_vector = []
+    for movie_vector in content_based_movies:
+        print(movie_vector.toarray())
+        if len(sum_vector) == 0:
+            sum_vector = movie_vector.toarray()    
+        sum_vector += movie_vector.toarray()
+
+    print(sum_vector)
+
+    cosine_sim = cosine_similarity(sp.csr_matrix(sum_vector), cv_mx)
+    indices = pd.Series(df_keys.index, index = df_keys['id'])
+    result = get_movie_list(df_keys, recommend_movie(df_keys, indices, movie_list[0], cosine_sim, 50))
+    serializer = MovieSerializer(result, many=True)
+    return serializer
+
+
 @api_view(['GET'])
 def RecommendMovie(request):
     start = time.time()
     topN = 20
-    print(request.method)
-    
-    if request.method == 'GET':
-        target_id = request.GET.get('id', request.GET.get('movie_id', None))
 
+    if request.method == 'GET':
+        target_id = request.GET.get('id', request.GET.get('id', None))
         if target_id is None:
+            print('ERROR!!')
             return JsonResponse({'msg': "Invalid Request Method", 'status': status.HTTP_400_BAD_REQUEST})
 
         target_user = User.objects.get(id=target_id)
         # 유저가 매긴 평점 개수
         rating_num = get_ratingNum(target_id)
+        
         # 기존 군집화 유무에 따른 군집 정보 가져오기
         max_id_object = UserCluster.objects.aggregate(user_id=Max('user_id'))
         max_id = max_id_object['user_id']
@@ -169,13 +197,26 @@ def RecommendMovie(request):
 
         movie_list = []
         movies = None
-        # 1. 유저가 매긴 평점 개수가 20개 이상인 경우 collaborative filtering
-        if rating_num >= 20:
 
-            # 1. 해당 유저가 본 영화
+        # 1. 평가한 영화 rating 수 20개 이상인 경우 -> collaborative filtering
+        if rating_num >= 20:
+            # 예외 상황: 20개 이상이지만 학습이 안된 경우 -> content based filtering
+            if target_user.profile.kmeans_cluster is None:
+                print('예외 상황입니다!! 20개 이상이지만 학습 안된 경우 Content Based Filtering')
+                # 해당 유저가 본 영화 list
+                ratings = Rating.objects.filter(user__id=target_id)
+                movie_list = [rating.movie.id for rating in ratings]
+                if len(movie_list) >= 20:
+                    movie_list = random.sample(movie_list, 20)
+
+                serializer = content_based_filtering(movie_list)
+                return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
+
+            print('collaborative filtering!!')
+            # 1-1. 해당 유저가 본 영화
             user_watched = [[rating.movie.id, rating.movie.imdb_id] for rating in Rating.objects.filter(user__id=target_id)]
 
-            # 2. 해당 군집 유저들이 본 모든 영화
+            # 1-2. 해당 군집 유저들이 본 모든 영화
 
             # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
             movie_list = cluster_movie_list_v2[0][str(target_cluster)]
@@ -184,6 +225,9 @@ def RecommendMovie(request):
 
             movie_list = collaborative_filtering(target_user, movies)
             movies = Movie.objects.filter(id__in=movie_list)
+
+            serializer = MovieSerializer(movies, many=True)
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
             # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
 
             # =================기존 버전 =================== #
@@ -198,22 +242,25 @@ def RecommendMovie(request):
 
             # 중복제거
             # movies = list(set(movies))
+            # movie_list = collaborative_filtering(target_user, movies)
+            # movies = Movie.objects.filter(id__in=movie_list)
+
+            # serializer = MovieSerializer(movies, many=True)
+            # return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
             # =================기존 버전 =================== #
 
-        # 2. 유저가 매긴 평점 개수가 20개 미만인 경우 content based filtering
+        # 2. 평가한 영화 rating 수 20개 미만인 경우 -> content based
         else:
-            print('평점개수 20개 미만')
-            # 2-1. 0인 경우 따로 빼서 -> kmeans 안되있는경우 가져오고. (신규 유저)
+            print('content based!!')
+            # 2-1. rating 0개인 경우. 가까운 군집의 유저들이 본 영화 이용해 content based filtering
             if rating_num == 0:  # 신규 유저
                 print('rating 0개')
-                # 2-1-2. 해당 군집 movie_list
-                # (1) 해당 군집 모든 유저
                 # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
+                # 2-1. 해당 군집 movie_list
                 movie_list = cluster_movie_list[0][str(target_cluster)]
 
-                movie_list = random.sample(movie_list, 20)
-
-                movies = Movie.objects.filter(id__in=movie_list)
+                if len(movie_list) >= 20:
+                    movie_list = random.sample(movie_list, 20)
                 # ================= 속도 개선 버전(파일 있을 때만 가능) =================== #
 
                 # ================= 기존 버전 =================== #
@@ -230,38 +277,15 @@ def RecommendMovie(request):
                 # movies = Movie.objects.filter(id__in=movie_list)
                 # ================= 기존 버전 =================== #
 
-
-            # 2-2. rating이 조금이라도 있는 경우, 해당 유저가 본 영화 list 추출
+            # 2-2. rating 조금이라도 있는 경우, 해당 user가 본 영화 이용해 content based filtering
             else:
-
+                print('rating 20미만(!=0)')
+                # 해당 유저가 본 영화 list
                 ratings = Rating.objects.filter(user__id=target_id)
                 movie_list = [rating.movie.id for rating in ratings]
                 if len(movie_list) >= 20:
                     movie_list = random.sample(movie_list, 20)
 
-                content_based_movies = []
-                print(movie_list)
-                for movie_id in movie_list:
-                    selectedMovie = df_keys.loc[df_keys['id'] == movie_id]
-                    # selectedMovie = df_keys.loc[df_keys['id'] == 862]
-                    idx = str(selectedMovie['Unnamed: 0']).split(' ')
-                    idx = int(idx[0])
-                    content_based_movies.append(cv_mx[idx:idx + 1])
-                
-                sum_vector = []
-                for movie_vector in content_based_movies:
-                    print(movie_vector.toarray())
-                    if len(sum_vector) == 0:
-                        sum_vector = movie_vector.toarray()    
-                    sum_vector += movie_vector.toarray()
+            serializer = content_based_filtering(movie_list)
 
-                print(sum_vector)
-                
-                cosine_sim = cosine_similarity(sp.csr_matrix(sum_vector), cv_mx)
-                indices = pd.Series(df_keys.index, index = df_keys['id'])
-
-                serializer = MovieSerializer(get_movie_list(df_keys, recommend_movie(df_keys, indices, movie_list[0], cosine_sim, 50)), many=True)
-                return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
-
-        serializer = MovieSerializer(movies, many=True)
-        return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)

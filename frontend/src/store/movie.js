@@ -1,5 +1,4 @@
 import Vue from 'vue';
-// import Axios
 import axios from 'axios';
 import global from '../plugins/global';
 
@@ -10,7 +9,8 @@ const state = {
         category: 'genre',
         keyword: 'TV Movie',
         title: '',
-        result: []
+        result: [],
+        currentPage: 2
     },
     selectedMovie: {
         movie: {},
@@ -56,12 +56,33 @@ const actions = {
             params: {
                 category: state.searchResultMovies.category,
                 keyword: state.searchResultMovies.keyword,
-                title: state.searchResultMovies.title
+                title: state.searchResultMovies.title,
+                page: 1
             }
         }).then((response) => {
             if (response.data.status === global.HTTP_SUCCESS) {
                 const { result } = response.data;
                 commit('setSearchResultMovies', result);
+                commit('setCurrentPage', 2);
+                return true;
+            }
+            return false;
+        });
+    },
+    async getMoreMovieByConditions({ state, commit }) {
+        Vue.$log.debug('Vuex movie.js getMoreMovieByConditions', state.searchResultMovies);
+        return axios.get(`${global.API_URL}/movies/`, {
+            params: {
+                category: state.searchResultMovies.category,
+                keyword: state.searchResultMovies.keyword,
+                title: state.searchResultMovies.title,
+                page: state.searchResultMovies.currentPage
+            }
+        }).then((response) => {
+            if (response.data.status === global.HTTP_SUCCESS) {
+                const { result } = response.data;
+                commit('appendSearchResultMovies', result);
+                commit('setCurrentPage', state.searchResultMovies.currentPage + 1);
                 return true;
             }
             return false;
@@ -159,13 +180,11 @@ const actions = {
         });
     },
     // For Test
-    async getContentBased({ commit }, email) {
-        Vue.$log.debug('Vuex movie.js getContentBased', email);
-        commit('setIsLoaded', false);
-        return axios.get(`${global.API_URL}/contentBased/`, {
-            params: {
-                email
-            }
+    async getContentBased({ commit }, params) {
+        Vue.$log.debug('Vuex movie.js getContentBased', params);
+        commit('setIsLoaded', params.flag);
+        return axios.get(`${global.API_URL}/content_based/`, {
+            params
         }).then((response) => {
             Vue.$log.debug('Vuex movie.js getContentBased response', response);
             return response.data;
@@ -186,6 +205,13 @@ const mutations = {
     setSearchResultMovies(state, result) {
         state.searchResultMovies.result = result;
     },
+    appendSearchResultMovies(state, result) {
+        if (state.searchResultMovies.result) {
+            state.searchResultMovies.result = state.searchResultMovies.result.concat(result);
+        }else {
+            state.searchResultMovies.result = result;
+        }
+    },
     setSelectedMovie(state, movie) {
         state.selectedMovie.movie = movie;
     },
@@ -200,6 +226,9 @@ const mutations = {
     },
     setSearchConditionKeyword(state, keyword) {
         state.searchResultMovies.keyword = keyword;
+    },
+    setCurrentPage(state, page) {
+        state.searchResultMovies.currentPage = page;
     }
 };
 

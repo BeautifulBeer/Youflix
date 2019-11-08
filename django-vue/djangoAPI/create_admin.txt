@@ -1,6 +1,6 @@
 from api.models import User
 from api.models import Profile
-user=User.objects.create_user(id=0,email='admin@admin.com', password='admin', is_active=True)
+user=User.objects.create_user(id=0,email='admin@admin.com', password='adminadmin', is_active=True)
 user.is_superuser=True
 user.is_staff=True
 user.save()

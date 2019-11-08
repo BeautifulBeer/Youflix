@@ -60,12 +60,14 @@ const actions = {
         }).then((response) => {
             Vue.$log.debug('Vuex login response', response);
             if (response.data.status === global.HTTP_SUCCESS) {
-                Vue.$log.debug('Vuex login response success');
+                Vue.$log.debug('Vuex login response success', response);
                 // result가 곧 user에 대한 데이터임
                 const { result } = response.data;
                 if (result.is_auth) {
-                    if (result.movie_taste !== '') {
+                    if (result.movie_taste && result.movie_taste !== '') {
                         result.movie_taste = JSON.parse(result.movie_taste.replace(/'/g, '"'));
+                    } else {
+                        result.movie_taste = '';
                     }
                     commit('setUser', result);
                     localStorage.setItem('token', result.token);
@@ -104,7 +106,7 @@ const actions = {
             if (response.data.status === global.HTTP_SUCCESS) {
                 const { result } = response.data;
                 if (result.is_auth) {
-                    commit('setUser', {
+                    let user = {
                         email: result.email,
                         id: result.id,
                         username: result.username,
@@ -112,9 +114,15 @@ const actions = {
                         gender: result.gender,
                         age: result.age,
                         occupation: result.occupation,
-                        is_staff: result.is_staff,
-                        movie_taste: result.movie_taste === '' ? '' : JSON.parse(result.movie_taste.replace(/'/g, '"'))
-                    });
+                        is_staff: result.is_staff
+                    };
+                    if (result.movie_taste && result.movie_taste !== '') {
+                        user.movie_taste = JSON.parse(result.movie_taste.replace(/'/g, '"'));
+                    } else {
+                        user.movie_taste = '';
+                    }
+                    Vue.$log.debug('Vuex user.js getUserBySession response user', user);
+                    commit('setUser', user);
                     return true;
                 }
             }
