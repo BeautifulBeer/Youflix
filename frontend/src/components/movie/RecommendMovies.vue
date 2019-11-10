@@ -47,16 +47,20 @@
                             v-for="(movie, index) in currentMovies"
                             :key="'personalized' + movie.id + index"
                             class="slider"
-                            @click.stop="viewMovie(movie.id)"
                         >
                             <v-img
                                 class="slider-img"
                                 :src="movie.backdrop_path | imagePath"
                             />
-                            <div class="slider-overlay">
+                            <div
+                                class="slider-overlay"
+                            >
                                 <div class="position: relative;">
                                     <div class="portfolio-item__info">
-                                        <h3 class="portfolio-item__header">
+                                        <h3
+                                            class="portfolio-item__header"
+                                            @click.stop="viewMovie(movie.id)"
+                                        >
                                             {{ movie.title }}<span>({{ movie.release_date | extractYear }})</span>
                                         </h3>
                                         <h4 class="portfolio-item__inform">
@@ -103,7 +107,7 @@
 </template>
 
 <script>
-
+import $ from 'jquery';
 import { createNamespacedHelpers } from 'vuex';
 import MovieDetail from '@/components/movie/MovieDetail.vue';
 
@@ -141,7 +145,9 @@ export default {
             maxPage: 2,
             selectedIndex: 0,
             visible: false,
-            isloaded: false
+            isloaded: false,
+            sliderWidth: 355,
+            innerWidth: 0
         };
     },
     computed: {
@@ -170,6 +176,11 @@ export default {
                 return this.user;
             }
             return null;
+        },
+        getStyle() {
+            return {
+                left: (this.innerWidth - 40)
+            };
         }
     },
     watch: {
@@ -204,10 +215,24 @@ export default {
     methods: {
         ...movieMapActions(['getMoviesByPersonal', 'addMovieView']),
         loadSliderWidth() {
-            const { innerWidth } = window;
-            this.showCount = parseInt(innerWidth / 355, 10) + 1;
+            // const { innerWidth } = window;
+            this.innerWidth = screen.width;
+            this.$log.debug('RecoommendMovies.vue loadSliderWidth innerWidth', this.innerWidth);
+            // const ratio = innerWidth / this.sliderWidth;
+            // if (ratio <= 1.1) {
+            //     this.showCount = 0;
+            // } else {
+            this.showCount = Math.ceil(this.innerWidth / this.sliderWidth, 10);
+            // }
             this.currentPage = 0;
-            this.maxPage = this.personalMovies.length / this.showCount;
+            this.currentIndex = 0;
+            if (this.showCount === 0) {
+                this.showCount = 1;
+            }
+            this.maxPage = Math.ceil(this.personalMovies.length / this.showCount);
+            if (this.personalMovies.length === this.showCount && this.maxPage === 1) {
+                this.maxPage += 1;
+            }
         },
         moveNextPage() {
             this.currentIndex = this.currentIndex + this.showCount - 1;
@@ -302,7 +327,7 @@ $button-height: 200px;
 .btn{
     width: 40px;
     height: scale-value($button-height, 1);
-    background: rgba(0,0,0,0.3);
+    background: rgba(0,0,0,0.7);
     position: absolute;
     top: 0;
     z-index: 1000;
@@ -310,20 +335,19 @@ $button-height: 200px;
         left: 0;
     }
     &.next{
-        right: 50%;
+        left: 100vw;
+        transform: translateX(-50%);
     }
 }
 
 .slider{
-    display: relative;
     width: scale-value($slider-width, 1);
     height: scale-value($slider-height, 1);
     float: left;
     margin: 0;
     padding: 0;
-    object-fit: fill;
     object-position: bottom;
-    display:block;
+    display: block;
     cursor: pointer;
     -webkit-transition: width .5s, height .5s, transform .5s ease; /* For Safari 3.1 to 6.0 */
     transition: width .5s, height .5s, transform .5s ease;
@@ -353,11 +377,11 @@ $button-height: 200px;
     width: 100%;
     height: 100%;
     transition: .5s ease;
-    opacity: 0;
-    z-index: 100;
+    visibility: hidden;
     position: absolute;
     top: 0%;
     left: 0%;
+    pointer-events: none;
 }
 
 .detail-container{
@@ -365,46 +389,8 @@ $button-height: 200px;
     left: 0%;
 }
 
-
-.arrow {
-    position: absolute;
-    top: 50%;
-    width: 3vmin;
-    height: 3vmin;
-    background: transparent;
-    border-top: 1vmin solid white;
-    border-right: 1vmin solid white;
-    box-shadow: 0 0 0 lightgray;
-    transition: all 200ms ease;
-
-    &.left {
-        left: 0;
-        transform: translate3d(0,-50%,0) rotate(-135deg);
-    }
-
-    &.right {
-        right: 0;
-        transform: translate3d(0,-50%,0) rotate(45deg);
-    }
-
-    &:hover {
-        border-color: orange;
-        box-shadow: 0.5vmin -0.5vmin 0 white;
-    }
-
-    &:before { // for better hit area
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-40%,-60%) rotate(45deg);
-        width: 200%;
-        height: 200%;
-    }
-}
-
 .section-title {
-    font-size: 45px;
+    font-size: 2.5em;
     text-align: left;
     text-transform: uppercase;
     text-rendering: optimizeLegibility;
@@ -420,7 +406,6 @@ $button-height: 200px;
 
 }
 
-
 .section-content{
     color: $text-gray-color;
     text-align: left;
@@ -433,16 +418,16 @@ $button-height: 200px;
 
 
 .portfolio-item__info {
-  @include position-absolute($top: $portfolio-item-info-offset, $left: $portfolio-item-info-offset);
-
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 25px 20px 0px 20px;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0, .7);
+    @include position-absolute($top: $portfolio-item-info-offset,
+        $left: $portfolio-item-info-offset);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 25px 20px 0px 20px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0, .7);
 }
 
 .portfolio-item__header {
@@ -456,6 +441,9 @@ $button-height: 200px;
         font-size: 0.8em;
     }
 
+    &:hover{
+        color: darkslategray;
+    }
 }
 
 .portfolio-item__inform {
@@ -477,11 +465,11 @@ $button-height: 200px;
     display: flex;
     margin: 0 auto;
     padding-bottom: 10px;
+    visibility: hidden;
 }
 
 .portfolio-item__link-block {
    position: relative;
-
    width: $portfolio-link-dimensions;
    height: $portfolio-link-dimensions;
    margin-right: $portfolio-link-offset;
@@ -493,7 +481,6 @@ $button-height: 200px;
 
 .portfolio-item__link {
   @include transition-mix;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -567,97 +554,94 @@ $button-height: 200px;
 
 
 @media (max-width: $small-breakpoint){
-    .slider{
-        width: scale-value($slider-width, 1.3);
-        height: scale-value($slider-height, 1.3);
-    }
-    .btn {
-        height: scale-value($button-height, 1.3);
-    }
     .slider:hover{
-        width: scale-value($slider-width, 1.3);
-        height: scale-value($slider-height, 1.3);
         .slider-img {
             opacity: 0.3;
         };
         .slider-overlay {
+            visibility: visible;
+            pointer-events: auto;
             opacity: 1;
-            width: scale-value($slider-width, 1.3);
-            height: scale-value($slider-height, 1.3);
         };
     }
 }
 
 @media (min-width: $small-breakpoint) and (max-width: $medium-breakpoint){
-    .slider{
+    .slider:hover{
         width: scale-value($slider-width, 1.2);
         height: scale-value($slider-height, 1.2);
-    }
-    .btn {
-        height: scale-value($button-height, 1.2);
-    }
-    .slider:hover{
-        width: scale-value($slider-width, 1.3);
-        height: scale-value($slider-height, 1.3);
         transform: translateY(-5%);
         .slider-img {
             opacity: 0.3;
         };
         .slider-overlay {
             opacity: 1;
-            width: scale-value($slider-width, 1.3);
-            height: scale-value($slider-height, 1.3);
+            width: scale-value($slider-width, 1.2);
+            height: scale-value($slider-height, 1.2);
+            visibility: visible;
+            pointer-events: auto;
         };
     }
 }
 
 @media (min-width: $medium-breakpoint) and (max-width: $large-breakpoint){
-    .slider{
-        width: scale-value($slider-width, 1.1);
-        height: scale-value($slider-height, 1.1);
-    }
-
-    .btn {
-        height: scale-value($button-height, 1.1);
-    }
-
     .slider:hover{
-        width: scale-value($slider-width, 1.2);
-        height: scale-value($slider-height, 1.2);
+        width: scale-value($slider-width, 1.3);
+        height: scale-value($slider-height, 1.3);
         transform: translateY(-10%);
         .slider-img {
             opacity: 0.3;
         };
         .slider-overlay {
             opacity: 1;
-            width: scale-value($slider-width, 1.2);
-            height: scale-value($slider-height, 1.2);
+            width: scale-value($slider-width, 1.3);
+            height: scale-value($slider-height, 1.3);
+            visibility: visible;
+            pointer-events: auto;
         };
+    }
+    .btn{
+            &.next{
+            left: 100vw;
+            transform: translateX(-40px);
+        }
     }
 }
 
 @media (min-width: $large-breakpoint){
     .slider{
-        width: scale-value($slider-width, 1);
-        height: scale-value($slider-height, 1);
+        width: scale-value($slider-width, 1.2);
+        height: scale-value($slider-height, 1.2);
+    }
+
+    .btn{
+        height: scale-value($button-height, 1.2);
     }
 
     .slider:hover{
-        width: scale-value($slider-width, 1.2);
-        height: scale-value($slider-height, 1.2);
+        width: scale-value($slider-width, 1.4);
+        height: scale-value($slider-height, 1.4);
         transform: translateY(-10%);
         .slider-img {
             opacity: 0.3;
         };
         .slider-overlay {
             opacity: 1;
-            width: scale-value($slider-width, 1.2);
-            height: scale-value($slider-height, 1.2);
+            width: scale-value($slider-width, 1.4);
+            height: scale-value($slider-height, 1.4);
+            visibility: visible;
+            pointer-events: auto;
         };
     }
+    .btn{
+            &.next{
+            left: 100vw;
+            transform: translateX(-40px);
+        }
+    }
 
-    .btn {
-        height: scale-value($button-height, 1);
+    .portfolio-item__links {
+        visibility: visible;
     }
 }
 
@@ -679,5 +663,21 @@ $button-height: 200px;
 background-color: black;
 }
 
+@media (max-width: map-get($breakpoints, mobile)) {
+    .section-title {
+        font-size: 1.5em;
+        margin-top: 0px;
+    }
+
+    .section-content{
+        font-size: 0.8em;
+        word-spacing: 1px;
+        line-height: 1.2em;
+    }
+
+    .title{
+        padding-left: 20px;
+    }
+}
 
 </style>

@@ -5,6 +5,7 @@ import global from '../plugins/global';
 const state = {
     personalMovies: [],
     genreMovies: {},
+    featureMovies: {},
     searchResultMovies: {
         category: 'genre',
         keyword: 'TV Movie',
@@ -16,7 +17,8 @@ const state = {
         movie: {},
         faculties: []
     },
-    isLoaded: true
+    isLoaded: true,
+    headerVisible: true
 };
 
 const actions = {
@@ -189,17 +191,41 @@ const actions = {
             return response.data;
         });
     },
-    async getRatingForMovie({ commit }, movieId) {
-        Vue.$log.debug('Vuex movie.js getRatingForMovie', movieId);
-        return axios.get(`${global.API_URL}/content_based/`, {
-            params: {
-                movie_id: movieId
-            }
+    async getSimilarity({ commit }, params) {
+        Vue.$log.debug('Vuex movie.js getSimilarity', params);
+        return axios.get(`${global.API_URL}/similarity/`, {
+            params
         }).then((response) => {
-            Vue.$log.debug('Vuex movie.js getRatingForMovie response', response);
+            Vue.$log.debug('Vuex movie.js getSimilarity response', response);
             return response.data;
         });
-    },    
+    },
+    async getContentBasedByFeatures({ commit }, [features, email]) {
+        Vue.$log.debug('Vuex movie.js getContentBasedByFeatures', email);
+        let promises = [];
+        commit('setIsLoaded', false);
+        features.forEach((feature) => {
+            promises.push(axios.get(`${global.API_URL}/content_based/`, {
+                params: {
+                    email: email,
+                    page: 1,
+                    feature: feature
+                }
+            }));
+        });
+        return Promise.all(promises).then((responses) => {
+            for (let i = 0; i < 3; i++) {
+                Vue.$log.debug('Vuex movie.js getContentBasedByFeatures promises all', features[i], responses[i].data);
+                if (responses[i].data.status === global.HTTP_SUCCESS) {
+                    const { result } = responses[i].data;
+                    console.log(features[i]);
+                    console.log(responses[i].data);
+                    commit('setFeatureMovies', { feature: features[i], movies: result });
+                }
+            }
+            return features[0];
+        });
+    }
 };
 
 const mutations = {
@@ -211,6 +237,9 @@ const mutations = {
     },
     setGenreMovies(state, { genre, movies }) {
         state.genreMovies[genre] = movies;
+    },
+    setFeatureMovies(state, { feature, movies }) {
+        state.featureMovies[feature] = movies;
     },
     setSearchResultMovies(state, result) {
         state.searchResultMovies.result = result;
@@ -239,6 +268,9 @@ const mutations = {
     },
     setCurrentPage(state, page) {
         state.searchResultMovies.currentPage = page;
+    },
+    setHeaderVisible(state, flag) {
+        state.headerVisible = flag;
     }
 };
 

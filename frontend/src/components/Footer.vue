@@ -152,4 +152,10 @@ export default {
     }
 }
 
+@media (max-width: map-get($breakpoints, mobile)){
+    .footer-wapper{
+        display: none;
+    }    
+}
+
 </style>

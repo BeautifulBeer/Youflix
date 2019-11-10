@@ -94,6 +94,8 @@ export default {
 
 <style lang="scss" scoped>
 
+@import '@/style/variables.scss';
+
 span {
 
     text-decoration: none;
@@ -294,5 +296,11 @@ p {
     background-color: rgba(154,151,161,0.3);
     margin: 0 auto 20px;
     margin-top: 10px;
+}
+
+@media (max-width: 525px) {
+    #logo {
+        font-size: 4em;
+    }
 }
 </style>

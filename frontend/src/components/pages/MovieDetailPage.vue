@@ -11,23 +11,28 @@
             class="content-wrapper"
         >
             <v-col
-                cols="3"
+                cols="12"
+                sm="3"
             >
                 <v-img
                     :src="getPoster | posterPath"
                 />
             </v-col>
             <v-col
-                cols="8"
+                cols="12"
+                sm="8"
             >
                 <v-row
                     class="label-row"
                 >
                     <v-col
-                        cols="8"
+                        cols="12"
+                        sm="8"
                     >
                         <v-row>
-                            <v-col cols="12">
+                            <v-col
+                                cols="12"
+                            >
                                 <span
                                     class="detail-title title-family"
                                 >
@@ -44,13 +49,17 @@
                         </v-row>
                     </v-col>
                     <v-col
-                        cols="4"
+                        cols="12"
+                        sm="4"
                     >
                         <v-row
                             justify="end"
                             align="center"
                         >
-                            <v-col cols="10">
+                            <v-col
+                                sm="10"
+                                cols="12"
+                            >
                                 <div class="detail-rating">
                                     <AnimateWhenVisible name="fade">
                                         <div class="wrapper">
@@ -77,22 +86,28 @@
                             justify="end"
                             align="center"
                         >
-                            <v-col cols="10">
+                            <v-col
+                                cols="12"
+                                sm="10"
+                            >
                                 <span
                                     class="taste-word"
-                                    style="color: white;"
+                                    style="color: white; float: left;"
                                 >
                                     {{ ratingWord }}
                                 </span>
-                                <v-rating
-                                    id="ratingStar"
-                                    v-model="rating"
-                                    dense
-                                    color="white"
-                                    background-color="white"
-                                    half-increments
-                                    hover
-                                />
+                                
+                                <span @click="ratingMovie()">
+                                    <v-rating
+                                        id="ratingStar"
+                                        v-model="rating"
+                                        dense
+                                        color="yellow"
+                                        background-color="yellow"
+                                        half-increments
+                                        hover
+                                    />
+                                </span>
                             </v-col>
                         </v-row>
                     </v-col>
@@ -160,11 +175,13 @@
             </v-col>
         </v-row>
         <v-row
+            v-show="!isMobile"
             justify="center"
             align="center"
         >
             <v-col
-                cols="10"
+                cols="12"
+                sm="10"
             >
                 <span
                     class="detail-title title-family"
@@ -174,6 +191,7 @@
             </v-col>
         </v-row>
         <v-row
+            v-show="!isMobile"
             :style="getCrewStyle"
             class="slider-container"
         >
@@ -217,20 +235,6 @@
                 </div>
             </div>
         </v-row>
-        <v-row
-            justify="center"
-            align="center"
-        >
-            <v-col
-                cols="10"
-            >
-                <span
-                    class="detail-title title-family"
-                >
-                    Reviews
-                </span>
-            </v-col>
-        </v-row>
     </v-container>
 </template>
 
@@ -239,6 +243,8 @@ import { createNamespacedHelpers } from 'vuex';
 
 const { mapState, mapActions } = createNamespacedHelpers('movies');
 const userMapState = createNamespacedHelpers('users').mapState;
+const userMapActions = createNamespacedHelpers('users').mapActions;
+const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
 
 export default {
     name: 'MovieDetailPage',
@@ -341,7 +347,7 @@ export default {
             if (this.getMovie.poster_path) {
                 return this.getMovie.poster_path;
             }
-            return '/static/img/no_poster.jpg';
+            return '/static/img/no_poster.png';
         },
         isVideo() {
             return this.getMovie.video !== '';
@@ -409,11 +415,32 @@ export default {
             }
             result.slice(0, result.length - 2);
             return result.concat(' | ', time);
+        },
+        isMobile() {
+            const mobile = 600;
+            const { innerWidth } = window;
+            this.$log.debug('Window breakpoint isMobile()', innerWidth);
+            if (innerWidth < mobile) {
+                return true;
+            }
+            return false;
         }
     },
     watch: {
         // eslint-disable-next-line
         id: function(val) {
+            if (this.user === null) {
+                this.getUserBySession(localStorage.getItem('token')).then(() => {
+                    this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                        this.rating = ret;
+                    });
+                });
+            }
+            else {
+                this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                    this.rating = ret;
+                });
+            }
             this.$log.debug('MovieDetailPage.vue watch id', val);
             if (val && this.getMovie && this.getMovie.id !== val) {
                 this.$log.debug('MovieDetailPage.vue watch id', val, this.getMovie);
@@ -428,45 +455,89 @@ export default {
                     } else {
                         this.$forceUpdate();
                     }
+                    this.getPrediction([this.user.email, this.id]).then((score) => {
+                        if (score !== -1) {
+                            this.predictedScore = score;
+                        }
+                        this.$forceUpdate();
+                    });
                 });
+            }
+        },
+        rating() {
+    
+            if (this.rating === 0.5) {
+                this.ratingWord = '최악이에요!';
+            } else if (this.rating === 1.0) {
+                this.ratingWord = '싫어요';
+            } else if (this.rating === 1.5) {
+                this.ratingWord = '재미없어요';
+            } else if (this.rating === 2.0) {
+                this.ratingWord = '별로에요';
+            } else if (this.rating === 2.5) {
+                this.ratingWord = '부족해요';
+            } else if (this.rating === 3.0) {
+                this.ratingWord = '보통이에요';
+            } else if (this.rating === 3.5) {
+                this.ratingWord = '볼만해요';
+            } else if (this.rating === 4.0) {
+                this.ratingWord = '재미있어요';
+            } else if (this.rating === 4.5) {
+                this.ratingWord = '훌륭해요';
             }
         }
     },
     mounted() {
+        console.log(this.user.email);
+        console.log(this.id);
+        if (this.user === null) {
+            this.getUserBySession(localStorage.getItem('token')).then(() => {
+                this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                    this.rating = ret;
+                });
+            });
+        }
+        else {
+            this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                this.rating = ret;
+            });
+        }
+
         this.$nextTick(() => {
             window.addEventListener('resize', () => {
                 this.loadSliderWidth();
             });
-            this.getMovieById(this.id).then((result) => {
-                this.$log.debug('MovieDetailPage.vue getMovieById response', this.user.email, this.id);
-                if (result) {
-                    this.getMovieFaculties(this.id).then(() => {
+            if (this.id && !Number.isNaN(this.id)) {
+                this.getMovieById(this.id).then((result) => {
+                    this.$log.debug('MovieDetailPage.vue getMovieById response', this.user.email, this.id);
+                    if (result) {
+                        this.getMovieFaculties(this.id).then(() => {
+                            this.$forceUpdate();
+                        }).then(() => {
+                            this.loadSliderWidth();
+                        });
+                    } else {
                         this.$forceUpdate();
-                    }).then(() => {
-                        this.loadSliderWidth();
-                    });
-                    this.getRatingForMovie(this.id).then((ret) => {
-                        this.rating = ret;
-                    });
-                } else {
-                    this.$forceUpdate();
-                }
-                this.getPrediction([this.user.email, this.id]).then((score) => {
-                    if (score !== -1) {
-                        this.predictedScore = score;
                     }
-                    this.$forceUpdate();
+                    this.getPrediction([this.user.email, this.id]).then((score) => {
+                        if (score !== -1) {
+                            this.predictedScore = score;
+                        }
+                        this.$forceUpdate();
+                    });
                 });
-            });
+            }
         });
     },
     methods: {
         ...mapActions(['getMovieById', 'getMovieFaculties', 'getPrediction', 'getRatingForMovie']),
+        ...userMapActions(['getUserBySession']),
+        ...ratingMapActions(['rateMovie', 'getEvaluatedRating']),
         back() {
             this.$router.go(-1);
         },
         loadSliderWidth() {
-            const { innerWidth } = window;
+            const { innerWidth } = screen.width;
             this.$log.debug('MovieDetailPage.vue loadSliderWidth innerWidth', innerWidth);
             this.showCount = Math.ceil(innerWidth / (this.sliderWidth + 15), 10);
             this.currentPage = 0;
@@ -502,6 +573,18 @@ export default {
                 return obj.character;
             }
             return '';
+        },
+        ratingMovie() {
+            console.log(this.user.email);
+            this.rateMovie(
+                {
+                    email: this.user.email,
+                    movie_id: this.id,
+                    ratingValue: this.rating
+                }
+            ).then((ret) => {
+                this.ratingWord = ret;
+            });
         }
     }
 };

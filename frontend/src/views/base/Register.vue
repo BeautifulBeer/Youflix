@@ -1,7 +1,6 @@
 <template>
     <div id="background-cover">
         <div id="background-img" />
-
         <div id="loginForm-setting">
             <div class="input-title white--text">
                 회원가입
@@ -562,6 +561,15 @@ export default {
             this.genresCheck = 1;
         }
     },
+    mounted() {
+        this.username = '';
+        this.email = '';
+        this.pwd = '';
+        this.age = '';
+        this.gender = '';
+        this.occupation = '';
+        this.selectGenres = [];
+    },
     methods: {
         ...mapActions(['registerMember', 'checkDuplicateEmail']),
         totalAgree() {
@@ -579,10 +587,11 @@ export default {
                     icon: 'warning',
                     button: false
                 });
+                this.idCheck = -1;
                 return false;
             }
             if (!this.checkDuplicateEmail(this.email).then((ret) => {
-                if (!ret) {
+                if (ret) {
                     swal({
                         title: 'Warning',
                         text: '이미 가입되어 있는 이메일 입니다.',
@@ -680,6 +689,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+@import '@/style/variables.scss';
+
 input {
   color: black;
 }
@@ -956,4 +968,5 @@ p {
     font-size: 12px;
     letter-spacing: -.5px;
 }
+
 </style>

@@ -109,6 +109,7 @@ import { createNamespacedHelpers } from 'vuex';
 const userMapState = createNamespacedHelpers('users').mapState;
 const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
 const movieMapActions = createNamespacedHelpers('movies').mapActions;
+const movieMutations = createNamespacedHelpers('movies').mapMutations;
 
 export default {
     filters: {
@@ -173,14 +174,17 @@ export default {
             this.$log.debug('MovieDetail.vue visible watcher', val);
             if (val) {
                 this.disableScroll();
+                this.setHeaderVisible(!val);
             } else {
                 this.enableScroll();
+                this.setHeaderVisible(!val);
             }
         }
     },
     methods: {
         ...ratingMapActions(['rateMovie']),
         ...movieMapActions(['getPrediction']),
+        ...movieMutations(['setHeaderVisible']),
         ratingMovie() {
             this.rateMovie(
                 {
