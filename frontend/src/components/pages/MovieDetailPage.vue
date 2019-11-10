@@ -92,19 +92,22 @@
                             >
                                 <span
                                     class="taste-word"
-                                    style="color: white;"
+                                    style="color: white; float: left;"
                                 >
                                     {{ ratingWord }}
                                 </span>
-                                <v-rating
-                                    id="ratingStar"
-                                    v-model="rating"
-                                    dense
-                                    color="white"
-                                    background-color="white"
-                                    half-increments
-                                    hover
-                                />
+                                
+                                <span @click="ratingMovie()">
+                                    <v-rating
+                                        id="ratingStar"
+                                        v-model="rating"
+                                        dense
+                                        color="yellow"
+                                        background-color="yellow"
+                                        half-increments
+                                        hover
+                                    />
+                                </span>
                             </v-col>
                         </v-row>
                     </v-col>
@@ -240,6 +243,8 @@ import { createNamespacedHelpers } from 'vuex';
 
 const { mapState, mapActions } = createNamespacedHelpers('movies');
 const userMapState = createNamespacedHelpers('users').mapState;
+const userMapActions = createNamespacedHelpers('users').mapActions;
+const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
 
 export default {
     name: 'MovieDetailPage',
@@ -424,6 +429,18 @@ export default {
     watch: {
         // eslint-disable-next-line
         id: function(val) {
+            if (this.user === null) {
+                this.getUserBySession(localStorage.getItem('token')).then(() => {
+                    this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                        this.rating = ret;
+                    });
+                });
+            }
+            else {
+                this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                    this.rating = ret;
+                });
+            }
             this.$log.debug('MovieDetailPage.vue watch id', val);
             if (val && this.getMovie && this.getMovie.id !== val) {
                 this.$log.debug('MovieDetailPage.vue watch id', val, this.getMovie);
@@ -446,9 +463,46 @@ export default {
                     });
                 });
             }
+        },
+        rating() {
+    
+            if (this.rating === 0.5) {
+                this.ratingWord = '최악이에요!';
+            } else if (this.rating === 1.0) {
+                this.ratingWord = '싫어요';
+            } else if (this.rating === 1.5) {
+                this.ratingWord = '재미없어요';
+            } else if (this.rating === 2.0) {
+                this.ratingWord = '별로에요';
+            } else if (this.rating === 2.5) {
+                this.ratingWord = '부족해요';
+            } else if (this.rating === 3.0) {
+                this.ratingWord = '보통이에요';
+            } else if (this.rating === 3.5) {
+                this.ratingWord = '볼만해요';
+            } else if (this.rating === 4.0) {
+                this.ratingWord = '재미있어요';
+            } else if (this.rating === 4.5) {
+                this.ratingWord = '훌륭해요';
+            }
         }
     },
     mounted() {
+        console.log(this.user.email);
+        console.log(this.id);
+        if (this.user === null) {
+            this.getUserBySession(localStorage.getItem('token')).then(() => {
+                this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                    this.rating = ret;
+                });
+            });
+        }
+        else {
+            this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                this.rating = ret;
+            });
+        }
+
         this.$nextTick(() => {
             window.addEventListener('resize', () => {
                 this.loadSliderWidth();
@@ -461,9 +515,6 @@ export default {
                             this.$forceUpdate();
                         }).then(() => {
                             this.loadSliderWidth();
-                        });
-                        this.getRatingForMovie(this.id).then((ret) => {
-                            this.rating = ret;
                         });
                     } else {
                         this.$forceUpdate();
@@ -480,6 +531,8 @@ export default {
     },
     methods: {
         ...mapActions(['getMovieById', 'getMovieFaculties', 'getPrediction', 'getRatingForMovie']),
+        ...userMapActions(['getUserBySession']),
+        ...ratingMapActions(['rateMovie', 'getEvaluatedRating']),
         back() {
             this.$router.go(-1);
         },
@@ -520,6 +573,18 @@ export default {
                 return obj.character;
             }
             return '';
+        },
+        ratingMovie() {
+            console.log(this.user.email);
+            this.rateMovie(
+                {
+                    email: this.user.email,
+                    movie_id: this.id,
+                    ratingValue: this.rating
+                }
+            ).then((ret) => {
+                this.ratingWord = ret;
+            });
         }
     }
 };
