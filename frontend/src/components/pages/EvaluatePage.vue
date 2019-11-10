@@ -22,7 +22,7 @@
                 style="width: 50%;"
             >
                 <v-progress-linear
-                    value="15"
+                    :value="ratingCount"
                     color="white"
                 />
             </v-col>
@@ -83,7 +83,7 @@ export default {
             ratingWord: '',
             moreWord: 'MORE',
             page: 1,
-            ratingCount: 0
+            ratingCount: -1
         };
     },
     computed: {
@@ -109,7 +109,7 @@ export default {
         },
         ratingCount() {
             if (this.ratingCount === 0) {
-                this.ratingWord = '지금까지 본 영화를 평가해주셔야 추천을 해드릴 수 있어요! :)';
+                this.ratingWord = '지금까지 본 영화를 평가해주시면 다양하게 추천해드릴 수 있어요! :)';
             } else if (this.ratingCount < 5) {
                 this.ratingWord = '평가만 하는 것도 나름 재미있지 않으세요?';
             } else if (this.ratingCount < 10) {
