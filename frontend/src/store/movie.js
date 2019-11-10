@@ -16,7 +16,8 @@ const state = {
         movie: {},
         faculties: []
     },
-    isLoaded: true
+    isLoaded: true,
+    headerVisible: true
 };
 
 const actions = {
@@ -199,7 +200,7 @@ const actions = {
             Vue.$log.debug('Vuex movie.js getRatingForMovie response', response);
             return response.data;
         });
-    },    
+    }
 };
 
 const mutations = {
@@ -239,6 +240,9 @@ const mutations = {
     },
     setCurrentPage(state, page) {
         state.searchResultMovies.currentPage = page;
+    },
+    setHeaderVisible(state, flag) {
+        state.headerVisible = flag;
     }
 };
 
