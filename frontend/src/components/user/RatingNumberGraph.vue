@@ -29,7 +29,7 @@ export default {
     },
     mounted() {
         if (this.user === null) {
-            this.getSession().then(() => {
+            this.getUserBySession(localStorage.getItem('token')).then(() => {
                 this.drawChart();
             });
         } else {
@@ -38,7 +38,7 @@ export default {
     },
     methods: {
         ...movieMapActions(['getRatingPref']),
-        ...userMapActions(['getSession']),
+        ...userMapActions(['getUserBySession']),
         drawChart() {
             // normal : '#FFDD63'
             // max : '#FFA136'

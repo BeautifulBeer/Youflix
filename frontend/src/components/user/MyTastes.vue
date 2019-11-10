@@ -63,7 +63,7 @@ export default {
     },
     mounted() {
         if (this.user === null) {
-            this.getSession();
+            this.getUserBySession(localStorage.getItem('token'));
         }
         this.rating = this.element.rating;
 
@@ -91,7 +91,7 @@ export default {
     },
     methods: {
         ...ratingMapActions(['rateMovie']),
-        ...userMapActions(['getSession']),
+        ...userMapActions(['getUserBySession']),
         urlMapping(value) {
             return `url(${value}) center / cover no-repeat`;
         },
