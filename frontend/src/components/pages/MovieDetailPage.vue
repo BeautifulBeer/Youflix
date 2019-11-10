@@ -11,23 +11,28 @@
             class="content-wrapper"
         >
             <v-col
-                cols="3"
+                cols="12"
+                sm="3"
             >
                 <v-img
                     :src="getPoster | posterPath"
                 />
             </v-col>
             <v-col
-                cols="8"
+                cols="12"
+                sm="8"
             >
                 <v-row
                     class="label-row"
                 >
                     <v-col
-                        cols="8"
+                        cols="12"
+                        sm="8"
                     >
                         <v-row>
-                            <v-col cols="12">
+                            <v-col
+                                cols="12"
+                            >
                                 <span
                                     class="detail-title title-family"
                                 >
@@ -44,13 +49,17 @@
                         </v-row>
                     </v-col>
                     <v-col
-                        cols="4"
+                        cols="12"
+                        sm="4"
                     >
                         <v-row
                             justify="end"
                             align="center"
                         >
-                            <v-col cols="10">
+                            <v-col
+                                sm="10"
+                                cols="12"
+                            >
                                 <div class="detail-rating">
                                     <AnimateWhenVisible name="fade">
                                         <div class="wrapper">
@@ -77,7 +86,10 @@
                             justify="end"
                             align="center"
                         >
-                            <v-col cols="10">
+                            <v-col
+                                cols="12"
+                                sm="10"
+                            >
                                 <span
                                     class="taste-word"
                                     style="color: white; float: left;"
@@ -163,11 +175,13 @@
             </v-col>
         </v-row>
         <v-row
+            v-show="!isMobile"
             justify="center"
             align="center"
         >
             <v-col
-                cols="10"
+                cols="12"
+                sm="10"
             >
                 <span
                     class="detail-title title-family"
@@ -177,6 +191,7 @@
             </v-col>
         </v-row>
         <v-row
+            v-show="!isMobile"
             :style="getCrewStyle"
             class="slider-container"
         >
@@ -219,20 +234,6 @@
                     </div>
                 </div>
             </div>
-        </v-row>
-        <v-row
-            justify="center"
-            align="center"
-        >
-            <v-col
-                cols="10"
-            >
-                <span
-                    class="detail-title title-family"
-                >
-                    Reviews
-                </span>
-            </v-col>
         </v-row>
     </v-container>
 </template>
@@ -346,7 +347,7 @@ export default {
             if (this.getMovie.poster_path) {
                 return this.getMovie.poster_path;
             }
-            return '/static/img/no_poster.jpg';
+            return '/static/img/no_poster.png';
         },
         isVideo() {
             return this.getMovie.video !== '';
@@ -414,6 +415,15 @@ export default {
             }
             result.slice(0, result.length - 2);
             return result.concat(' | ', time);
+        },
+        isMobile() {
+            const mobile = 600;
+            const { innerWidth } = window;
+            this.$log.debug('Window breakpoint isMobile()', innerWidth);
+            if (innerWidth < mobile) {
+                return true;
+            }
+            return false;
         }
     },
     watch: {
@@ -445,6 +455,12 @@ export default {
                     } else {
                         this.$forceUpdate();
                     }
+                    this.getPrediction([this.user.email, this.id]).then((score) => {
+                        if (score !== -1) {
+                            this.predictedScore = score;
+                        }
+                        this.$forceUpdate();
+                    });
                 });
             }
         },
@@ -491,24 +507,26 @@ export default {
             window.addEventListener('resize', () => {
                 this.loadSliderWidth();
             });
-            this.getMovieById(this.id).then((result) => {
-                this.$log.debug('MovieDetailPage.vue getMovieById response', this.user.email, this.id);
-                if (result) {
-                    this.getMovieFaculties(this.id).then(() => {
+            if (this.id && !Number.isNaN(this.id)) {
+                this.getMovieById(this.id).then((result) => {
+                    this.$log.debug('MovieDetailPage.vue getMovieById response', this.user.email, this.id);
+                    if (result) {
+                        this.getMovieFaculties(this.id).then(() => {
+                            this.$forceUpdate();
+                        }).then(() => {
+                            this.loadSliderWidth();
+                        });
+                    } else {
                         this.$forceUpdate();
-                    }).then(() => {
-                        this.loadSliderWidth();
-                    });
-                } else {
-                    this.$forceUpdate();
-                }
-                this.getPrediction([this.user.email, this.id]).then((score) => {
-                    if (score !== -1) {
-                        this.predictedScore = score;
                     }
-                    this.$forceUpdate();
+                    this.getPrediction([this.user.email, this.id]).then((score) => {
+                        if (score !== -1) {
+                            this.predictedScore = score;
+                        }
+                        this.$forceUpdate();
+                    });
                 });
-            });
+            }
         });
     },
     methods: {
@@ -519,7 +537,7 @@ export default {
             this.$router.go(-1);
         },
         loadSliderWidth() {
-            const { innerWidth } = window;
+            const { innerWidth } = screen.width;
             this.$log.debug('MovieDetailPage.vue loadSliderWidth innerWidth', innerWidth);
             this.showCount = Math.ceil(innerWidth / (this.sliderWidth + 15), 10);
             this.currentPage = 0;

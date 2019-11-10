@@ -322,7 +322,10 @@ blockASafterClick - boolean. If user clicked any sliding control, autosliding wo
 </script>
 
 
-<style scoped>
+<style lang="scss" scoped>
+
+@import '@/style/variables.scss';
+
 .fnc {
   /* you can add color names and their values here
   and then simply add classes like .m--blend-$colorName to .fnc-slide
@@ -900,6 +903,26 @@ body {
   transition-timing-function: ease;
   -webkit-transform: rotate(-45deg) scaleX(0) translateZ(0);
           transform: rotate(-45deg) scaleX(0) translateZ(0);
+}
+
+@media (max-width: map-get($breakpoints, mobile)) {
+  .fnc-slider {
+    height: 50vh;
+    width: 100vw;
+    object-fit: contain;
+  }
+
+  .fnc-nav__control {
+    width: 25%;
+    height: 50px;
+  }
+  .fnc-slide__heading-line{
+    font-size: 1.5em;
+  }
+
+  .fnc-slide__mask{
+    display: none;
+  }
 }
 
 </style>

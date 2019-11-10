@@ -1,19 +1,186 @@
 <template>
-    <div>
-        <nav id="header">
-            <v-row class="wrapper">
-                <v-col
-                    cols="1"
-                    class="wrapper"
-                >
-                    <v-row
-                        justify="start"
-                        style="height: 100%;"
+    <div v-show="headerVisible">
+        <div v-show="!isMobile">
+            <div class="header-space" />
+            <nav id="header">
+                <v-row class="wrapper">
+                    <v-col
+                        cols="1"
+                        class="wrapper menu-stretch"
                     >
-                        <v-col
-                            cols="12"
+                        <v-row
+                            justify="center"
+                            style="height: 100%;"
+                        >
+                            <div>
+                                <v-btn
+                                    text
+                                    :to="getlogoutflag ? '/home' : '/'"
+                                    class="btn-link"
+                                    style="height: 100%;"
+                                >
+                                    <span
+                                        style="line-height: 10vh"
+                                        class="log-font"
+                                    >
+                                        YOUFLIX
+                                    </span>
+                                </v-btn>
+                            </div>
+                        </v-row>
+                    </v-col>
+                    <v-col
+                        v-show="getlogoutflag"
+                        cols="3"
+                    >
+                        <v-row
+                            class="genre-btn-row title-family"
+                            justify="start"
+                            align="center"
+                        >
+                            <v-btn
+                                text
+                                color="transparent"
+                                class="genre-btn"
+                            >
+                                <span
+                                    class="label"
+                                >
+                                    Search
+                                </span>
+                                <div
+                                    class="overlay"
+                                >
+                                    <div class="category-wrapper title-family">
+                                        <div
+                                            v-for="(value, key) in category"
+                                            :key="'categoryWrapper' + key"
+                                            class="category"
+                                            @click="setSearchConditionCategory(key)"
+                                        >
+                                            {{ key }}
+                                        </div>
+                                    </div>
+                                    <div class="genres-wrapper content-family">
+                                        <div
+                                            v-for="(categoryRow, index) in get2DCategory[getSelectedCategory]"
+                                            :key="'HeaderGenreCategory' + index"
+                                            class="genre-row"
+                                        >
+                                            <div
+                                                v-for="category in categoryRow"
+                                                :key="'HeaderGenre' + category"
+                                                class="genre"
+                                                @click="movieCategorySearch(category)"
+                                            >
+                                                {{ category }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </v-btn>
+                            <v-btn
+                                text
+                                color="transparent"
+                                class="genre-btn"
+                                to="/evaluate"
+                            >
+                                <span
+                                    class="label"
+                                >
+                                    RATING
+                                </span>
+                            </v-btn>
+                        </v-row>
+                    </v-col>
+                    <v-col
+                        v-show="getlogoutflag"
+                        cols="8"
+                        class="wrapper"
+                    >
+                        <v-row
+                            align="center"
+                            justify="end"
                             class="wrapper"
                         >
+                            <v-col
+                                cols="4"
+                            >
+                                <div class="search">
+                                    <div
+                                        id="header-search-effect"
+                                        class="search-effect"
+                                    />
+                                    <input
+                                        id="header-search-input"
+                                        v-model="keyword"
+                                        type="search"
+                                        class="search-box content-family"
+                                        placeholder="영화명"
+                                    >
+                                    <span
+                                        id="search-btn"
+                                        class="search-button"
+                                        @click="searchKeyword()"
+                                    >
+                                        <span
+                                            id="header-search-icon"
+                                            class="search-icon"
+                                        />
+                                    </span>
+                                </div>
+                            </v-col>
+                            <v-col
+                                cols="1"
+                            >
+                                <div class="dropdown">
+                                    <v-btn
+                                        text
+                                    >
+                                        <span class="menu-font">
+                                            {{ getUserName }}
+                                            <i class="fa fa-angle-down" />
+                                        </span>
+                                    </v-btn>
+                                    <div class="dropdown-content">
+                                        <router-link to="/myflix">
+                                            myflix
+                                        </router-link>
+                                        <router-link
+                                            to="/setting"
+                                        >
+                                            setting
+                                        </router-link>
+                                        <router-link
+                                            to="/"
+                                        >
+                                            likes
+                                        </router-link>
+                                        <router-link
+                                            to="/adminPage"
+                                        >
+                                            admin
+                                        </router-link>
+                                        <router-link
+                                            to="/"
+                                        >
+                                            <span @click="logoutState()">
+                                                logout
+                                            </span>
+                                        </router-link>
+                                    </div>
+                                </div>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-row>
+            </nav>
+        </div>
+        <div v-show="isMobile">
+            <div id="mobile-header">
+                <v-row>
+                    <v-col cols="12">
+                        <v-row justify="center">
                             <v-btn
                                 text
                                 :to="getlogoutflag ? '/home' : '/'"
@@ -27,151 +194,11 @@
                                     YOUFLIX
                                 </span>
                             </v-btn>
-                        </v-col>
-                    </v-row>
-                </v-col>
-                <v-col
-                    v-show="getlogoutflag"
-                    cols="3"
-                >
-                    <v-row
-                        class="genre-btn-row title-family"
-                        justify="start"
-                        align="center"
-                    >
-                        <v-btn
-                            text
-                            color="transparent"
-                            class="genre-btn"
-                        >
-                            <span
-                                class="label"
-                            >
-                                Search
-                            </span>
-                            <div
-                                class="overlay"
-                            >
-                                <div class="category-wrapper title-family">
-                                    <div
-                                        v-for="(value, key) in category"
-                                        :key="'categoryWrapper' + key"
-                                        class="category"
-                                        @click="setSearchConditionCategory(key)"
-                                    >
-                                        {{ key }}
-                                    </div>
-                                </div>
-                                <div class="genres-wrapper content-family">
-                                    <div
-                                        v-for="(categoryRow, index) in get2DCategory[getSelectedCategory]"
-                                        :key="'HeaderGenreCategory' + index"
-                                        class="genre-row"
-                                    >
-                                        <div
-                                            v-for="category in categoryRow"
-                                            :key="'HeaderGenre' + category"
-                                            class="genre"
-                                            @click="movieCategorySearch(category)"
-                                        >
-                                            {{ category }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </v-btn>
-                        <v-btn
-                            text
-                            color="transparent"
-                            class="genre-btn"
-                            to="/evaluate"
-                        >
-                            <span
-                                class="label"
-                            >
-                                RATING
-                            </span>
-                        </v-btn>
-                    </v-row>
-                </v-col>
-                <v-col
-                    v-show="getlogoutflag"
-                    cols="8"
-                    class="wrapper"
-                >
-                    <v-row
-                        align="center"
-                        justify="end"
-                        class="wrapper"
-                    >
-                        <v-col cols="4">
-                            <div class="search">
-                                <div
-                                    id="header-search-effect"
-                                    class="search-effect"
-                                />
-                                <input
-                                    id="header-search-input"
-                                    v-model="keyword"
-                                    type="search"
-                                    class="search-box content-family"
-                                    placeholder="영화명"
-                                >
-                                <span
-                                    id="search-btn"
-                                    class="search-button"
-                                    @click="searchKeyword()"
-                                >
-                                    <span
-                                        id="header-search-icon"
-                                        class="search-icon"
-                                    />
-                                </span>
-                            </div>
-                        </v-col>
-                        <v-col cols="1">
-                            <div class="dropdown">
-                                <v-btn
-                                    text
-                                >
-                                    <span class="menu-font">
-                                        {{ getUserName }}
-                                        <i class="fa fa-angle-down" />
-                                    </span>
-                                </v-btn>
-                                <div class="dropdown-content">
-                                    <router-link to="/myflix">
-                                        myflix
-                                    </router-link>
-                                    <router-link
-                                        to="/setting"
-                                    >
-                                        setting
-                                    </router-link>
-                                    <router-link
-                                        to="/"
-                                    >
-                                        likes
-                                    </router-link>
-                                    <router-link
-                                        to="/adminPage"
-                                    >
-                                        admin
-                                    </router-link>
-                                    <router-link
-                                        to="/"
-                                    >
-                                        <span @click="logoutState()">
-                                            logout
-                                        </span>
-                                    </router-link>
-                                </div>
-                            </div>
-                        </v-col>
-                    </v-row>
-                </v-col>
-            </v-row>
-        </nav>
+                        </v-row>
+                    </v-col>
+                </v-row>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -197,7 +224,7 @@ export default {
     },
     computed: {
         ...mapState(['token', 'user']),
-        ...movieMapState(['searchResultMovies']),
+        ...movieMapState(['searchResultMovies', 'headerVisible']),
         ...infoMapState(['category']),
         getlogoutflag() {
             return (this.token !== null && this.token !== undefined);
@@ -228,6 +255,15 @@ export default {
                 }
             }
             return result;
+        },
+        isMobile() {
+            const mobile = 600;
+            const { innerWidth } = window;
+            this.$log.debug('Window breakpoint isMobile()', innerWidth);
+            if (innerWidth < mobile) {
+                return true;
+            }
+            return false;
         }
     },
     mounted() {
@@ -376,6 +412,7 @@ export default {
 <style lang="scss" scoped>
 
 @import '@/style/font.scss';
+@import '@/style/variables.scss';
 
 $search-bg-color: transparent;
 $icon-color: #e50914;
@@ -410,6 +447,7 @@ $blue: #F03861;
         margin: auto 0;
         height: 100%;
     }
+
     .menu-font{
         font-size: 1.2em;
         color: white;
@@ -668,7 +706,7 @@ $blue: #F03861;
                 .genre{
                     font-size: 1em;
                     margin: 0 15px 5px 0;
-                    display: inline-block;
+                        display: inline-block;
                     width: 33%;
 
                     &:hover{
@@ -682,6 +720,37 @@ $blue: #F03861;
        .overlay{
            display: flex;
        }
+    }
+}
+
+#mobile-header {
+    .menu-font{
+        font-size: 1.2em;
+        color: white;
+        text-transform: uppercase;
+    }
+    .log-font{
+        font-size: 2.5em;
+        color: #e50914;
+        font-weight: bold;
+        letter-spacing: -1px;
+        text-shadow: 1px 1px 1px black;
+    }
+}
+
+// #mobile-header{
+
+// }
+
+
+@media (max-width: map-get($breakpoints, mobile) ) {
+    .header-space{
+         height: 10vh;
+    }
+    #header {
+        .menu-stretch {
+            width: 100vw;
+        }
     }
 }
 
