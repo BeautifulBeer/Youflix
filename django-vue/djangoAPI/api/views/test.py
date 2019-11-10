@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
-from api.models import Movie, Rating, User, Crew, UserCluster
+from api.models import Movie, Rating, User, Crew, Cast, UserCluster
 from api.algorithms.kmeansClustering import U_Cluster
 # from django.contrib.auth.models import User
 from api.serializers import MovieSerializer,MovieAgeSerializer,MovieGenderSerializer
@@ -59,8 +59,11 @@ def content_based(request):
     """
     if request.method == 'GET':
 
+        print("Content Based Algorithm...")
+
         email = request.GET.get('email', None)
         page = request.GET.get('page', 1)
+        feature = request.GET.get('feature', None)
 
         if email is None:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
@@ -80,7 +83,14 @@ def content_based(request):
         else:
 
             # Read preprocessing data
-            df_keys = pd.read_csv('df_keys.csv')
+            if feature == 'Director':
+                df_keys = pd.read_csv('df_keys_crew.csv')
+            elif feature == 'Actor':
+                df_keys = pd.read_csv('df_keys_cast.csv')
+            elif feature == 'Director/Actor':
+                df_keys = pd.read_csv('df_keys_crew_cast.csv')
+            else:
+                df_keys = pd.read_csv('df_keys.csv')
 
             print("page ", page)
 
@@ -88,9 +98,10 @@ def content_based(request):
             # scikit-learn의 TF-IDF Vectorizer 사용하여 키워드를 토큰화하여 행렬을 분석하여 각 단어의 빈도를 분석합니다.
             tfidf_vectorizer = TfidfVectorizer()
             tf_mx = tfidf_vectorizer.fit_transform(df_keys['keywords'])
+            features_len = len(tfidf_vectorizer.get_feature_names())
 
             # 영화에 대한 유사도 값을 저장할 배열입니다.
-            selected_movies = [[0 for i in range(88317)]]
+            selected_movies = [[0 for i in range(features_len)]]
 
             # 평가한 영화를 제외하기 위한 Set 입니다.
             seen_movie_set = set()
@@ -151,10 +162,13 @@ def preprocessing_for_cb(request):
     movies_frame = movies_frame.drop('video', axis=1)
     movies_frame = movies_frame.drop('vote_average', axis=1)
     movies_frame = movies_frame.drop('vote_count', axis=1)
+    movies_frame = movies_frame.drop('release_date', axis=1)
 
     # 각 영화에 대한 Keyword와 Genre를 추출합니다.
     keywords = []
     genres = []
+    crews_list = []
+    casts_list = []
 
     # DataFrame을 하나씩 참조하며 해당 영화에 맞는 Keyword와 Genre들을 저장합니다.
     # 없을 경우 ''을 삽입 합니다.
@@ -162,6 +176,33 @@ def preprocessing_for_cb(request):
 
         # id를 통해 movie 객체를 가져와서 필요한 정보를 추출합니다.
         movie = Movie.objects.get(id=element[0])
+        
+        # 감독과 배우 정보를 가져옵니다.
+        crews = Crew.objects.filter(movie=movie)
+        casts = Cast.objects.filter(movie=movie)
+
+        if len(crews) == 0:
+            crews_list.append('')
+        else:
+            temp = []
+            for crew in crews:
+                if crew.job == 'Director':
+                    temp.append(crew.name)
+                    break
+            if len(temp) == 0:
+                crews_list.append('')
+            else:
+                crews_list.append(temp)
+
+        if len(casts) == 0:
+            casts_list.append('')
+        else:
+            temp = []
+            for cast in casts:
+                temp.append(cast.name)
+                if len(temp) == 3:
+                    break
+            casts_list.append(temp)
         
         if len(movie.keywords.all()) is not 0:
 
@@ -187,12 +228,18 @@ def preprocessing_for_cb(request):
     # pd.set_option('display.max_columns', 30)
 
     # 데이터 전처리 및 생성
+    movies_frame['crews'] = ''
+    movies_frame['casts'] = ''
     # 1. overview가 없는 영화에 대해서 ''로 모두 할당 해줍니다.
     movies_frame['overview'] = movies_frame['overview'].fillna('')
     # 2. Genre 데이터를 삽입합니다.
-    movies_frame = movies_frame.assign(genres = genres)
+    movies_frame = movies_frame.assign(genres=genres)
     # 3. Keyword 데이터를 삽입합니다.
-    movies_frame = movies_frame.assign(keywords = keywords)
+    movies_frame = movies_frame.assign(keywords=keywords)
+    # 4. Crew 데이터를 삽입합니다.
+    movies_frame = movies_frame.assign(crews=crews_list)
+    # 5. Cast 데이터를 삽입합니다.
+    movies_frame = movies_frame.assign(casts=casts_list)
 
     # genres, keywords 데이터에 대해서 공백(' ')을 없애줍니다.
     movies_frame['genres'] = movies_frame['genres'].apply(preprocessing_genres)
@@ -201,6 +248,7 @@ def preprocessing_for_cb(request):
     # Rake(Rapid Automatic Keyword Extraction)을 이용해서 줄거리에 대한 keyword을 추출합니다.
     movies_frame['overview'] = movies_frame['overview'].apply(preprocessing_overview)
 
+
     # 앞에서 만든 데이터를 통하여 새로운 DataFrame을 생성합니다.
     df_keys = pd.DataFrame()
     df_keys['title'] = movies_frame['title']
@@ -208,31 +256,53 @@ def preprocessing_for_cb(request):
     df_keys['id'] = movies_frame['id']
 
     # 만들어진 단어들을 하나의 단어 모음으로 만듭니다.
-    df_keys['keywords'] = movies_frame.apply(bag_words, axis = 1)
+    df_keys['keywords'] = movies_frame.apply(bag_words, axis=1)
 
     # 지금까지의 결과를 .csv 파일로 저장합니다.
-    df_keys.to_csv('df_keys.csv', mode='w')
+    df_keys.to_csv('df_keys_crew_cast.csv', mode='w')
 
-    # test 출력
-    # print(df_keys.head())
+    # ============================== WARNING ==================================
+    # 여기서 부터 아래의 코드를 실행하고 싶을 경우,
+    # df_keys_*.csv 파일들 중 하나를 Pandas의 DataFrame으로 가져와야 합니다.
+    # =========================================================================
 
     # scikit-learn의 CountVectorizer를 사용하여 키워드를 토큰화하여 행렬을 조사하여 각 단어의 빈도를 분석합니다.
-    cv = CountVectorizer()
-    cv_mx = cv.fit_transform(df_keys['keywords'])
+    tfidf_vectorizer = TfidfVectorizer()
+    tf_mx = tfidf_vectorizer.fit_transform(df_keys['keywords'])
+
+    selected_movies = df_keys.loc[df_keys['id'] == 862]
+    idx = str(selectedMovie['Unnamed: 0']).split(' ')
+    idx = int(idx[0])
 
     # Cosine Similarity 알고리즘을 사용하여 유사도를 분석합니다.
-    cosine_sim = cosine_similarity(cv_mx, cv_mx)
-    # pd.DataFrame(cosine_sim).to_csv('consine_sim.csv', mode='w')
-    # test 출력
-    # print(cosine_sim)
+    cosine_sim = cosine_similarity(tf_mx[idx: idx+1], tf_mx)
 
     # 일치하는 index list를 생성합니다.
-    indices = pd.Series(df_keys.index, index = df_keys['id'])
+    indices = pd.Series(df_keys.index, index=df_keys['id'])
 
     # id 597에 대한 상위 10개의 추천 영화를 추출합니다.
-    # print(recommend_movie(df_keys, indices, 597, cosine_sim, 10))
+    # print(recommend_movie(df_keys, indices, cosine_sim, 10))
+    print(test_recommend_movie(df_keys, 862, indices, 10, cosine_sim))
     return Response(status=status.HTTP_200_OK)
 
+# def test_recommend_movie(df_keys, movie_id, indices, n, cosine_sim):
+#     movies = []
+    
+#     # retrieve matching movie title index
+#     if movie_id not in indices.index:
+#         print("Movie not in database.")
+#         return
+#     else:
+#         idx = indices[movie_id]
+    
+#     # cosine similarity scores of movies in descending order
+#     scores = pd.Series(cosine_sim[idx]).sort_values(ascending = False)
+    
+#     # top n most similar movies indexes
+#     # use 1:n because 0 is the same movie entered
+#     top_n_idx = list(scores.iloc[1:n].index)
+        
+#     return df_keys['title'].iloc[top_n_idx]
 
 def recommend_movie(df_keys, indices, cosine_sim, n):
 
@@ -286,4 +356,4 @@ def preprocessing_overview(data):
 
 
 def bag_words(x):
-    return (' '.join(x['genres']) + ' ' + ' '.join(x['keywords']) + ' ' + ' '.join(x['title']) + ' ' + ' '.join(x['overview']))
+    return (' '.join(x['genres']) + ' ' + ' '.join(x['keywords']) + ' ' + ' '.join(x['title']) + ' ' + ' '.join(x['overview']) + ' ' + ' '.join(x['crews']) + ' ' + ' '.join(x['casts']))

@@ -3,6 +3,7 @@
         <LatestMovies />
         <RecommendMovies :setLoaded="setRecommendLoaded" />
         <GenreMovies :setLoaded="setGenresLoaded" />
+        <TasteMovies :setLoaded="setGenresLoaded" />
     </div>
 </template>
 
@@ -13,6 +14,7 @@ import { createNamespacedHelpers } from 'vuex';
 import LatestMovies from '@/components/movie/LatestMovies.vue';
 import RecommendMovies from '@/components/movie/RecommendMovies.vue';
 import GenreMovies from '@/components/movie/GenreMovies.vue';
+import TasteMovies from '@/components/movie/TasteMovies.vue';
 
 const { mapMutations } = createNamespacedHelpers('movies');
 
@@ -21,7 +23,8 @@ export default {
     components: {
         LatestMovies,
         RecommendMovies,
-        GenreMovies
+        GenreMovies,
+        TasteMovies
     },
     data() {
         return {

@@ -273,3 +273,4 @@ def get_rating_movie(requset):
                 rating_value = user_rating.rating
                 break
         return JsonResponse({'status': status.HTTP_200_OK, 'data': json.dumps(rating_value)}, safe=False)
+
