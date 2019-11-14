@@ -225,3 +225,5 @@ WEBPACK_LOADER = {
         'STATS_FILE': os.path.join(FRONTEND_DIR, 'webpack-stats.json'),
     }
 }
+
+SESSION_COOKIE_DOMAIN = 'youflix.twilightparadox.com'
