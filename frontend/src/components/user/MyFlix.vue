@@ -1,4 +1,4 @@
-<template>
+h<template>
     <v-container
         class="container-settting"
         fluid
@@ -114,7 +114,7 @@ export default {
     },
     mounted() {
         if (this.user === null) {
-            this.getSession().then(() => {
+            this.getUserBySession(localStorage.getItem('token')).then(() => {
                 this.username = this.user.username;
                 this.getRatings(this.user.email).then((ret) => {
                     this.setRatingList(ret);
@@ -128,7 +128,7 @@ export default {
         }
     },
     methods: {
-        ...userMapActions(['getUserBySession', 'getSession']),
+        ...userMapActions(['getUserBySession']),
         ...ratingMapActions(['getRatings']),
         setRatingList(list) {
             this.ratingList = [];

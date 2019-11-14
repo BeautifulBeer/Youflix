@@ -82,6 +82,7 @@ export default {
 #appContainer{
     position: relative;
     background-color: $background-color;
+    // overflow-x: hidden;
 }
 
 </style>

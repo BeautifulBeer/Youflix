@@ -15,7 +15,7 @@ Movielens와 IMDB 데이터를 활용하여 개인 맞춤형 영화 추천을 �
 프로젝트의 환경과 기존 로컬 환경을 분리하기 위한 가상환경을 생성합니다. 
 
 ```bash
-# Path > bigdata-sub3
+# Path > youflix
 # 위의 위치에서 아래의 명령어를 실행 해주시면 됩니다.
     pip3 install -r requirements.txt
    
@@ -33,7 +33,7 @@ Movielens와 IMDB 데이터를 활용하여 개인 맞춤형 영화 추천을 �
 생성한 가상환경을 활성화합니다. 해당 가상환경은, 서버를 실행하기 전에 반드시 활성화해야 합니다.
 
 ```bash
-# Path > bigdata-sub3/django-vue
+# Path > youflix/django-vue
     # on Windows
         call scripts/activate
     # on Linux
@@ -49,10 +49,10 @@ Movielens와 IMDB 데이터를 활용하여 개인 맞춤형 영화 추천을 �
 
 ```bash
 # Virtual environment를 활성화한 상태여야 합니다.
-# Path > bigdata-sub3/django-vue/djangoAPI
+# Path > youflix/django-vue/djangoAPI
     pip3 install -r requirements.txt
 
-# Path > bigdata-sub3/frontend
+# Path > youflix/frontend
     npm install
     npm install -g eslint --save
 ```
@@ -79,11 +79,11 @@ Movielens와 IMDB 데이터를 활용하여 개인 맞춤형 영화 추천을 �
 # 총 2개의 cmd가 필요합니다
 # cmd 1
 # Virtual environment를 활성화한 상태여야 합니다.
-# Path > bigdata-sub3/django-vue/djangoAPI
-   py manage.py runserver
+# Path > youflix/django-vue/djangoAPI
+   py manage.py runserver -settings=djangoAPI.settings.development
    
 # cmd 2
-# Path > bigdata-sub3/frontend
+# Path > youflix/frontend
    cd django-vue/djangoAPI/frontend
    npm run serve
 ```
@@ -94,14 +94,14 @@ Movielens와 IMDB 데이터를 활용하여 개인 맞춤형 영화 추천을 �
 
 ```bash
 # cmd 1
-# Path > bigdata-sub3/frontend
+# Path > youflix/frontend
    cd django-vue/djangoAPI/frontend
    npm run build
    
 # cmd 2
 # Virtual environment를 활성화한 상태여야 합니다.
-# Path > bigdata-sub3/django-vue/djangoAPI
-   py manage.py runserver
+# Path > youflix/django-vue/djangoAPI
+   py manage.py runserver -settings=djangoAPI.settings.production
 ```
 
 

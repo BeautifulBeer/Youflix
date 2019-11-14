@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import $ from 'jquery';
 import { createNamespacedHelpers } from 'vuex';
 
 const { mapState } = createNamespacedHelpers('movies');
@@ -40,13 +41,15 @@ export default {
                 setTimeout(() => {
                     this.enableScroll();
                 }, 500);
+            } else {
+                this.disableScroll();
             }
-            this.disableScroll();
         }
     },
     methods: {
         disableScroll() {
-            window.scrollTo(0, 0);
+            // const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            // const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
             window.onscroll = () => {
                 window.scrollTo(0, 0);
             };

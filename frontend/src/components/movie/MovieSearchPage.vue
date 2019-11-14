@@ -41,6 +41,7 @@
                 v-if="maxPages > 1"
                 v-model="page"
                 :length="maxPages"
+                dark
             />
         </v-row>
     </v-container>
@@ -107,6 +108,9 @@ export default {
                 return result;
             }
             return '조건 없이 검색한 결과입니다';
+        },
+        isReachMax() {
+            return this.page >= this.maxPages;
         }
     },
     watch: {
@@ -118,6 +122,15 @@ export default {
             }).then(() => {
                 this.setIsLoaded(true);
             });
+        },
+        // eslint-disable-next-line
+        isReachMax: function(val) {
+            this.$log.debug('MovieSearchPage.vue isReachMax watcher', val);
+            if (val) {
+                this.getMoreMovieByConditions().then(() => {
+                    this.$forceUpdate();
+                });
+            }
         }
     },
     mounted() {
@@ -132,7 +145,7 @@ export default {
         });
     },
     methods: {
-        ...mapActions(['getMovieByConditions']),
+        ...mapActions(['getMovieByConditions', 'getMoreMovieByConditions']),
         ...mapMutations(['setIsLoaded']),
         responsiveSlider() {
             const { innerWidth } = window;
