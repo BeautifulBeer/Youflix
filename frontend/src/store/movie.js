@@ -18,6 +18,7 @@ const state = {
         faculties: []
     },
     isLoaded: true,
+    rateAdditionalMovies: false,
     headerVisible: true
 };
 
@@ -271,6 +272,9 @@ const mutations = {
     },
     setHeaderVisible(state, flag) {
         state.headerVisible = flag;
+    },
+    setRateAdditionalMovies(state, flag) {
+        state.rateAdditionalMovies = flag;
     }
 };
 

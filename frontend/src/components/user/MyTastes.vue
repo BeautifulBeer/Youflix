@@ -47,6 +47,7 @@ import { createNamespacedHelpers } from 'vuex';
 const userMapState = createNamespacedHelpers('users').mapState;
 const userMapActions = createNamespacedHelpers('users').mapActions;
 const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
+const movieMapMutations = createNamespacedHelpers('movies').mapMutations;
 
 export default {
     props: {
@@ -92,6 +93,7 @@ export default {
     methods: {
         ...ratingMapActions(['rateMovie']),
         ...userMapActions(['getUserBySession']),
+        ...movieMapMutations(['setRateAdditionalMovies']),
         urlMapping(value) {
             return `url(${value}) center / cover no-repeat`;
         },
@@ -104,6 +106,8 @@ export default {
                 }
             ).then((ret) => {
                 this.ratingWord = ret;
+            }).then(() => {
+                this.setRateAdditionalMovies(true);
             });
         }
     }

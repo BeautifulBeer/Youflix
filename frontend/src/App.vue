@@ -6,9 +6,7 @@
         >
             <v-content>
                 <Header />
-                <keep-alive>
-                    <router-view />
-                </keep-alive>
+                <router-view />
                 <template v-if="getlogoutflag">
                     <Footer />
                 </template>
