@@ -53,7 +53,7 @@ from numba.typed import Dict
 
 
 @api_view(['GET'])
-def content_based(request):
+def algorithm(request):
     """
         Content-Based Algorithm
     """
@@ -287,21 +287,17 @@ def preprocessing_for_cb(request):
 
 # def test_recommend_movie(df_keys, movie_id, indices, n, cosine_sim):
 #     movies = []
-    
 #     # retrieve matching movie title index
 #     if movie_id not in indices.index:
 #         print("Movie not in database.")
 #         return
 #     else:
 #         idx = indices[movie_id]
-    
 #     # cosine similarity scores of movies in descending order
 #     scores = pd.Series(cosine_sim[idx]).sort_values(ascending = False)
-    
 #     # top n most similar movies indexes
 #     # use 1:n because 0 is the same movie entered
-#     top_n_idx = list(scores.iloc[1:n].index)
-        
+#     top_n_idx = list(scores.iloc[1:n].index)      
 #     return df_keys['title'].iloc[top_n_idx]
 
 def recommend_movie(df_keys, indices, cosine_sim, n):

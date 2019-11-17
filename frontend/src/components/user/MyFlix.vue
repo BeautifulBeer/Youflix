@@ -95,6 +95,7 @@ import MyTastes from './MyTastes.vue';
 const userMapState = createNamespacedHelpers('users').mapState;
 const userMapActions = createNamespacedHelpers('users').mapActions;
 const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
+const movieMapMutation = createNamespacedHelpers('movies').mapMutations;
 
 export default {
     name: 'MyFlix',
@@ -115,10 +116,22 @@ export default {
     mounted() {
         if (this.user === null) {
             this.getUserBySession(localStorage.getItem('token')).then(() => {
-                this.username = this.user.username;
-                this.getRatings(this.user.email).then((ret) => {
-                    this.setRatingList(ret);
-                });
+                if (this.user == null) {
+                    swal({
+                        title: 'Session Timeout',
+                        text: 'Session이 만료되었습니다. Login Page로 돌아갑니다.',
+                        icon: 'error',
+                        button: false
+                    }).then(() => {
+                        this.$router.push('/login');
+                        this.setIsLoaded(true);
+                    });
+                } else {
+                    this.username = this.user.username;
+                    this.getRatings(this.user.email).then((ret) => {
+                        this.setRatingList(ret);
+                    });
+                }
             });
         } else {
             this.getRatings(this.user.email).then((ret) => {
@@ -130,6 +143,7 @@ export default {
     methods: {
         ...userMapActions(['getUserBySession']),
         ...ratingMapActions(['getRatings']),
+        ...movieMapMutation(['setIsLoaded']),
         setRatingList(list) {
             this.ratingList = [];
             list.forEach((element) => {

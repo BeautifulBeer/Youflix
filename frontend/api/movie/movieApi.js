@@ -9,16 +9,15 @@ export default {
                 email
             }
         });
-        
     },
-    getAllMovies(params){
+    getAllMovies(params) {
         return axios.get(`${apiUrl}/movies/`, {
-            params,
-        })
+            params
+        });
     },
-    modifyMovie(data){
+    modifyMovie(data) {
         return axios.post(`${apiUrl}/movies/modify/`, {
-            data,
-        })
+            data
+        });
     }
 };
