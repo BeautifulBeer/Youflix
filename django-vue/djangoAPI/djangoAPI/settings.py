@@ -14,6 +14,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(BASE_DIR)
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'frontend')
 
@@ -127,6 +128,8 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
+
 # logging
 LOGGING = {
     'version': 1,
@@ -200,12 +203,14 @@ LOGGING = {
 AUTH_USER_MODEL = 'api.User'
 
 
+#DEBUG = False
 DEBUG = True
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+WSGI_APPLICATION = 'djangoAPI.wsgi.application'
 
-WSGI_APPLICATION = 'djangoAPI.wsgi.development.application'
+ALLOWED_HOSTS = ['*', '13.125.172.87', 'youflix.twilightparadox.com']
 
 DATABASES = {
     'default': {
@@ -221,3 +226,5 @@ WEBPACK_LOADER = {
         'STATS_FILE': os.path.join(FRONTEND_DIR, 'webpack-stats.json'),
     }
 }
+
+SESSION_COOKIE_DOMAIN = 'youflix.twilightparadox.com'

@@ -316,6 +316,7 @@ def session_member(request):
             if not token:
                 raise ValueError('No Token Parameter')
             # Request Session이 존재하지 않을 시에, logout 하고 재 로그인을 요청
+            print(token)
             user = None
             if not request.session.get(str(token)):
                 auth_user = Token.objects.get(key=token)

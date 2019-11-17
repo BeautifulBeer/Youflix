@@ -1,7 +1,7 @@
 const BundleTracker = require('webpack-bundle-tracker');
 
 module.exports = {
-    publicPath: process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8080/' : 'http://127.0.0.1:8000/static/dist',
+	publicPath: process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:8080/' : '/static/dist',
     outputDir: '../django-vue/djangoAPI/static/dist',
     chainWebpack: (config) => {
         config.optimization

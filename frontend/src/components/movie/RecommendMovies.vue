@@ -152,7 +152,7 @@ export default {
     },
     computed: {
         ...mapState(['user']),
-        ...movieMapState(['personalMovies']),
+        ...movieMapState(['personalMovies', 'rateAdditionalMovies']),
         currentMovies() {
             const start = this.currentIndex;
             const end = this.currentIndex + this.showCount;
@@ -181,6 +181,9 @@ export default {
             return {
                 left: (this.innerWidth - 40)
             };
+        },
+        getRateAdditionalMovies() {
+            return this.rateAdditionalMovies;
         }
     },
     watch: {
@@ -190,6 +193,16 @@ export default {
                 this.$log.debug('RecommendMovies.vue getUserPK watch', user);
                 this.setLoaded(false);
                 this.getMoviesByPersonal(user.id).then(() => {
+                    this.$log.debug('RecommendMovies.vue getUserPK watch response');
+                    this.setLoaded(true);
+                });
+            }
+        },
+        // eslint-disable-next-line
+        getRateAdditionalMovies: function (val) {
+            if (val) {
+                this.setLoaded(false);
+                this.getMoviesByPersonal(this.user.id).then(() => {
                     this.$log.debug('RecommendMovies.vue getUserPK watch response');
                     this.setLoaded(true);
                 });
