@@ -16,7 +16,10 @@
 
 /**/migrations/0001_initial.py
 
+
 /**/db.sqlite3*
 /**/data/
 /**/json/
 /**/django-vue/.static_root/
+/**/django-vue/djangoAPI/logs/*.log
+
