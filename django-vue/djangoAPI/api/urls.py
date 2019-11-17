@@ -4,8 +4,7 @@ from api.views import auth_views
 from api.views import rating_views
 from api.views import recommend_views
 from api.views import collabo_test
-# from api.views import clustering
-from api.views import test
+from api.views import content_based
 from api.algorithms import kmeansClustering
 
 urlpatterns = [
@@ -32,14 +31,11 @@ urlpatterns = [
     url(r'movies/neverSeenMovies/$', movie_views.never_seen_movie_list, name='never_seen_movie_list'),
     url(r'movies/faculites/$', movie_views.faculites, name='faculites'),
     url(r'movies/rating/$', movie_views.get_rating_movie, name='get_rating_movie'),
-    # url(r'similarMovie/$', movie_views.similarMovie, name='similarMovie'),
-    # url(r'^movies/recommend/$', movie_views.recommendation, name='movie_recommend'),
 
     # 추천 URL
     url(r'^auth/recommendMovie/$', recommend_views.RecommendMovie, name='recommendMovie'),
 
     # 평점정보 접근 URL
-    # url(r'ratings/$', rating_views.ratings, name='rating_list'),
     url(r'rateMovie/$', rating_views.rate_movie, name='rate_movie'),
     url(r'getRatings/$', rating_views.get_ratings, name='get_ratings'),
     url(r'getEvaluatedRating/$', rating_views.get_evaluate_rating, name='get_evaluate_rating'),
@@ -48,8 +44,7 @@ urlpatterns = [
     # clustering 실행 URL
     url('clustering/kmeansClustering/C/', kmeansClustering.C_Cluster, name="c_Cluster"),
 
-    # test
-    url(r'preprocessing/$', test.preprocessing_for_cb, name='preprocessing'),
-    url(r'content_based/$', test.content_based, name='content_based'),
-    url(r'test/$', collabo_test.test, name='collabo_test')
+    # Content-Based Algorithm
+    url(r'preprocessing/$', content_based.preprocessing_for_cb, name='preprocessing'),
+    url(r'content_based/$', content_based.algorithm, name='content_based')
 ]

@@ -14,6 +14,7 @@ import { createNamespacedHelpers } from 'vuex';
 const userMapState = createNamespacedHelpers('users').mapState;
 const userMapActions = createNamespacedHelpers('users').mapActions;
 const movieMapActions = createNamespacedHelpers('movies').mapActions;
+const movieMapMutation = createNamespacedHelpers('movies').mapMutations;
 
 // Variables
 var chart;
@@ -30,105 +31,36 @@ export default {
     mounted() {
         if (this.user === null) {
             this.getUserBySession(localStorage.getItem('token')).then(() => {
-                this.drawChart();
+                if (this.user == null) {
+                    swal({
+                        title: 'Session Timeout',
+                        text: 'Session이 만료되었습니다. Login Page로 돌아갑니다.',
+                        icon: 'error',
+                        button: false
+                    }).then(() => {
+                        this.$router.push('/login');
+                        this.setIsLoaded(true);
+                    });
+                } else {
+                    this.drawChart();
+                }
             });
         } else {
-            this.drawChart();
+                this.drawChart();
         }
     },
     methods: {
         ...movieMapActions(['getRatingPref']),
         ...userMapActions(['getUserBySession']),
+        ...movieMapMutation(['setIsLoaded']),
         drawChart() {
-            // normal : '#FFDD63'
-            // max : '#FFA136'
-            // let colors = [];
+            
             this.getRatingPref(this.user.email).then((ret) => {
                 const data = [];
                 Object.keys(ret.data).sort().forEach((key) => {
                     data.push(ret.data[key]);
                 });
-                // const options = {
-                //     chart: {
-                //         height: 350,
-                //         type: 'bar'
-                //     },
-                //     plotOptions: {
-                //         bar: {
-                //             dataLabels: {
-                //                 position: 'center' // top, center, bottom
-                //             }
-                //         }
-                //     },
-                //     dataLabels: {
-                //         enabled: true,
-                //         formatter: (val) => val,
-                //         offsetY: -20,
-                //         style: {
-                //             fontSize: '15px',
-                //             colors: ['#E50914']
-                //         }
-                //     },
-                //     series: [{
-                //         name: '횟수',
-                //         data
-                //     }],
-                //     xaxis: {
-                //         categories: ['0.5', '1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5'],
-                //         position: 'top',
-                //         labels: {
-                //             offsetY: -18
 
-                //         },
-                //         axisBorder: {
-                //             show: false
-                //         },
-                //         axisTicks: {
-                //             show: false
-                //         },
-                //         crosshairs: {
-                //             fill: {
-                //                 type: 'gradient',
-                //                 gradient: {
-                //                     colorFrom: '#D8E3F0',
-                //                     colorTo: '#BED1E6',
-                //                     stops: [0, 100],
-                //                     opacityFrom: 0.4,
-                //                     opacityTo: 0.5
-                //                 }
-                //             }
-                //         },
-                //         tooltip: {
-                //             enabled: true,
-                //             offsetY: -35
-
-                //         }
-                //     },
-                //     fill: {
-                //         gradient: {
-                //             shade: 'light',
-                //             type: 'horizontal',
-                //             shadeIntensity: 0.25,
-                //             gradientToColors: undefined,
-                //             inverseColors: true,
-                //             opacityFrom: 1,
-                //             opacityTo: 1,
-                //             stops: [50, 0, 100, 100]
-                //         }
-                //     },
-                //     yaxis: {
-                //         axisBorder: {
-                //             show: false
-                //         },
-                //         axisTicks: {
-                //             show: false
-                //         },
-                //         labels: {
-                //             show: false,
-                //             formatter: (val) => val
-                //         }
-                //     }
-                // };
                 const colors = ['#7dd426', '#26d483', '#09e5cb', '#09a3e5', '#2609e5', '#8609e5', '#e509e1', '#e5099f', '#e5096c', '#E50914'];
                 const options = {
                     chart: {

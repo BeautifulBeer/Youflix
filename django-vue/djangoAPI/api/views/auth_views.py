@@ -391,8 +391,8 @@ def duplicate_inspection(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return JsonResponse({'status': status.HTTP_200_OK})
-        return JsonResponse({ 'status': status.HTTP_400_BAD_REQUEST, 'result': True })
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': True })
+        return JsonResponse({ 'status': status.HTTP_200_OK, 'result': False })
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 @api_view(['GET'])

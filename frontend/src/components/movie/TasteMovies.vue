@@ -41,8 +41,8 @@
                 class="movie-slider"
             >
                 <a
-                    @click="movePrevPage()"
                     class="arrow left"
+                    @click="movePrevPage()"
                 />
                 <div
                     v-for="(movie, index) in currentMovies"
@@ -71,6 +71,7 @@ const userMapState = createNamespacedHelpers('users').mapState;
 const userMapActions = createNamespacedHelpers('users').mapActions;
 const movieMapActions = createNamespacedHelpers('movies').mapActions;
 const movieMapState = createNamespacedHelpers('movies').mapState;
+const movieMapMutation = createNamespacedHelpers('movies').mapMutations;
 
 export default {
     name: 'GenreMovies',
@@ -111,7 +112,9 @@ export default {
             let result = [];
             if (end >= this.getGenreMovies.length) {
                 result = result.concat(this.getGenreMovies.slice(start));
-                result = result.concat(this.getGenreMovies.slice(0, end - this.getGenreMovies.length));
+                result = result.concat(
+                    this.getGenreMovies.slice(0, end - this.getGenreMovies.length)
+                );
             } else {
                 result = result.concat(this.getGenreMovies.slice(start, end));
             }
@@ -121,7 +124,6 @@ export default {
             if (!(this.selectedGenre in this.featureMovies)) {
                 return [];
             }
-            console.log(this.featureMovies);
             return this.featureMovies[this.selectedGenre];
         },
         getUser() {
@@ -136,20 +138,30 @@ export default {
             this.$log.debug(this.getUserTaste);
             this.setLoaded(false);
 
-            console.log(localStorage.getItem('token'))
-
             if (this.user === null) {
                 this.getUserBySession(localStorage.getItem('token')).then(() => {
-                    this.getContentBasedByFeatures([this.getUserTaste, this.user.email]).then((ret) => {
-                        console.log(ret);
-                        this.selectGenre(ret);
-                    }).then((() => {
-                        this.setLoaded(true);
-                    }));
+                    if (this.user == null) {
+                        swal({
+                            title: 'Session Timeout',
+                            text: 'Session이 만료되었습니다. Login Page로 돌아갑니다.',
+                            icon: 'error',
+                            button: false
+                        }).then(() => {
+                            this.$router.push('/login');
+                            this.setIsLoaded(true);
+                        });
+                    } else {
+                        this.getContentBasedByFeatures(
+                            [this.getUserTaste, this.user.email]
+                        ).then((ret) => {
+                            this.selectGenre(ret);
+                        }).then((() => {
+                            this.setLoaded(true);
+                        }));
+                    }
                 });
             } else {
                 this.getContentBasedByFeatures([this.getUserTaste, this.user.email]).then((ret) => {
-                    console.log(ret);
                     this.selectGenre(ret);
                 }).then((() => {
                     this.setLoaded(true);
@@ -164,6 +176,7 @@ export default {
     methods: {
         ...movieMapActions(['getContentBasedByFeatures', 'addMovieView']),
         ...userMapActions(['getUserBySession']),
+        ...movieMapMutation(['setIsLoaded']),
         selectGenre(genre) {
             this.selectedGenre = genre;
             this.currentIndex = 0;

@@ -591,7 +591,7 @@ export default {
                 return false;
             }
             if (!this.checkDuplicateEmail(this.email).then((ret) => {
-                if (ret) {
+                if (!ret) {
                     swal({
                         title: 'Warning',
                         text: '이미 가입되어 있는 이메일 입니다.',

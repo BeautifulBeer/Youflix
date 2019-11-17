@@ -435,9 +435,10 @@ export default {
                         this.rating = ret;
                     });
                 });
-            }
-            else {
-                this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+            } else {
+                this.getEvaluatedRating(
+                    { email: this.user.email, movie_id: this.id }
+                ).then((ret) => {
                     this.rating = ret;
                 });
             }
@@ -465,7 +466,6 @@ export default {
             }
         },
         rating() {
-    
             if (this.rating === 0.5) {
                 this.ratingWord = '최악이에요!';
             } else if (this.rating === 1.0) {
@@ -488,17 +488,18 @@ export default {
         }
     },
     mounted() {
-        console.log(this.user.email);
-        console.log(this.id);
         if (this.user === null) {
             this.getUserBySession(localStorage.getItem('token')).then(() => {
-                this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+                this.getEvaluatedRating(
+                    { email: this.user.email, movie_id: this.id }
+                ).then((ret) => {
                     this.rating = ret;
                 });
             });
-        }
-        else {
-            this.getEvaluatedRating({ email: this.user.email, movie_id: this.id }).then((ret) => {
+        } else {
+            this.getEvaluatedRating(
+                { email: this.user.email, movie_id: this.id }
+            ).then((ret) => {
                 this.rating = ret;
             });
         }
@@ -575,7 +576,6 @@ export default {
             return '';
         },
         ratingMovie() {
-            console.log(this.user.email);
             this.rateMovie(
                 {
                     email: this.user.email,

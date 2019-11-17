@@ -36,7 +36,7 @@ const actions = {
             params: {
                 email
             }
-        }).then(() => true).catch(() => false);
+        }).then((ret) => ret.data.result).catch(() => false);
         return ret;
     },
 
@@ -97,17 +97,14 @@ const actions = {
     },
     async getUserBySession({ commit }, token) {
         Vue.$log.debug('Vuex user.js getUserBySession', token);
-	console.log('getUserBySession', token);
         return axios.get(`${global.API_URL}/auth/session/`, {
             params: {
                 token
             }
         }).then((response) => {
             Vue.$log.debug('Vuex user.js getUserBySession response', response.data);
-		console.log('response', response.data);
             if (response.data.status === global.HTTP_SUCCESS) {
                 const { result } = response.data;
-		console.log('response 200', result);
                 if (result.is_auth) {
                     let user = {
                         email: result.email,
@@ -125,7 +122,6 @@ const actions = {
                         user.movie_taste = '';
                     }
                     Vue.$log.debug('Vuex user.js getUserBySession response user', user);
-		    console.log('user', user);
                     commit('setUser', user);
                     return true;
                 }
