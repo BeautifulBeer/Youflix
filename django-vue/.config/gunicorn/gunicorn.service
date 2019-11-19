@@ -5,8 +5,8 @@ After=network.target
 [Service]
 User=ubuntu
 Group=ubuntu
-WorkingDirectory=/home/ubuntu/Youflix/youflix/django-vue/djangoAPI
-ExecStart=/home/ubuntu/.pyenv/versions/deploy_ec2/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/Youflix/youflix/django-vue/djangoAPI/run/djangoAPI.sock djangoAPI.wsgi:application
+WorkingDirectory=/home/ubuntu/youflix/django-vue/djangoAPI
+ExecStart=/home/ubuntu/.pyenv/versions/youflix/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/youflix/django-vue/djangoAPI/run/djangoAPI.sock djangoAPI.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

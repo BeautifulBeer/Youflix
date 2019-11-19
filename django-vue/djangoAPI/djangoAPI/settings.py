@@ -210,7 +210,7 @@ DEBUG = True
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 WSGI_APPLICATION = 'djangoAPI.wsgi.application'
 
-ALLOWED_HOSTS = ['*', '13.125.172.87', 'youflix.twilightparadox.com']
+ALLOWED_HOSTS = ['*']
 
 DATABASES = {
     'default': {
