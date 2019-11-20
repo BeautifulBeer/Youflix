@@ -20,7 +20,6 @@ def movies(request):
             keyword = request.GET.get('keyword', None)
             sort = request.GET.get('sort', 1)
             page = request.GET.get('page', 1)
-            print(movie_id, title, category, keyword, sort, page)
             movie_all = Movie.objects.all()
 
             # querySet 으로 반환됨
@@ -122,7 +121,6 @@ def modify(request):
     if request.method == 'POST':
 
         modified = request.data.get('data', None)
-        print(modified)
 
         movie_id = modified.get('id', None)
         title = modified.get('title', None)
@@ -256,9 +254,6 @@ def get_rating_movie(requset):
 
         email = requset.GET.get('email', None)
         movie_id = requset.GET.get('movieId', None)
-
-        print(email)
-        print(movie_id)
 
         if email is None or movie_id is None:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

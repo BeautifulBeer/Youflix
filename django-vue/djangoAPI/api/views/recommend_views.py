@@ -89,7 +89,6 @@ def recommend_movie(df_keys, indices, id, cosine_sim, n):
 
     # 내림차순으로, Cosine Simirality을 정렬합니다.
     scores = pd.Series(cosine_sim[0]).sort_values(ascending = False)
-    print(scores)
 
     # 가장 유사한 n(10)개만 추출합니다.
     # 첫번째 index의 영화의 경우 활성화된 영화와 같기 때문에 제외합니다.
@@ -137,14 +136,12 @@ def collaborative_filtering(user, movies):
     if len(rating_desc) > topN:
         rating_desc = rating_desc[:topN]
     movie_list = [movie[0] for movie in rating_desc]
-    print(movie_list)
     return movie_list
 
 
 def content_based_filtering(movie_list):
 
     content_based_movies = []
-    print(movie_list)
     for movie_id in movie_list:
         selectedMovie = df_keys.loc[df_keys['id'] == movie_id]
         idx = str(selectedMovie['Unnamed: 0']).split(' ')
@@ -153,12 +150,9 @@ def content_based_filtering(movie_list):
 
     sum_vector = []
     for movie_vector in content_based_movies:
-        print(movie_vector.toarray())
         if len(sum_vector) == 0:
             sum_vector = movie_vector.toarray()    
         sum_vector += movie_vector.toarray()
-
-    print(sum_vector)
 
     cosine_sim = cosine_similarity(sp.csr_matrix(sum_vector), cv_mx)
     indices = pd.Series(df_keys.index, index = df_keys['id'])
@@ -202,7 +196,6 @@ def RecommendMovie(request):
         if rating_num >= 20:
             # 예외 상황: 20개 이상이지만 학습이 안된 경우 -> content based filtering
             if target_user.profile.kmeans_cluster is None:
-                print('예외 상황입니다!! 20개 이상이지만 학습 안된 경우 Content Based Filtering')
                 # 해당 유저가 본 영화 list
                 ratings = Rating.objects.filter(user__id=target_id)
                 movie_list = [rating.movie.id for rating in ratings]
@@ -212,7 +205,6 @@ def RecommendMovie(request):
                 serializer = content_based_filtering(movie_list)
                 return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
 
-            print('collaborative filtering!!')
             # 1-1. 해당 유저가 본 영화
             user_watched = [[rating.movie.id, rating.movie.imdb_id] for rating in Rating.objects.filter(user__id=target_id)]
 
@@ -279,7 +271,6 @@ def RecommendMovie(request):
 
             # 2-2. rating 조금이라도 있는 경우, 해당 user가 본 영화 이용해 content based filtering
             else:
-                print('rating 20미만(!=0)')
                 # 해당 유저가 본 영화 list
                 ratings = Rating.objects.filter(user__id=target_id)
                 movie_list = [rating.movie.id for rating in ratings]

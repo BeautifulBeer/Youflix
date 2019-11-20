@@ -59,8 +59,6 @@ def algorithm(request):
     """
     if request.method == 'GET':
 
-        print("Content Based Algorithm...")
-
         email = request.GET.get('email', None)
         page = request.GET.get('page', 1)
         feature = request.GET.get('feature', None)
@@ -91,8 +89,6 @@ def algorithm(request):
                 df_keys = pd.read_csv('df_keys_crew_cast.csv')
             else:
                 df_keys = pd.read_csv('df_keys.csv')
-
-            print("page ", page)
 
             # All Movies Vectorizer
             # scikit-learn의 TF-IDF Vectorizer 사용하여 키워드를 토큰화하여 행렬을 분석하여 각 단어의 빈도를 분석합니다.
@@ -140,7 +136,6 @@ def algorithm(request):
 @api_view(['GET'])
 def preprocessing_for_cb(request):
     
-    print("Preprocessing Content-Based Algorithm...")
     # DB에서 모든 movie 정보를 가져옵니다.
     movies = Movie.objects.all()
     # movies 객체를 DataFrame화 합니다.
@@ -282,7 +277,7 @@ def preprocessing_for_cb(request):
 
     # id 597에 대한 상위 10개의 추천 영화를 추출합니다.
     # print(recommend_movie(df_keys, indices, cosine_sim, 10))
-    print(test_recommend_movie(df_keys, 862, indices, 10, cosine_sim))
+    # print(test_recommend_movie(df_keys, 862, indices, 10, cosine_sim))
     return Response(status=status.HTTP_200_OK)
 
 # def test_recommend_movie(df_keys, movie_id, indices, n, cosine_sim):

@@ -209,8 +209,8 @@ def login(request):
 def logout(request):
     if request.method == 'POST':
         token = request.data.get('token', None)
-        user = User.objects.get(email=request.session[str(token)])
-        del request.session[str(token)]
+        auth_user = Token.objects.get(key=token)
+        user = User.objects.get(email=auth_user.user)
         user.auth_token.delete()
         auth.logout(request)
         return JsonResponse({'status': status.HTTP_200_OK})
@@ -315,21 +315,11 @@ def session_member(request):
             token = request.GET.get('token', None)
             if not token:
                 raise ValueError('No Token Parameter')
-            # Request Session이 존재하지 않을 시에, logout 하고 재 로그인을 요청
-            print(token)
+
             user = None
-            if not request.session.get(str(token)):
-                auth_user = Token.objects.get(key=token)
-                user = User.objects.get(email=auth_user.user)
-                if user is None:
-                    raise User.DoesNotExist
-                user.auth_token.delete()
-                auth.logout(request)
-                raise ValueError('Request session token key None')
-            else:
-                user = User.objects.get(email=request.session.get(str(token)))
-                if user is None:
-                    raise User.DoesNotExist
+            auth_user = Token.objects.get(key=token)
+            user = User.objects.get(email=auth_user.user)
+            
             if user.is_authenticated and token == str(Token.objects.get(user=user)):
                 profile = Profile.objects.get(user=user)
                 print('profile ID: ',profile.id)
