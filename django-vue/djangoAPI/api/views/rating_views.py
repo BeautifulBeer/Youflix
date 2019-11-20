@@ -41,14 +41,8 @@ def get_evaluate_rating(request):
 
     if request.method == 'GET':
 
-        print("GETRATINGFORMOVIE")
-
         email = request.GET.get('email', None)
         movie_id = request.GET.get('movie_id', None)
-
-        print(email)
-        print(movie_id)
-        print()
 
         if email is None or movie_id is None:
             return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})

@@ -40,7 +40,6 @@ def collaborative_filtering(user, movies):
     for movieid in movies:
         try:
             movieId = None
-            print(int(link[link['tmdbId'] == movieid]['movieId']))
             movieId = int(link[link['tmdbId'] == movieid]['movieId'])
             movie_map = movie_mapper[str(movieId)]
             movie_vec = latent_movie[movie_map]
@@ -58,7 +57,6 @@ def collaborative_filtering(user, movies):
     if len(rating_desc) > topN:
         rating_desc = rating_desc[:topN]
     movie_list = [movie[0] for movie in rating_desc]
-    print(movie_list)
     return movie_list
 
 
