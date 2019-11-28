@@ -48,7 +48,6 @@ const actions = {
         });
     },
     async getEvaluatedRating({ commit }, params) {
-        console.log(params);
         Vue.$log.debug('Vuex ratings.js getEvaluatedRating', params);
         return axios.get(`${global.API_URL}/getEvaluatedRating/`, {
             params: {
@@ -56,7 +55,6 @@ const actions = {
                 movie_id: params.movie_id
             }
         }).then((response) => {
-            console.log(response);
             const { result } = response.data;
             Vue.$log.debug('Vuex ratings.js getEvaluatedRating RESULT', result);
             return result;

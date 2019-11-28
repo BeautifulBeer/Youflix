@@ -67,6 +67,9 @@
 <script>
 import { createNamespacedHelpers } from 'vuex';
 
+//import sweetalert modal
+import swal from 'sweetalert';
+
 const userMapState = createNamespacedHelpers('users').mapState;
 const userMapActions = createNamespacedHelpers('users').mapActions;
 const movieMapActions = createNamespacedHelpers('movies').mapActions;
