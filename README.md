@@ -1,171 +1,196 @@
-﻿# You can flex(YOUFLEX)
+# YOUFLIX(Your flix)
 
-Movielens와 IMDB 데이터를 활용하여 개인 맞춤형 영화 추천을 하는 서비스입니다. Content-based 와 Collaborative Filtering 기술을 결합하여 Hybrid Recommender System을 개발하고, 이는 사용자 취향 기반의 영화 추천을 가능케 합니다. 또한, 영화 줄거리/리뷰를 통해 태그를 추출해내어 키워드 기반 영화검색이 가능한 서비스를 개발합니다.
+This project is movie recommendation system based on switching hybrid recommendation system. The switching hybrid recommendation system is commonly considered as combination of model-based CF(Collaborative Filtering) and CB(Content-based Recommendation).
 
-
-
-## Prerequisite Steps
-
-프로젝트를 실행하기 위해 필요한 단계들입니다. 
+<img src="img/logo.png" width="300" height="300" align="center">
 
 
 
-### Create Virtual Environment
+http://youflix.twilightparadox.com (2019.11 Service ON)
 
-프로젝트의 환경과 기존 로컬 환경을 분리하기 위한 가상환경을 생성합니다. 
+※ DNS Hosting - FreeDNS
+
+
+
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+
+
+
+### Environment
+
+- Ubuntu 18.04.3 LTS (AWS)
+- Python 3.6.8
+
+
+
+### Prerequisites
+
+What things you need to install the software and how to install them. For convenience sake, all instructions what you need to start are in "prerequisites.sh". The only thing you have to do is executing bash file.
 
 ```bash
-# Path > youflix
-# 위의 위치에서 아래의 명령어를 실행 해주시면 됩니다.
-    pip3 install -r requirements.txt
-   
-# virtualenv django-vue를 생성합니다
-    virtualenv django-vue
+# Clone git repository
+cd ~
+git clone https://lab.ssafy.com/Jo_yongseok/youflix.git
 
-# djangoAPI 디렉토리를 생성한 django-vue 로 이동합니다
-    mv djangoAPI django-vue
+# Install dependencies of pyenv
+sudo apt-get install -y make build-essential \
+ libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+ wget curl llvm libncurses5-dev libncursesw5-dev \
+ xz-utils tk-dev git python-pip
+ 
+# Install pyenv.
+curl -L \
+https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer \
+| bash
+
+# Setup environmental variables for pyenv
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
+source ~/.bash_profile
+
+# Install python 3.6.8
+pyenv install 3.6.8
+
+# Setup environmental variables for pyenv-virtualenv
+echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
+
+# Create virtual environment using pyenv-virtualenv
+pyenv virtualenv youflix
 ```
 
 
 
-### Activate Virtual Environment
+### Installing
 
-생성한 가상환경을 활성화합니다. 해당 가상환경은, 서버를 실행하기 전에 반드시 활성화해야 합니다.
+A step by step series of examples that tell you how to get a development environment running. For convenience sake, all instructions what you need to start are in "installation.sh". The only thing you have to do is executing bash file.
 
 ```bash
-# Path > youflix/django-vue
-    # on Windows
-        call scripts/activate
-    # on Linux
-        call bin/activate
+# Get current directory
+dir=$(pwd)
+# Django directory
+djangoDIR="${dir}/django-vue/djangoAPI"
+# Front directory
+frontDIR="${dir}/frontend"
+# Config directory
+configDIR="${dir}/django-vue/.config"
 
-# 위의 명령어를 실행하게 되면 CMD창이 아래와 같이 변하게 됩니다.
-# (django-vue) C:\Users\......
+# Delete prev database, pycache
+rm "${djangoDIR}/db.sqlite3"
+rm "${djangoDIR}/api/migrations/*_initial.py"
+ 
+# Activate virtualenv
+cd "${djangoDIR}"
+pyenv activate youflix
+
+# Install all packages
+pip3 install -r requirements.txt
+
+# Django database setup
+python "${djangoDIR}/manage.py" makemigrations
+python "${djangoDIR}/manage.py" migrate
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/collection.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/company.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/country.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/genre.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/keyword.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/language.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/movie.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/crew.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/cast.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/user_profile_cluster.json"
+python "${djangoDIR}/manage.py" loaddata "${djangoDIR}/json/rating.json"
+
+# Create static root of youflix, for nginx
+mkdir "${dir}/django-vue/.static_root"
+
+# Gunicorn installation
+sudo apt-get -y install gunicorn
+
+# Nginx installation
+sudo apt-get -y install nginx
+
+# Nodejs
+sudo apt-get -y install nodejs
+sudo apt-get -y install npm
+
+# NPM build
+cd "${frontDIR}"
+npm install
+npm run build
+
+# Django 
+yes | python "${djangoDIR}/manage.py" collectstatic
+
+# Reload daemon serivce (apply gunicorn.service)
+sudo systemctl daemon-reload
+
 ```
 
 
 
-### Install Required Packages
+## Deployment
+
+Add additional notes about how to deploy this on a live system. Before we deploy this project on AWS EC2, gunicorn and nginx should be registered as daemon. 
 
 ```bash
-# Virtual environment를 활성화한 상태여야 합니다.
-# Path > youflix/django-vue/djangoAPI
-    pip3 install -r requirements.txt
+# Change configuration of .config files. Invalid path is exists
+# gunicorn.service
+WorkingDirectory, ExecStart should be changed 
+# nginx.service
+access_log, error_log, proxy_pass, alias should be changed
 
-# Path > youflix/frontend
-    npm install
-    npm install -g eslint --save
+
+# Register Gunicorn as a daemon
+sudo ln -s "${configDIR}/gunicorn/gunicorn.service" /etc/systemd/system/
+mkdir "${djangoDIR}/run/"
+
+# Register nginx app, youflix
+sudo cp -f "${configDIR}/nginx/youflix.conf" /etc/nginx/sites-available/
+sudo ln -s /etc/nginx/sites-available/youflix.conf /etc/nginx/sites-enabled/
+touch "${djangoDIR}/logs/nginx-access.log"
+touch "${djangoDIR}/logs/nginx-error.log"
+
+# Start gunicorn, nginx
+sudo systemctl start gunicorn.service
+sudo systemctl start nginx.service
 ```
 
 
 
-### Setup django server
+## Description
 
-```bash
-# Path > youflix/django-vue/djangoAPI
-    python manage.py makemigrations
-    python manage.py migrate
-    
-# Path > youflix/django-vue/djangoAPI
-* 사전에 pycache에 앞에 숫자 있는 파일을 삭제
-    python .\manage.py loaddata ./json/Total.json
-```
+This project try to solve the cold start problem and propose new CB algorithm. Cold start is an old problem in the recommendation system. Recommendation system commonly provides service based on user's tastes, however, some cases do not have any information about the user. We overcome this problem with similar users' tastes using K-means clustering to group similar users by several features such as occupation, age, gender. Original CB is only able to apply in a one-to-one relationship. For instance, CB can estimate the similarity between a movie and a movie, but not movies and a movie. We propose a new algorithm to solve this problem.
 
 
 
-### Development Server On
+### Architecture
 
-```bash
-# 총 2개의 cmd가 필요합니다
-# cmd 1
-# Virtual environment를 활성화한 상태여야 합니다.
-# Path > youflix/django-vue/djangoAPI
-   py manage.py runserver -settings=djangoAPI.settings.development
-   
-# cmd 2
-# Path > youflix/frontend
-   cd django-vue/djangoAPI/frontend
-   npm run serve
-```
+An essential part of our project, movie recommendation, is mainly implemented using Python. We choose Django as a back-end for easy integration between server-side and recommendation part. Django does not guarantee high availability as a standalone web server in various environment, hence we combine Django with Nginx. This is widely used architecture to deploy Django server. Nginx is very powerful web server enabling load balancing or reverse proxies. That is why we provide services as the following architecture.  
+
+<img src="img/architecture_img.png" align="center">
 
 
 
-### Production Server On
+### Algorithm
 
-```bash
-# cmd 1
-# Path > youflix/frontend
-   cd django-vue/djangoAPI/frontend
-   npm run build
-   
-# cmd 2
-# Virtual environment를 활성화한 상태여야 합니다.
-# Path > youflix/django-vue/djangoAPI
-   py manage.py runserver -settings=djangoAPI.settings.production
-```
+As we mentioned, switching a hybrid recommendation system is used to recommend movies to users. We define three cases for users, newbie, light user, and heavy user to apply this algorithm. Here is an overview of the recommendation algorithm.
+
+<img src="img/algorithm_img.png" align="center">
+
+CB recommendation performs well in the case user rates a few movies, compared with model-based CF. In contrast, model-based CF shows high performance when the user rates many movies.  Hence, in our system, CB is for the light users and model-based CF is for the heavy users. 
 
 
 
-### VSCode Linter Setting
+## License
 
-```bash
-# 1. Ctrl + , 를 이용해 Setting 창 열기
-# 2. 우측 상단에 있는 Open Settings(UI) 버튼을 클릭, Settings.json 열기
-# 3. 아래의 내용 삽입하기
-# 4. VSCode Extension Python 설치
-# Eslint, Pylint 적용
-{
-    "editor.tabCompletion": "on",
-    "eslint.alwaysShowStatus": true,
-    "eslint.validate": [
-        "javascript",
-        "javascriptreact",
-        {
-            "autoFix": false,
-            "language": "vue"
-        }
-    ],
-    "explorer.confirmDragAndDrop": false,
-    "less.lint.duplicateProperties": "warning",
-    "scss.lint.duplicateProperties": "warning",
-    "python.linting.pycodestyleEnabled": true,
-    "python.linting.enabled": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.ignorePatterns": [
-        ".vscode/*.py",
-        "**/site-packages/**/*.py",
-        "**/*.pyc"
-    ],
-    "window.zoomLevel": 2,
-    "vetur.format.options.tabSize": 4,
-}
-```
+This project is licensed under the Apache 2.0 License - see the LICENSE file for details
 
 
 
-### 접속방법
+## References
 
-- http://localhost:8000 을 통해서 확인할 수 있습니다.
-
-
-
-## 관련자료 링크
-
-자세한 사항은 관련 위키를 참조해주시면 감사하겠습니다. [프로젝트 관련 문서 위키]([https://lab.ssafy.com/Jo_yongseok/youflix/wikis/%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EB%AA%85%EC%84%B8%EC%84%9C](https://lab.ssafy.com/Jo_yongseok/youflix/wikis/프로젝트-명세서))
-
-아래는 프로젝트 진행 중 참고한 기술들에 대한 레퍼런스입니다.
-
-
-
-> *Git Commit message 남기는 규칙**
-
-- https://djkeh.github.io/articles/How-to-write-a-git-commit-message-kor/
-
-> **우아한 형제 기술 블로그(Git 사용방법)**
-
-- http://woowabros.github.io/experience/2017/10/30/baemin-mobile-git-branch-strategy.html
-
-> **Django cache**
-
-- https://docs.djangoproject.com/en/2.2/topics/cache/
-
+- "A template to make good README.md", PurpleBooth, https://gist.github.com/PurpleBooth/109311bb0361f32d87a2 
+- "파이썬 가상 개발 환경 구성: pyenv, virtualenv, autoenv, pip", 김태완, http://taewan.kim/post/python_virtual_env/
