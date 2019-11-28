@@ -51,6 +51,9 @@ router.beforeResolve((to, from, next) => {
     if (!token && to.meta.authRequired) {
         return next('/');
     }
+    if (to.path === from.path) {
+        return next({ redirect: to.path });
+    }
     return next();
 });
 

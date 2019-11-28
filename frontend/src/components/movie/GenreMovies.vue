@@ -7,7 +7,9 @@
             justify="center"
             class="title"
         >
-            <v-col sm="8">
+            <v-col
+                sm="8"
+            >
                 <AnimateWhenVisible name="fadeDown">
                     <span
                         key="span1"
@@ -51,7 +53,7 @@
                 >
                     <v-img
                         class="tile-img"
-                        :src="movie.poster_path"
+                        :src="movie.poster_path | imagePath"
                         @click="viewMovie(movie.id)"
                     />
                 </div>
@@ -73,6 +75,17 @@ const movieMapState = createNamespacedHelpers('movies').mapState;
 
 export default {
     name: 'GenreMovies',
+    filters: {
+        imagePath(value) {
+            return value === '' ? '/static/img/no_poster.png' : value;
+        }
+    },
+    props: {
+        setLoaded: {
+            type: Function,
+            default: null
+        }
+    },
     data() {
         return {
             selectedGenre: undefined,
@@ -89,9 +102,9 @@ export default {
         ...movieMapState(['genreMovies']),
         getUserTaste() {
             if (this.user) {
-                return this.user.movie_taste ? this.user.movie_taste : [];
+                return this.user.movie_taste || this.user.movie_taste !== '' ? this.user.movie_taste : ['Animation', 'Action'];
             }
-            return [];
+            return ['Animation', 'Action'];
         },
         currentMovies() {
             if (this.getGenreMovies.length === 0) {
@@ -118,8 +131,14 @@ export default {
     watch: {
         getUserTaste(val) {
             if (val) {
+                this.$log.debug('GenreMovies.vue getUserTaste watch', val);
+                this.setLoaded(false);
                 this.getMoviesByGenres(val).then((preference) => {
+                    this.$log.debug('GenreMovies.vue getMoviesByGenres response preference', preference);
                     this.selectGenre(preference);
+                }).then(() => {
+                    this.$log.debug('GenreMovies.vue getMoviesByGenres setLoaded');
+                    this.setLoaded(true);
                 });
             }
         }
@@ -127,23 +146,16 @@ export default {
     mounted() {
         if (this.currentMovies.length === 0 && this.getUserTaste.length !== 0) {
             this.$log.debug(this.getUserTaste);
+            this.setLoaded(false);
             this.getMoviesByGenres(this.getUserTaste).then((preference) => {
                 this.selectGenre(preference);
-            });
+            }).then((() => {
+                this.setLoaded(true);
+            }));
         }
+        this.setSlider();
         window.addEventListener('resize', () => {
-            const windowWidth = window.innerWidth;
-            let result = 2;
-            if (windowWidth > 1600) {
-                result = 6;
-            } else if (windowWidth > 1400) {
-                result = 5;
-            } else if (windowWidth > 1200) {
-                result = 4;
-            } else if (windowWidth > 1000) {
-                result = 3;
-            }
-            this.showCount = result;
+            this.setSlider();
         });
     },
     methods: {
@@ -169,6 +181,22 @@ export default {
         viewMovie(id) {
             this.addMovieView(id);
             this.$router.push(`/movies/detail/${id}`);
+        },
+        setSlider() {
+            const innerWidth = screen.width;
+            let result = 1;
+            if (innerWidth > 1600) {
+                result = 6;
+            } else if (innerWidth > 1400) {
+                result = 5;
+            } else if (innerWidth > 1200) {
+                result = 4;
+            } else if (innerWidth > 1000) {
+                result = 3;
+            } else if (innerWidth > 800) {
+                result = 2;
+            }
+            this.showCount = result;
         }
     }
 };
@@ -334,6 +362,23 @@ a, a > span {
   transform: scale(1.1);
   z-index: 10;
   cursor: pointer;
+}
+
+@media (max-width: map-get($breakpoints, mobile)) {
+    .section-title {
+        font-size: 1.5em;
+        margin-top: 0px;
+    }
+
+    .section-content{
+        font-size: 0.8em;
+        word-spacing: 1px;
+        line-height: 1.2em;
+    }
+
+    .title{
+        padding-left: 20px;
+    }
 }
 
 </style>

@@ -1,188 +1,238 @@
 <template>
     <div id="background-cover">
         <div id="background-img" />
-
-        <div
-            id="loginForm-setting"
-            class="white--text"
-        >
-            <div class="input-title">
+        <div id="loginForm-setting">
+            <div class="input-title white--text">
                 회원가입
             </div>
+            <div class="sign-in-page__input-group">
+                <label class="sign-input">
+                    <input
+                        id="username"
+                        v-model="username"
+                        type="text"
+                        placeholder="닉네임 (2-10자, 영어,한글,숫자)"
+                    >
+                    <i
+                        v-if="nickNameCheck == -1"
+                        class="mdi mdi-close-circle-outline mdi-24px fail-icon"
+                    />
+                    <i
+                        v-else-if="nickNameCheck == 1"
+                        class="mdi mdi-check-circle-outline mdi-24px success-icon"
+                    />
+                </label>
+                <label class="sign-input">
+                    <input
+                        id="email"
+                        v-model="email"
+                        type="email"
+                        placeholder="이메일 (example@gmail.com)"
+                    >
+                    <i
+                        v-if="idCheck == -1"
+                        class="mdi mdi-close-circle-outline mdi-24px fail-icon"
+                    />
+                    <i
+                        v-else-if="idCheck == 1"
+                        class="mdi mdi-check-circle-outline mdi-24px success-icon"
+                    />
+                </label>
 
-            <input
-                id="username"
-                v-model="username"
-                class="input-setting input-top-radius"
-                type="text"
-                placeholder="닉네임 (2-10자, 영어,한글,숫자)"
-            >
+                <label class="sign-input">
+                    <input
+                        id="pwd"
+                        v-model="pwd"
+                        type="password"
+                        placeholder="비밀번호 (6-30자, 영어,숫자,특수문자)"
+                    >
+                    <i
+                        v-if="passwordCheck == -1"
+                        class="mdi mdi-close-circle-outline mdi-24px fail-icon"
+                    />
+                    <i
+                        v-else-if="passwordCheck == 1"
+                        class="mdi mdi-check-circle-outline mdi-24px success-icon"
+                    />
+                </label>
 
-            <input
-                id="email"
-                v-model="email"
-                class="input-setting"
-                type="text"
-                placeholder="이메일 (example@gmail.com)"
-            >
+                <label class="sign-input">
+                    <select
+                        id="age"
+                        v-model="age"
+                        name="age"
+                    >
+                        <option value>
+                            Age
+                        </option>
+                        <option value="1">
+                            Under 18
+                        </option>
+                        <option value="18">
+                            18-24
+                        </option>
+                        <option value="25">
+                            25-34
+                        </option>
+                        <option value="35">
+                            35-44
+                        </option>
+                        <option value="45">
+                            45-49
+                        </option>
+                        <option value="50">
+                            50-55
+                        </option>
+                        <option value="56">
+                            56+
+                        </option>
+                    </select>
+                    <i
+                        v-if="ageCheck == -1"
+                        class="mdi mdi-close-circle-outline mdi-24px fail-icon"
+                    />
+                    <i
+                        v-else-if="ageCheck == 1"
+                        class="mdi mdi-check-circle-outline mdi-24px success-icon"
+                    />
+                </label>
 
-            <input
-                id="pwd"
-                v-model="pwd"
-                class="input-setting"
-                type="password"
-                placeholder="비밀번호 (6-30자, 영어,숫자,특수문자)"
-            >
+                <label class="sign-input">
+                    <select
+                        id="gender"
+                        v-model="gender"
+                        name="gender"
+                    >
+                        <option value>
+                            Gender
+                        </option>
+                        <option value="male">
+                            Male
+                        </option>
+                        <option value="female">
+                            Female
+                        </option>
+                        <option value="other">
+                            Other
+                        </option>
+                    </select>
+                    <i
+                        v-if="genderCheck == -1"
+                        class="mdi mdi-close-circle-outline mdi-24px fail-icon"
+                    />
+                    <i
+                        v-else-if="genderCheck == 1"
+                        class="mdi mdi-check-circle-outline mdi-24px success-icon"
+                    />
+                </label>
 
-            <select
-                id="age"
-                class="select-setting"
-                name="age"
-            >
-                <option value>
-                    Age
-                </option>
-                <option value="1">
-                    Under 18
-                </option>
-                <option value="18">
-                    18-24
-                </option>
-                <option value="25">
-                    25-34
-                </option>
-                <option value="35">
-                    35-44
-                </option>
-                <option value="45">
-                    45-49
-                </option>
-                <option value="50">
-                    50-55
-                </option>
-                <option value="56">
-                    56+
-                </option>
-            </select>
+                <label class="sign-input">
+                    <select
+                        id="occupation"
+                        v-model="occupation"
+                        name="occupation"
+                    >
+                        <option value>
+                            Occupation
+                        </option>
+                        <option value="other">
+                            other
+                        </option>
+                        <option value="academic/educator">
+                            academic/educator
+                        </option>
+                        <option value="artist">
+                            artist
+                        </option>
+                        <option value="clerical/admin">
+                            clerical/admin
+                        </option>
+                        <option value="college/grad student">
+                            college/grad student
+                        </option>
 
-            <select
-                id="gender"
-                class="a4a4a4--text select-setting"
-                name="gender"
-            >
-                <option value>
-                    Gender
-                </option>
-                <option value="male">
-                    Male
-                </option>
-                <option value="female">
-                    Female
-                </option>
-                <option value="other">
-                    Other
-                </option>
-            </select>
+                        <option value="customer service">
+                            customer service
+                        </option>
+                        <option value="doctor/health care">
+                            doctor/health care
+                        </option>
+                        <option value="executive/managerial">
+                            executive/managerial
+                        </option>
+                        <option value="farmer">
+                            farmer
+                        </option>
+                        <option value="homemaker">
+                            homemaker
+                        </option>
 
-            <select
-                id="occupation"
-                class="#a4a4a4--text select-setting"
-                name="occupation"
-            >
-                <option value>
-                    Occupation
-                </option>
-                <option value="other">
-                    other
-                </option>
-                <option value="academic/educator">
-                    academic/educator
-                </option>
-                <option value="artist">
-                    artist
-                </option>
-                <option value="clerical/admin">
-                    clerical/admin
-                </option>
-                <option value="college/grad student">
-                    college/grad student
-                </option>
+                        <option value="K-12 student">
+                            K-12 student
+                        </option>
+                        <option value="lawyer">
+                            lawyer
+                        </option>
+                        <option value="programmer">
+                            programmer
+                        </option>
+                        <option value="retired">
+                            retired
+                        </option>
+                        <option value="sales/marketing">
+                            sales/marketing
+                        </option>
 
-                <option value="customer service">
-                    customer service
-                </option>
-                <option value="doctor/health care">
-                    doctor/health care
-                </option>
-                <option value="executive/managerial">
-                    executive/managerial
-                </option>
-                <option value="farmer">
-                    farmer
-                </option>
-                <option value="homemaker">
-                    homemaker
-                </option>
-
-                <option value="K-12 student">
-                    K-12 student
-                </option>
-                <option value="lawyer">
-                    lawyer
-                </option>
-                <option value="programmer">
-                    programmer
-                </option>
-                <option value="retired">
-                    retired
-                </option>
-                <option value="sales/marketing">
-                    sales/marketing
-                </option>
-
-                <option value="scientist">
-                    scientist
-                </option>
-                <option value="self-employed">
-                    self-employed
-                </option>
-                <option value="technician/engineer">
-                    technician/engineer
-                </option>
-                <option value="tradesman/craftsman">
-                    tradesman/craftsman
-                </option>
-                <option value="unemployed">
-                    unemployed
-                </option>
-                <option value="writer">
-                    writer
-                </option>
-            </select>
-
-            <!-- <div v-if="agreeFlag1">
-                <ServiceAgreement :dialog="true" />
+                        <option value="scientist">
+                            scientist
+                        </option>
+                        <option value="self-employed">
+                            self-employed
+                        </option>
+                        <option value="technician/engineer">
+                            technician/engineer
+                        </option>
+                        <option value="tradesman/craftsman">
+                            tradesman/craftsman
+                        </option>
+                        <option value="unemployed">
+                            unemployed
+                        </option>
+                        <option value="writer">
+                            writer
+                        </option>
+                    </select>
+                    <i
+                        v-if="occupationCheck == -1"
+                        class="mdi mdi-close-circle-outline mdi-24px fail-icon"
+                    />
+                    <i
+                        v-else-if="occupationCheck == 1"
+                        class="mdi mdi-check-circle-outline mdi-24px success-icon"
+                    />
+                </label>
+                <label class="sign-input">
+                    <input
+                        class="#a4a4a4--text"
+                        type="button"
+                        value="Genre Preferences"
+                        @click="genres_select = true; dialog = true;"
+                    >
+                    <i
+                        v-if="genresCheck == -1"
+                        class="mdi mdi-close-circle-outline mdi-24px fail-icon"
+                    />
+                    <i
+                        v-else-if="genresCheck == 1"
+                        class="mdi mdi-check-circle-outline mdi-24px success-icon"
+                    />
+                </label>
             </div>
-            
-            <div v-if="agreeFlag2">
-                <ServiceAgreement2 :dialog="true" />
-            </div>
-            
-            <div v-if="agreeFlag3">
-                <UserInfoAgreement :dialog="true" />
-            </div>
-            <div v-if="agreeFlag4">
-                <AlertAgreement :dialog="true" />
-            </div> -->
 
-            <input
-                class="#a4a4a4--text input-bottom-radius input-setting"
-                type="button"
-                value="Genre Preferences"
-                @click="genres_select = true; dialog = true;"
+            <div
+                class="white--text"
+                style="margin-top: 10px;"
             >
-
-            <div style="margin-top: 10px;">
                 <div>
                     <v-btn
                         v-if="!totalAgreeFlag"
@@ -322,53 +372,56 @@
                 >
 
                 <p class="page-payment">
-                    결제 정보요? 충분히 둘러보시고 입력해도 늦지 않아요
+                    평가정보요? 충분히 둘러보시고 입력해도 늦지 않아요
                 </p>
             </div>
-        </div>
 
-        <v-row justify="center">
-            <v-dialog
-                v-model="dialog"
-                max-width="1000"
+            <v-row
+                justify="center"
             >
-                <v-card>
-                    <v-card-title class="headline">
-                        Select Genres
-                    </v-card-title>
-                    <v-divider />
-                    <div style="margin: 10px;">
-                        <v-row>
-                            <v-col
-                                v-for="(genre, index) in genres.length"
-                                :key="index"
-                                cols="12"
-                                sm="3"
-                                md="3"
+                <v-dialog
+                    v-model="dialog"
+                    max-width="1000"
+                    justify="center"
+                >
+                    <v-card>
+                        <v-card-title class="headline">
+                            Select Genres
+                        </v-card-title>
+                        <v-divider />
+                        <div style="margin: 10px;">
+                            <v-row>
+                                <v-col
+                                    v-for="(genre, index) in genres.length"
+                                    :key="index"
+                                    cols="12"
+                                    sm="3"
+                                    md="3"
+                                >
+                                    <v-checkbox
+                                        v-model="selectGenres"
+                                        :label="genres[index]"
+                                        color="red"
+                                        :value="genres[index]"
+                                        hide-details
+                                    />
+                                </v-col>
+                            </v-row>
+                        </div>
+                        <v-card-actions>
+                            <div class="flex-grow-1" />
+                            <v-btn
+                                color="blue darken-1"
+                                text
+                                @click="dialog = !dialog"
                             >
-                                <v-checkbox
-                                    v-model="selectGenres"
-                                    :label="genres[index]"
-                                    color="red"
-                                    :value="genres[index]"
-                                    hide-details
-                                />
-                            </v-col>
-                        </v-row>
-                    </div>
-                    <v-card-actions>
-                        <div class="flex-grow-1" />
-                        <v-btn
-                            color="blue darken-1"
-                            text
-                            @click="dialog = !dialog"
-                        >
-                            OK
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
-            </v-dialog>
-        </v-row>
+                                OK
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+            </v-row>
+        </div>
     </div>
 </template>
 
@@ -385,6 +438,11 @@ export default {
             username: '',
             email: '',
             pwd: '',
+            age: '',
+            gender: '',
+            occupation: '',
+            selectGenres: [],
+
             totalAgreeFlag: false,
             agreeFlag1: false,
             agreeFlag2: false,
@@ -392,7 +450,14 @@ export default {
             agreeFlag4: false,
             dialog: false,
             genres_select: false,
-            selectGenres: []
+
+            nickNameCheck: 0,
+            idCheck: 0,
+            passwordCheck: 0,
+            ageCheck: 0,
+            genderCheck: 0,
+            occupationCheck: 0,
+            genresCheck: 0
         };
     },
     computed: {
@@ -428,7 +493,82 @@ export default {
             } else if (this.agreeFlag1 && this.agreeFlag2 && this.agreeFlag3 && this.agreeFlag4) {
                 this.totalAgreeFlag = true;
             }
+        },
+        username() {
+            if (this.username === undefined || this.username.length === 0) {
+                this.nickNameCheck = 0;
+                return;
+            }
+            const re = /^[가-힣a-zA-Z0-9]+$/;
+
+            if (!re.test(this.username) || this.username.length < 2 || this.username.length > 10) {
+                this.nickNameCheck = -1;
+                return;
+            }
+            this.nickNameCheck = 1;
+        },
+        email() {
+            if (this.email === undefined || this.email.length === 0) {
+                this.idCheck = 0;
+                return;
+            }
+            const re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+            if (!re.test(this.email)) {
+                this.idCheck = -1;
+                return;
+            }
+            this.idCheck = 1;
+        },
+        pwd() {
+            if (this.pwd === undefined || this.pwd.length === 0) {
+                this.passwordCheck = 0;
+                return;
+            }
+
+            if (this.pwd.length < 6) {
+                this.passwordCheck = -1;
+                return;
+            }
+            this.passwordCheck = 1;
+        },
+        age() {
+            if (this.age.length === 0) {
+                this.ageCheck = -1;
+                return;
+            }
+            this.ageCheck = 1;
+        },
+        gender() {
+            if (this.gender.length === 0) {
+                this.genderCheck = -1;
+                return;
+            }
+            this.genderCheck = 1;
+        },
+        occupation() {
+            if (this.occupation.length === 0) {
+                this.occupationCheck = -1;
+                return;
+            }
+            this.occupationCheck = 1;
+        },
+        selectGenres() {
+            if (this.selectGenres.length === 0) {
+                this.genresCheck = -1;
+                return;
+            }
+            this.genresCheck = 1;
         }
+    },
+    mounted() {
+        this.username = '';
+        this.email = '';
+        this.pwd = '';
+        this.age = '';
+        this.gender = '';
+        this.occupation = '';
+        this.selectGenres = [];
     },
     methods: {
         ...mapActions(['registerMember', 'checkDuplicateEmail']),
@@ -439,14 +579,15 @@ export default {
             this.agreeFlag3 = true;
             this.agreeFlag4 = true;
         },
-        validityCheck(age, job, gender) {
-            if (this.username === '' || this.email === '' || this.pwd === '' || age === '' || job === '' || gender === '') {
+        validityCheck() {
+            if (this.username === '' || this.email === '' || this.pwd === '' || this.age === '' || this.occupation === '' || this.gender === '') {
                 swal({
                     title: 'Warning',
                     text: '모든 값을 입력 해주세요.',
                     icon: 'warning',
                     button: false
                 });
+                this.idCheck = -1;
                 return false;
             }
             if (!this.checkDuplicateEmail(this.email).then((ret) => {
@@ -511,22 +652,15 @@ export default {
             return true;
         },
         register() {
-            const ageDocument = document.getElementById('age');
-            const ageVal = ageDocument.options[ageDocument.selectedIndex].value;
-            const jobDocument = document.getElementById('occupation');
-            const jobVal = jobDocument.options[jobDocument.selectedIndex].value;
-            const genderDocument = document.getElementById('gender');
-            const genderVal = genderDocument.options[genderDocument.selectedIndex].value;
-
-            if (!this.validityCheck(ageVal, jobVal, genderVal)) return;
+            if (!this.validityCheck()) return;
 
             const params = {
                 email: this.email,
                 username: this.username,
                 password: this.pwd,
-                age: ageVal,
-                gender: genderVal,
-                occupation: jobVal,
+                age: this.age,
+                gender: this.gender,
+                occupation: this.occupation,
                 genres: this.selectGenres
             };
             this.$log.debug('Register.vue', params);
@@ -555,9 +689,35 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+@import '@/style/variables.scss';
+
 input {
   color: black;
 }
+
+select {
+  color: black;
+  width: 90%;
+}
+
+option {
+  color: black;
+}
+
+.agreement {
+  opacity: 0.5;
+  font-size: 12px;
+}
+
+.checkbox {
+  margin: 0px;
+}
+
+.register {
+  color: white;
+}
+
 
 #loginForm-setting {
   position: absolute;
@@ -632,27 +792,6 @@ input {
   border-bottom-left-radius: 4px;
 }
 
-select {
-  color: #757575;
-}
-
-option {
-  color: black;
-}
-
-.agreement {
-  opacity: 0.5;
-  font-size: 12px;
-}
-
-.checkbox {
-  margin: 0px;
-}
-
-.register {
-  color: white;
-}
-
 .register-button {
   display: inline-block;
   position: relative;
@@ -697,4 +836,137 @@ a:visited a:link {
   text-decoration: none;
   color: white;
 }
+
+input {
+
+    outline-width: 0;
+}
+
+p {
+    margin: 0;
+    padding: 0;
+}
+
+.success-icon {
+
+    color: lightgreen;
+    float: right;
+}
+
+.fail-icon {
+
+    color: lightcoral;
+    float: right;
+}
+
+.sign-in-page:after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: #121218;
+    opacity: 0.8;
+}
+
+.sign-in-page__centerer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -khtml-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    z-index: 100;
+}
+
+.sign-in-page__label {
+    font-size: 18px;
+    margin-bottom: 14px;
+    letter-spacing: -1px;
+}
+
+.sign-in-page__password {
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+    float: right;
+    padding-top: 4px;
+    font-size: 12px;
+    color: #ffffff;
+}
+
+.sign-input {
+    position: relative;
+    display: block;
+    border-bottom: 1px solid rgba(154,151,161,0.2);
+    width: 300px;
+    height: 46px;
+    line-height: 24px;
+    padding: 10px 14px;
+    background-color: #ffffff;
+}
+
+.sign-input:first-child {
+    border-top-right-radius: 4px;
+    border-top-left-radius: 4px;
+}
+
+.sign-input:last-child {
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.sign-input>input {
+    width: 90%;
+    color: #121218;
+    font-size: 16px;
+    letter-spacing: -.5px;
+}
+
+.sign-in-page .sign-in-page__centerer .sign-in-page__submit {
+    display: inline-block;
+    position: relative;
+    text-align: center;
+    -webkit-border-radius: 40px;
+    -khtml-border-radius: 40px;
+    -moz-border-radius: 40px;
+    -ms-border-radius: 40px;
+    -o-border-radius: 40px;
+    border-radius: 40px;
+    margin-top: 16px;
+    background-color: #fc426a;
+    color: #ffffff;
+    width: 300px;
+    height: 48px;
+    line-height: 48px;
+    margin-bottom: 21px;
+    font-size: 18px;
+}
+
+.btn-icon {
+    width: 20%;
+    text-align: right;
+    vertical-align: middle;
+    display:inline-block;
+}
+
+.sign-in-page .sign-in-page__centerer .sign-in-page__divider {
+    display: block;
+    width: 300px;
+    height: 1px;
+    background-color: rgba(154,151,161,0.2);
+    margin: 0 auto 15px;
+}
+
+.sign-in-page .sign-in-page__centerer .sign-in-page__fb-joined {
+    margin-bottom: 13px;
+    color: #d5d4d7;
+    font-size: 12px;
+    letter-spacing: -.5px;
+}
+
 </style>

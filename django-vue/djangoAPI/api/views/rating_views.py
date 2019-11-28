@@ -7,57 +7,6 @@ import datetime
 import pytz
 
 
-# @api_view(['GET', 'POST'])
-# def ratings(request):
-
-#     if request.method == 'GET':
-
-#         serializer = RatingSerializer(ratings, many=True)
-#         return Response(data=serializer.data, status=status.HTTP_200_OK)
-
-#     if request.method == 'POST':
-#         ratings = request.data.get('ratings', None)
-
-#         for rating_obj in ratings:
-
-#             userId = rating_obj.get('userId', None)
-#             movieId = rating_obj.get('movieId', None)
-
-#             user = User.objects.get(username = 'user' + userId)
-#             movie = Movie.objects.get(id=movieId)
-
-# @api_view(['GET', 'POST'])
-# def ratings(request):
-
-#     if request.method == 'GET':
-
-#         serializer = RatingSerializer(ratings, many=True)
-#         return Response(data=serializer.data, status=status.HTTP_200_OK)
-
-#     if request.method == 'POST':
-#         ratings = request.data.get('ratings', None)
-
-#         for rating_obj in ratings:
-
-#             userId = rating_obj.get('userId', None)
-#             movieId = rating_obj.get('movieId', None)
-
-#             user = User.objects.get(username = 'user' + userId)
-#             movie = Movie.objects.get(id=movieId)
-
-#             rating = rating_obj.get('rating', None)
-#             timestamp = datetime.datetime.fromtimestamp(int(rating_obj.get('timestamp', None).strip())).replace(tzinfo=pytz.utc)
-
-#             if not (user and movie and rating and timestamp):
-#                 continue
-#             if Rating.objects.filter(user = user).filter(movie = movie).count() > 0:
-#                 continue
-
-#             age  = Profile.objects.get(user = user).age
-#             gender = Profile.objects.get(user = user).gender
-#             Rating(user=user, movie=movie, rating=rating, timestamp=timestamp).save()
-#         return Response(status=status.HTTP_200_OK)
-
 @api_view(['GET'])
 def rate_movie(request):
 
@@ -88,7 +37,7 @@ def rate_movie(request):
 
 
 @api_view(['GET'])
-def get_rating_for_movie(request):
+def get_evaluate_rating(request):
 
     if request.method == 'GET':
 
@@ -100,10 +49,12 @@ def get_rating_for_movie(request):
 
         user = User.objects.get(email=email)
         movie = Movie.objects.get(id=movie_id)
-        rating = Rating.objects.get(user=user, movie=movie)
 
-        serializer = RatingSerializer(user, movie, rating.rating, rating.timestamp)
-        return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data})
+        try:
+            rating = Rating.objects.get(user=user, movie=movie)
+        except Rating.DoesNotExist:
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': 0})
+        return JsonResponse({'status': status.HTTP_200_OK, 'result': rating.rating})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 

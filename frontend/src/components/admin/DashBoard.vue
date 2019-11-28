@@ -8,17 +8,34 @@
                 <div id="chart" />
             </v-col>
         </v-row>
+        <v-row>
+            <v-col>
+                <BasicLine/>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col>
+                <ContinuousChart/>
+            </v-col>
+        </v-row>
     </div>
 </template>
 
 <script>
 import ApexCharts from 'apexcharts';
+import BasicLine from './lineChart.vue';
+import ContinuousChart from './testChart.vue';
 
 let chart;
 let chart2;
+let BasicChart;
+let BaseChart;
 
 export default {
-
+    components: {
+        BasicLine,
+        ContinuousChart,
+    },
     mounted() {
         const options = {
             chart: {

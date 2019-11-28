@@ -14,6 +14,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT_DIR = os.path.dirname(BASE_DIR)
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'frontend')
 
@@ -22,11 +23,6 @@ FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'fronten
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '9%614ea(^@4t_=s#9c-1y=z@azlq!1q$=phwpoadz%v6adjp=5'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
 
 # Application definition
 
@@ -79,9 +75,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'djangoAPI.wsgi.application'
-
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -131,17 +124,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-WEBPACK_LOADER = {
-    'DEFAULT': {
-        'CACHE': DEBUG,
-        'BUNDLE_DIR_NAME': '/bundles/',  # must end with slash
-        'STATS_FILE': os.path.join(FRONTEND_DIR, 'webpack-stats.json'),
-    }
-}
-
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
+
+STATIC_ROOT = os.path.join(ROOT_DIR, '.static_root')
 
 # logging
 LOGGING = {
@@ -208,4 +195,36 @@ LOGGING = {
 #     }
 # }
 
+# GLOBAL_CONSTANTS = {
+#     'OVERVIEW_TF_IDF_TOTAL_VALUE': 205631.73694292648,
+#     'TITLE_TF_IDF_TOTAL_VALUE': 62259.32234575411
+# }
+
 AUTH_USER_MODEL = 'api.User'
+
+
+#DEBUG = False
+DEBUG = True
+
+# Database
+# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+WSGI_APPLICATION = 'djangoAPI.wsgi.application'
+
+ALLOWED_HOSTS = ['*']
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'CACHE': DEBUG,
+        'BUNDLE_DIR_NAME': '/bundles/',  # must end with slash
+        'STATS_FILE': os.path.join(FRONTEND_DIR, 'webpack-stats.json'),
+    }
+}
+
+SESSION_COOKIE_DOMAIN = 'youflix.twilightparadox.com'

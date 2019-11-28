@@ -47,14 +47,17 @@ const actions = {
             return result;
         });
     },
-    async getRatingForMovie({ commit }, params) {
-        Vue.$log.debug('Vuex ratings.js getRatingForMovie', params);
-        return axios.get(`${global.API_URL}/getRatingForMovie/`, {
-            params
+    async getEvaluatedRating({ commit }, params) {
+        Vue.$log.debug('Vuex ratings.js getEvaluatedRating', params);
+        return axios.get(`${global.API_URL}/getEvaluatedRating/`, {
+            params: {
+                email: params.email,
+                movie_id: params.movie_id
+            }
         }).then((response) => {
             const { result } = response.data;
-            Vue.$log.debug('Vuex ratings.js getRating RESULT', result);
-            return result.rating;
+            Vue.$log.debug('Vuex ratings.js getEvaluatedRating RESULT', result);
+            return result;
         });
     }
 };

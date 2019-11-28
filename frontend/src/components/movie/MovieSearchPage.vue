@@ -6,6 +6,13 @@
     >
         <v-row style="height: 10vh;" />
         <v-row
+            align="center"
+            class="condition-text title-family"
+            style="padding: 0px 50px 0px 50px;"
+        >
+            {{ getSearchCondition }}
+        </v-row>
+        <v-row
             :align="rowAlign"
             :justify="rowAlign"
             class="content-wrapper"
@@ -34,6 +41,7 @@
                 v-if="maxPages > 1"
                 v-model="page"
                 :length="maxPages"
+                dark
             />
         </v-row>
     </v-container>
@@ -43,7 +51,7 @@
 import { createNamespacedHelpers } from 'vuex';
 import MovieGridCard from './MovieGridCard.vue';
 
-const { mapState, mapActions } = createNamespacedHelpers('movies');
+const { mapState, mapActions, mapMutations } = createNamespacedHelpers('movies');
 
 export default {
     components: {
@@ -80,18 +88,65 @@ export default {
         },
         rowAlign() {
             return this.movieListEmpty ? 'center' : 'start';
+        },
+        changeConditions() {
+            return this.searchResultMovies.category.concat(
+                this.searchResultMovies.keyword,
+                this.searchResultMovies.title
+            );
+        },
+        getSearchCondition() {
+            let result = '';
+            if (this.searchResultMovies) {
+                if (this.searchResultMovies.keyword) {
+                    result = result.concat(this.searchResultMovies.keyword);
+                }
+                if (this.searchResultMovies.title) {
+                    result = result.concat('/', this.searchResultMovies.title);
+                }
+                result = result.concat('으로 검색한 결과입니다.');
+                return result;
+            }
+            return '조건 없이 검색한 결과입니다';
+        },
+        isReachMax() {
+            return this.page >= this.maxPages;
+        }
+    },
+    watch: {
+        // eslint-disable-next-line
+        changeConditions: function(val) {
+            this.setIsLoaded(false);
+            this.getMovieByConditions().then(() => {
+                this.$forceUpdate();
+            }).then(() => {
+                this.setIsLoaded(true);
+            });
+        },
+        // eslint-disable-next-line
+        isReachMax: function(val) {
+            this.$log.debug('MovieSearchPage.vue isReachMax watcher', val);
+            if (val) {
+                this.getMoreMovieByConditions().then(() => {
+                    this.$forceUpdate();
+                });
+            }
         }
     },
     mounted() {
+        this.setIsLoaded(false);
         this.getMovieByConditions().then(() => {
             this.$forceUpdate();
+        }).then(() => {
+            this.setIsLoaded(true);
         });
         window.addEventListener('resize', () => {
             this.responsiveSlider();
         });
     },
     methods: {
-        ...mapActions(['getMovieByConditions']),
+        ...mapActions(['getMovieByConditions', 'getMoreMovieByConditions']),
+        ...mapMutations(['setIsLoaded']),
         responsiveSlider() {
             const { innerWidth } = window;
             const containerWidth = innerWidth - 50 * 2;
@@ -103,6 +158,8 @@ export default {
 
 <style lang="scss" scoped>
 
+@import '@/style/font.scss';
+
 .content-wrapper{
     padding: 0px 50px 0px 50px;
     min-height: 75vh;
@@ -111,6 +168,12 @@ export default {
 .no-result-text{
     font-size: 4em;
     color: white;
+}
+
+.condition-text{
+    color: gray;
+    font-size: 1.2em;
+    text-transform: capitalize;
 }
 
 </style>

@@ -5,11 +5,14 @@ from rest_framework.authtoken.models import Token
 from django.http import JsonResponse
 from django.core.cache import cache
 from django.contrib import auth
+from django.db.models import Max
 
 from api.serializers import ProfileSerializer, SessionSerializer
 from api.serializers import RecommendMovie, SimilarUserSerializer
 from api.models import create_profile
-from api.models import User, Profile, Movie, Rating
+from api.models import User, Profile, Movie, Rating, UserCluster
+
+from api.algorithms.kmeansClustering import U_Cluster
 
 from collections import Counter
 
@@ -30,6 +33,13 @@ BASE_DIR = os.path.dirname(
             )
         )
 
+url = os.path.join(BASE_DIR, 'data')
+latent_user = np.load(os.path.join(url, 'mapper/latent_user.npy'))
+latent_movie = np.load(os.path.join(url, 'mapper/latent_movie.npy'))
+user_mapper = open(os.path.join(url, 'mapper/userMapper.json')).read()
+user_mapper = json.loads(user_mapper)
+movie_mapper = open(os.path.join(url, 'mapper/movieMapper.json')).read()
+movie_mapper = json.loads(movie_mapper)
 
 # 여러명의 사용자들을 가입시키는 Request
 @api_view(['POST'])
@@ -51,7 +61,8 @@ def signup_many(request):
                     password=password,
                     age=age,
                     occupation=occupation,
-                    gender=gender
+                    gender=gender,
+                    movie_taste=None
                     )
 
         return JsonResponse({'status': status.HTTP_200_OK})
@@ -103,8 +114,18 @@ def register(request):
         occupation = params.get('occupation', None)
         genres = params.get('genres', None)
 
-        max_id_object = Profile.objects.latest('id')
-        max_id = max_id_object.id
+        if gender == 'female':
+            gender = 'F'
+        elif gender == 'male':
+            gender = 'M'
+
+        cluster_max_id_obj = UserCluster.objects.aggregate(user_id=Max('user_id'))
+        profile_max_id_obj = Profile.objects.aggregate(user_id=Max('user_id'))
+        if profile_max_id_obj['user_id'] < cluster_max_id_obj['user_id']:
+            max_id = cluster_max_id_obj['user_id']
+        else:
+            max_id = profile_max_id_obj['user_id']
+
         try:
             create_profile(
                     id=max_id+1,
@@ -149,9 +170,11 @@ def login(request):
                 user.auth_token.delete()
             token = Token.objects.create(user=user)
             request.session[str(token)] = email
+            request.session.modified = True
             profile = Profile.objects.get(user=user)
             result = {
                 'email': email,
+                'id': profile.id,
                 'username': profile.username,
                 'gender': profile.gender,
                 'age': profile.age,
@@ -164,6 +187,7 @@ def login(request):
         else:
             result = {
                 'email': None,
+                'id': None,
                 'username': None,
                 'gender': None,
                 'age': None,
@@ -185,8 +209,8 @@ def login(request):
 def logout(request):
     if request.method == 'POST':
         token = request.data.get('token', None)
-        user = User.objects.get(email=request.session[str(token)])
-        del request.session[str(token)]
+        auth_user = Token.objects.get(key=token)
+        user = User.objects.get(email=auth_user.user)
         user.auth_token.delete()
         auth.logout(request)
         return JsonResponse({'status': status.HTTP_200_OK})
@@ -241,16 +265,17 @@ def updateUser(request):
             auth.login(request, user)
             token = Token.objects.create(user=user)
             request.session[str(token)] = email
-
+            request.session.modified = True
             result = {
                     'email': email,
-                    'username' : profile.username,
+                    'id': profile.id,
+                    'username': profile.username,
                     'gender': profile.gender,
                     'age': profile.age,
                     'occupation': profile.occupation,
-                    'token' : token,
-                    'is_staff' : profile.user.is_staff,
-                    'is_auth' : True,
+                    'token': token,
+                    'is_staff': profile.user.is_staff,
+                    'is_auth': True,
                     'movie_taste': profile.movie_taste
             }
             serializer = SessionSerializer(result)
@@ -282,100 +307,25 @@ def similarUser(request):
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
 
 
-url = os.path.join(BASE_DIR, 'data', 'mapper')
-latent_user = np.load(os.path.join(url, 'latent_user.npy'))
-latent_movie = np.load(os.path.join(url, 'latent_movie.npy'))
-user_mapper = open(os.path.join(url, 'userMapper.json')).read()
-user_mapper = json.loads(user_mapper)
-movie_mapper = open(os.path.join(url, 'movieMapper.json')).read()
-movie_mapper = json.loads(movie_mapper)
-
-
-@api_view(['GET'])
-def RecommendMovieUserBased(request):
-    start = time.time()
-    topN = 20
-    if request.method == 'GET':
-
-        target_id = request.GET.get('id', None)
-        if target_id:
-            # 1. target_id user와 같은 군집인 users
-            target_user = Profile.objects.get(id=target_id)
-            target_cluster = target_user.kmeans_cluster
-            print('START')
-            # cache hit
-            if cache.get(target_cluster, default=None) is not None:
-                print("cache HIT!!!")
-                start = time.time()
-                df = pd.DataFrame(cache.get(target_cluster))
-                print(time.time() - start)
-            # cache miss
-            else:
-                print("cache miss...")
-                start = time.time()
-                similar_users = Profile.objects.filter(kmeans_cluster=target_cluster)
-                similar_user_list = [user.id for user in similar_users]
-
-                # 2. 해당 군집 모든 유저가 가장 많이 시청한 영화
-                movie_list = []
-                for userid in similar_user_list:
-                    ratings = Rating.objects.filter(user__id=userid)
-                    for rating in ratings:
-                        movie_list.append(rating.movie.id)
-
-                movie_counts = Counter(movie_list)
-                movie_dict = dict(movie_counts)
-                df = pd.DataFrame(list(movie_dict.items()), columns=['id', 'count'])
-                # 5개 미만의 평점수를 가진 영화 제거
-                df = df[df['count'] >= 5]
-                # 3. 많이 본 영화 내림차순 정렬
-                df = df.sort_values(["count"], ascending=[False])
-
-                # cache에 target_cluster를 key로하는 value를 삽입.
-                cache.set(target_cluster, df, None)
-                print(time.time() - start)
-
-            # 4. 타켓유저가 보지 않은 영화들 중 재밌을 것 같은 영화 TopN 추천
-            target_user_watched = [rating.movie.id for rating in target_user.user.rating_set.all()]
-            target_user_id = int(user_mapper[str(target_user.id)])
-            topN_movies = []
-            for idx in range(len(df)):
-                if df.iloc[idx].id not in target_user_watched:
-                    topN_movies.append([df.iloc[idx].id, 0])
-            for movie in topN_movies:
-                if str(movie[0]) in movie_mapper:
-                    movie_id = int(movie_mapper[str(movie[0])])
-                    movie[1] = np.dot(latent_movie[movie_id, :], np.transpose(latent_user[target_user_id, :]))
-            topN_movies.sort(key=lambda movie: movie[1], reverse=True)
-            topN_movies = topN_movies[:topN]
-
-            movie_list = []
-            for movie in topN_movies:
-                movie_list.append(movie[0])
-            data = Movie.objects.filter(id__in=movie_list)
-            print(data)
-
-            serializer = RecommendMovie(data, many=True)
-            return JsonResponse({'status': status.HTTP_200_OK, 'result': serializer.data}, safe=False)
-        return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
-    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
-
-
 @api_view(['GET', 'POST'])
 def session_member(request):
 
-    if request.method == 'GET': 
+    if request.method == 'GET':
         try:
             token = request.GET.get('token', None)
-            user = User.objects.get(email=request.session.get(str(token)))
+            if not token:
+                raise ValueError('No Token Parameter')
 
-            if user is None:
-                return JsonResponse({'msg': 'error', 'status': status.HTTP_400_BAD_REQUEST})
-
+            user = None
+            auth_user = Token.objects.get(key=token)
+            user = User.objects.get(email=auth_user.user)
+            
             if user.is_authenticated and token == str(Token.objects.get(user=user)):
                 profile = Profile.objects.get(user=user)
+                print('profile ID: ',profile.id)
                 result = {
                     'email': user.email,
+                    'id': profile.id,
                     'username': profile.username,
                     'token': token,
                     'gender': profile.gender,
@@ -388,6 +338,7 @@ def session_member(request):
             else:
                 result = {
                     'email': None,
+                    'id': None,
                     'username': None,
                     'token': None,
                     'gender': None,
@@ -398,47 +349,25 @@ def session_member(request):
                     'movie_taste': None
                 }
             serializer = SessionSerializer(result)
-            return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
-        except:
-            return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
-
-    if request.method == 'POST':
-
-        result = {}
-        token = request.data.get('token', None)
-        email = request.session.get(str(token), None)
-        user = User.objects.get(email=email)
-
-        if user.is_authenticated and token == str(Token.objects.get(user=user)):
-            profile = Profile.objects.get(user=user)
-            print(profile)
-            result = {
-                'email': user.email,
-                'username': profile.username,
-                'token': token,
-                'gender': profile.gender,
-                'age': profile.age,
-                'occupation': profile.occupation,
-                'is_auth': True,
-                'is_staff': profile.user.is_staff,
-                'movie_taste': profile.movie_taste
-            }
-        else:
-            result = {
-                'email': None,
-                'username': None,
-                'token': None,
-                'gender': None,
-                'age': None,
-                'occupation': None,
-                'is_auth': False,
-                'is_staff':  False,
-                'movie_taste': profile.movie_taste
-            }
-        serializer = SessionSerializer(result)
-        return JsonResponse({'result': serializer.data, 'status': status.HTTP_200_OK})
-    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
-
+            return JsonResponse({
+                'result': serializer.data,
+                'status': status.HTTP_200_OK
+            })
+        except ValueError:
+            return JsonResponse({
+                'status': status.HTTP_400_BAD_REQUEST,
+                'msg': str(ValueError)
+            })
+        except User.DoesNotExist:
+            return JsonResponse({
+                'status': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                'msg': 'User does not Exists'
+            })
+        except Exception:
+            return JsonResponse({
+                'status': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                'msg': 'UNKNOWN ERROR'
+            })
 
 @api_view(['GET'])
 def duplicate_inspection(request):
@@ -452,6 +381,54 @@ def duplicate_inspection(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return JsonResponse({'status': status.HTTP_200_OK})
-        return JsonResponse({'status': status.HTTP_400_BAD_REQUEST})
+            return JsonResponse({'status': status.HTTP_200_OK, 'result': True })
+        return JsonResponse({ 'status': status.HTTP_200_OK, 'result': False })
+    return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})
+
+@api_view(['GET'])
+def predictMovieRating(request):
+    '''
+        영화 m에 대한 유저 u의 예측평점을 반환하는 메서드입니다.
+    '''
+    try:
+        if request.method == 'GET':
+            movie_id = request.GET.get('movieId', None)
+            useremail = request.GET.get('useremail', None)
+            print('predictMovieRating ', movie_id, useremail)
+            if movie_id is None or useremail is None:
+                raise ValueError('Parameters are missing')
+            user = User.objects.get(email=useremail)
+            if user is None:
+                raise User.DoesNotExist
+            movie = Movie.objects.get(id=movie_id)
+            if movie is None:
+                raise Movie.DoesNotExist
+            if str(user.id) not in user_mapper:
+                raise KeyError('user id is invalid, mapper error')
+            user_target_id = int(user_mapper[str(user.id)])
+            if user_target_id is None:
+                raise ValueError('user target id is none')
+            if str(movie.id) not in movie_mapper:
+                raise KeyError('movie id is invalid, mapper error')
+            movie_target_id = int(movie_mapper[str(movie.id)])
+            if movie_target_id is None:
+                raise ValueError('movie target id is none')
+            prediction = np.dot(
+                latent_movie[movie_target_id, :],
+                np.transpose(latent_user[user_target_id, :])
+            )
+            return JsonResponse({
+                'status': status.HTTP_200_OK,
+                'result': {
+                    'prediction': prediction
+                }
+            })
+    except ValueError as v:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': str(v)})
+    except User.DoesNotExist:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'User Object is not exist'})
+    except Movie.DoesNotExist:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': 'Movie Object is not exist'})
+    except KeyError as k:
+        return JsonResponse({'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'msg': str(k)})
     return JsonResponse({'status': status.HTTP_400_BAD_REQUEST, 'msg': 'Invalid Request Method'})

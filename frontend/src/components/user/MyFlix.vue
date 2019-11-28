@@ -1,4 +1,4 @@
-<template>
+h<template>
     <v-container
         class="container-settting"
         fluid
@@ -52,16 +52,16 @@
                         <v-col
                             style="min-height: 600px; position: relative;"
                             sm="12"
-                            md="6"
+                            md="12"
                         >
                             <RatingNumberGraph />
                         </v-col>
-                        <v-col
+                        <!-- <v-col
                             sm="12"
                             md="6"
                         >
                             <GenreGraph />
-                        </v-col>
+                        </v-col> -->
                     </v-row>
                 </v-col>
             </v-row>
@@ -95,6 +95,7 @@ import MyTastes from './MyTastes.vue';
 const userMapState = createNamespacedHelpers('users').mapState;
 const userMapActions = createNamespacedHelpers('users').mapActions;
 const ratingMapActions = createNamespacedHelpers('ratings').mapActions;
+const movieMapMutation = createNamespacedHelpers('movies').mapMutations;
 
 export default {
     name: 'MyFlix',
@@ -114,11 +115,23 @@ export default {
     },
     mounted() {
         if (this.user === null) {
-            this.getSession().then(() => {
-                this.username = this.user.username;
-                this.getRatings(this.user.email).then((ret) => {
-                    this.setRatingList(ret);
-                });
+            this.getUserBySession(localStorage.getItem('token')).then(() => {
+                if (this.user == null) {
+                    swal({
+                        title: 'Session Timeout',
+                        text: 'Session이 만료되었습니다. Login Page로 돌아갑니다.',
+                        icon: 'error',
+                        button: false
+                    }).then(() => {
+                        this.$router.push('/login');
+                        this.setIsLoaded(true);
+                    });
+                } else {
+                    this.username = this.user.username;
+                    this.getRatings(this.user.email).then((ret) => {
+                        this.setRatingList(ret);
+                    });
+                }
             });
         } else {
             this.getRatings(this.user.email).then((ret) => {
@@ -128,8 +141,9 @@ export default {
         }
     },
     methods: {
-        ...userMapActions(['getUserBySession', 'getSession']),
+        ...userMapActions(['getUserBySession']),
         ...ratingMapActions(['getRatings']),
+        ...movieMapMutation(['setIsLoaded']),
         setRatingList(list) {
             this.ratingList = [];
             list.forEach((element) => {
@@ -143,30 +157,27 @@ export default {
 <style scoped>
 
 .container-settting {
-
     padding: 0px;
     margin: 0px;
 }
 
 .area {
-
     background-color: white;
     padding: 50px;
 }
 
 #background-img {
-
   background: url("../../assets/userDetail.jpg") no-repeat center center;
   height: 100%;
   background-size: cover;
 }
 
 .rating-section {
-
     background-color: white;
     margin-left: 30px;
     margin-right: 30px;
     padding-top: 20px;
     padding-bottom: 20px;
 }
+
 </style>

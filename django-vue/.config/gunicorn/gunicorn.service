@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/youflix/django-vue/djangoAPI
+ExecStart=/home/ubuntu/.pyenv/versions/youflix/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/youflix/django-vue/djangoAPI/run/djangoAPI.sock djangoAPI.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

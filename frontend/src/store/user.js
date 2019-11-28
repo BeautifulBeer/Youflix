@@ -19,9 +19,6 @@ const actions = {
                 const { result } = response.data;
                 Vue.$log.debug('success update user info', result);
                 if (result.is_auth) {
-                    if (result.movie_taste !== '') {
-                        result.movie_taste = result.movie_taste;
-                    }
                     commit('setUser', result);
                     localStorage.setItem('token', result.token);
                     Vue.$log.debug('Vuex', 'user obj from response', result);
@@ -39,7 +36,7 @@ const actions = {
             params: {
                 email
             }
-        }).then(() => true).catch(() => false);
+        }).then((ret) => ret.data.result).catch(() => false);
         return ret;
     },
 
@@ -57,18 +54,20 @@ const actions = {
 
     async login({ commit }, params) {
         Vue.$log.debug('Vuex', params);
-        const resp = axios.post(`${global.API_URL}/auth/loginmember/`, {
+        return axios.post(`${global.API_URL}/auth/loginmember/`, {
             email: params.email,
             password: params.password
         }).then((response) => {
             Vue.$log.debug('Vuex login response', response);
             if (response.data.status === global.HTTP_SUCCESS) {
-                Vue.$log.debug('Vuex login response success');
+                Vue.$log.debug('Vuex login response success', response);
                 // result가 곧 user에 대한 데이터임
                 const { result } = response.data;
                 if (result.is_auth) {
-                    if (result.movie_taste !== '') {
+                    if (result.movie_taste && result.movie_taste !== '') {
                         result.movie_taste = JSON.parse(result.movie_taste.replace(/'/g, '"'));
+                    } else {
+                        result.movie_taste = '';
                     }
                     commit('setUser', result);
                     localStorage.setItem('token', result.token);
@@ -79,15 +78,16 @@ const actions = {
             }
             return false;
         });
-        return resp;
     },
 
     async logout({ commit }, token) {
+        console.log("LOGOUT!!! ", token);
         Vue.$log.debug('Vuex logout', token);
         return axios.post(`${global.API_URL}/auth/logoutmember/`, {
             token
         }).then((response) => {
             Vue.$log.debug('Vuex logout response', response);
+            console.log("??? ", response);
             if (response.data.status === global.HTTP_SUCCESS) {
                 localStorage.removeItem('token');
                 commit('setUser', null);
@@ -97,55 +97,39 @@ const actions = {
             return false;
         });
     },
-    async getSession({ commit }) {
-        Vue.$log.debug('Vuex getSession', localStorage.getItem('token'));
-        return axios.post(`${global.API_URL}/auth/session/`, {
-            token: localStorage.getItem('token')
-        }).then((result) => {
-            Vue.$log.debug('Vuex getSession response result', result);
-
-            if (result.data.is_auth) {
-                commit('setUser', {
-                    email: result.data.email,
-                    username: result.data.username,
-                    token: result.data.token,
-                    gender: result.data.gender,
-                    age: result.data.age,
-                    occupation: result.data.occupation,
-                    is_staff: result.data.is_staff,
-                    movie_taste: JSON.parse(result.data.movie_taste.replace(/'/g, '"'))
-                });
-            } else {
-                localStorage.removeItem('token');
-                commit('setUser', null);
-            }
-            return result.data.is_auth;
-        }).catch((err) => {
-            Vue.$log.debug('Vuex user.js getSession catch', err);
-        });
-    },
-
     async getUserBySession({ commit }, token) {
-        Vue.$log.debug('Vuex', token);
+        Vue.$log.debug('Vuex user.js getUserBySession', token);
         return axios.get(`${global.API_URL}/auth/session/`, {
             params: {
                 token
             }
         }).then((response) => {
-            Vue.$log.debug('Vuex response', response.data.movie_taste.replace(/'/g, '"'));
-            commit('setUser', {
-                email: response.data.email,
-                username: response.data.username,
-                token: response.data.token,
-                gender: response.data.gender,
-                age: response.data.age,
-                occupation: response.data.occupation,
-                is_staff: response.data.is_staff,
-                movie_taste: JSON.parse(response.data.movie_taste.replace(/'/g, '"'))
-            });
-        }).catch((error) => {
-            Vue.$log.debug('Vuex getUserBySession error', error);
-            localStorage.removeItem('token');
+            Vue.$log.debug('Vuex user.js getUserBySession response', response.data);
+            console.log(response);
+            if (response.data.status === global.HTTP_SUCCESS) {
+                const { result } = response.data;
+                if (result.is_auth) {
+                    let user = {
+                        email: result.email,
+                        id: result.id,
+                        username: result.username,
+                        token: result.token,
+                        gender: result.gender,
+                        age: result.age,
+                        occupation: result.occupation,
+                        is_staff: result.is_staff
+                    };
+                    if (result.movie_taste && result.movie_taste !== '') {
+                        user.movie_taste = JSON.parse(result.movie_taste.replace(/'/g, '"'));
+                    } else {
+                        user.movie_taste = '';
+                    }
+                    Vue.$log.debug('Vuex user.js getUserBySession response user', user);
+                    commit('setUser', user);
+                    return true;
+                }
+            }
+            return false;
         });
     }
 };
