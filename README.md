@@ -133,15 +133,20 @@ sudo systemctl daemon-reload
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system. Before we deploy this project on AWS EC2, gunicorn and nginx should be registered as daemon. 
+Add additional notes about how to deploy this on a live system. Before we deploy this project on AWS EC2, gunicorn and nginx should be registered as daemon. Check "deployment.sh".
 
 ```bash
+# Get current directory
+dir=$(pwd)
+# Config directory
+configDIR="${dir}/django-vue/.config"
+########################################################################
 # Change configuration of .config files. Invalid path is exists
 # gunicorn.service
-WorkingDirectory, ExecStart should be changed 
+# WorkingDirectory, ExecStart should be changed 
 # nginx.service
-access_log, error_log, proxy_pass, alias should be changed
-
+# access_log, error_log, proxy_pass, alias should be changed
+########################################################################
 
 # Register Gunicorn as a daemon
 sudo ln -s "${configDIR}/gunicorn/gunicorn.service" /etc/systemd/system/
@@ -156,6 +161,7 @@ touch "${djangoDIR}/logs/nginx-error.log"
 # Start gunicorn, nginx
 sudo systemctl start gunicorn.service
 sudo systemctl start nginx.service
+
 ```
 
 

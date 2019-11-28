@@ -4,8 +4,6 @@ dir=$(pwd)
 djangoDIR="${dir}/django-vue/djangoAPI"
 # Front directory
 frontDIR="${dir}/frontend"
-# Config directory
-configDIR="${dir}/django-vue/.config"
 
 # Delete prev database, pycache
 rm "${djangoDIR}/db.sqlite3"
@@ -42,16 +40,6 @@ sudo apt-get -y install gunicorn
 # Nginx installation
 sudo apt-get -y install nginx
 
-# Register Gunicorn as a daemon
-sudo ln -s "${configDIR}/gunicorn/gunicorn.service" /etc/systemd/system/
-mkdir "${djangoDIR}/run/"
-
-# Register nginx app, youflix
-sudo cp -f "${configDIR}/nginx/youflix.conf" /etc/nginx/sites-available/
-sudo ln -s /etc/nginx/sites-available/youflix.conf /etc/nginx/sites-enabled/
-touch "${djangoDIR}/logs/nginx-access.log"
-touch "${djangoDIR}/logs/nginx-error.log"
-
 # Nodejs
 sudo apt-get -y install nodejs
 sudo apt-get -y install npm
@@ -66,7 +54,3 @@ yes | python "${djangoDIR}/manage.py" collectstatic
 
 # Reload daemon serivce (apply gunicorn.service)
 sudo systemctl daemon-reload
-
-# Start gunicorn, nginx
-sudo systemctl start gunicorn.service
-sudo systemctl start nginx.service
