@@ -52,16 +52,16 @@ h<template>
                         <v-col
                             style="min-height: 600px; position: relative;"
                             sm="12"
-                            md="6"
+                            md="12"
                         >
                             <RatingNumberGraph />
                         </v-col>
-                        <v-col
+                        <!-- <v-col
                             sm="12"
                             md="6"
                         >
                             <GenreGraph />
-                        </v-col>
+                        </v-col> -->
                     </v-row>
                 </v-col>
             </v-row>

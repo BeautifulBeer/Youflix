@@ -151,16 +151,16 @@
                                         >
                                             setting
                                         </router-link>
-                                        <router-link
+                                        <!-- <router-link
                                             to="/"
                                         >
                                             likes
-                                        </router-link>
-                                        <router-link
+                                        </router-link> -->
+                                        <!-- <router-link
                                             to="/adminPage"
                                         >
                                             admin
-                                        </router-link>
+                                        </router-link> -->
                                         <router-link
                                             to="/"
                                         >
@@ -353,7 +353,7 @@ export default {
             }
         },
         logoutState() {
-            this.getUserBySession(this.token).then((ret) => {
+            this.getUserBySession(localStorage.getItem('token')).then((ret) => {
                 if (ret) {
                     this.logout(this.token).then(() => {
                         swal({

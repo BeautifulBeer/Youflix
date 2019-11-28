@@ -81,11 +81,13 @@ const actions = {
     },
 
     async logout({ commit }, token) {
+        console.log("LOGOUT!!! ", token);
         Vue.$log.debug('Vuex logout', token);
         return axios.post(`${global.API_URL}/auth/logoutmember/`, {
             token
         }).then((response) => {
             Vue.$log.debug('Vuex logout response', response);
+            console.log("??? ", response);
             if (response.data.status === global.HTTP_SUCCESS) {
                 localStorage.removeItem('token');
                 commit('setUser', null);
@@ -103,6 +105,7 @@ const actions = {
             }
         }).then((response) => {
             Vue.$log.debug('Vuex user.js getUserBySession response', response.data);
+            console.log(response);
             if (response.data.status === global.HTTP_SUCCESS) {
                 const { result } = response.data;
                 if (result.is_auth) {
