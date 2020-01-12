@@ -1,4 +1,4 @@
-Django==2.2.4
+Django>=2.2.8
 django-webpack-loader==0.6.0
 pytz==2019.2
 

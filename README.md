@@ -2,7 +2,11 @@
 
 This project is movie recommendation system based on switching hybrid recommendation system. The switching hybrid recommendation system is commonly considered as combination of model-based CF(Collaborative Filtering) and CB(Content-based Recommendation).
 
-<img src="img/logo.png" width="300" height="300" align="center">
+
+
+<p align="center">
+    <img src="img/logo.png" width="300" height="300">
+</p>
 
 
 
@@ -126,7 +130,6 @@ yes | python "${djangoDIR}/manage.py" collectstatic
 
 # Reload daemon serivce (apply gunicorn.service)
 sudo systemctl daemon-reload
-
 ```
 
 
@@ -161,7 +164,6 @@ touch "${djangoDIR}/logs/nginx-error.log"
 # Start gunicorn, nginx
 sudo systemctl start gunicorn.service
 sudo systemctl start nginx.service
-
 ```
 
 
@@ -176,7 +178,9 @@ This project try to solve the cold start problem and propose new CB algorithm. C
 
 An essential part of our project, movie recommendation, is mainly implemented using Python. We choose Django as a back-end for easy integration between server-side and recommendation part. Django does not guarantee high availability as a standalone web server in various environment, hence we combine Django with Nginx. This is widely used architecture to deploy Django server. Nginx is very powerful web server enabling load balancing or reverse proxies. That is why we provide services as the following architecture.  
 
-<img src="img/architecture_img.png" align="center">
+<p align="center">
+    <img src="img/architecture_img.png">
+</p>
 
 
 
@@ -184,15 +188,28 @@ An essential part of our project, movie recommendation, is mainly implemented us
 
 As we mentioned, switching a hybrid recommendation system is used to recommend movies to users. We define three cases for users, newbie, light user, and heavy user to apply this algorithm. Here is an overview of the recommendation algorithm.
 
-<img src="img/algorithm_img.png" align="center">
+<p align="center">
+    <img src="img/algorithm_img.png">
+</p>
+
+
 
 CB recommendation performs well in the case user rates a few movies, compared with model-based CF. In contrast, model-based CF shows high performance when the user rates many movies.  Hence, in our system, CB is for the light users and model-based CF is for the heavy users. 
+
+
+
+##### If you are interested in algorithms what we use, please check the below repositories.
+
+- Model-based CF : https://github.com/BeautifulBeer/model-based-CF
+- Content-based Algorithm : https://github.com/Karmantez/Content-Based-Algorithm
+
 
 
 
 ## License
 
 This project is licensed under the Apache 2.0 License - see the LICENSE file for details
+
 
 
 
