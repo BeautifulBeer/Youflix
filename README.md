@@ -5,13 +5,6 @@ This project is movie recommendation system based on switching hybrid recommenda
 <img src="img/logo.png" width="300" height="300" align="center">
 
 
-
-http://youflix.twilightparadox.com (2019.11 Service ON)
-
-※ DNS Hosting - FreeDNS
-
-
-
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
