@@ -2,7 +2,7 @@ Django==2.2.13
 django-webpack-loader==0.6.0
 pytz==2019.2
 
-djangorestframework==3.10.2
+djangorestframework==3.11.2
 joblib==0.13.2
 numpy==1.17.0
 scikit-learn==0.21.3
